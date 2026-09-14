@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,10 @@ export function PayslipForm() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    void fetch("/api/payslips", { credentials: "same-origin" });
+  }, []);
   const [form, setForm] = useState({
     employerSlug: "",
     paymentDate: "",
@@ -58,6 +62,7 @@ export function PayslipForm() {
     try {
       const res = await fetch("/api/payslips", {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
@@ -78,7 +83,9 @@ export function PayslipForm() {
       if (!res.ok || !data.payslip) {
         throw new Error(data.error ?? "Could not save the payslip.");
       }
-      router.push(data.readyForAnalysis ? "/analysis" : `/payslips/${data.payslip.id}`);
+      const next = data.readyForAnalysis ? "/analysis" : `/payslips/${data.payslip.id}`;
+      router.push(next);
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save");
     } finally {
@@ -271,10 +278,10 @@ function Section({
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="block space-y-1.5">
-      <span className="text-sm font-medium">{label}</span>
+    <div className="space-y-1.5">
+      <p className="text-sm font-medium">{label}</p>
       {children}
-    </label>
+    </div>
   );
 }
 

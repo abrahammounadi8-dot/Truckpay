@@ -40,7 +40,7 @@ export function EmploymentProfileForm() {
   });
 
   useEffect(() => {
-    fetch("/api/profile")
+    fetch("/api/profile", { credentials: "same-origin" })
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((data: { profile?: PublicProfile | null }) => {
         if (!data.profile) return;
@@ -75,6 +75,7 @@ export function EmploymentProfileForm() {
     try {
       const res = await fetch("/api/profile", {
         method: "PUT",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,

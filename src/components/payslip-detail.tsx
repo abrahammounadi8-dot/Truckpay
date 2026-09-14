@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -24,35 +24,35 @@ const epistemicLabel: Record<Epistemic, string> = {
   unknown: "Unknown",
 };
 
-export function PayslipDetail({ id }: { id: string }) {
+export function PayslipDetail({
+  slip,
+  findings,
+}: {
+  slip: PublicPayslip;
+  findings: Finding[];
+}) {
   const router = useRouter();
-  const [slip, setSlip] = useState<PublicPayslip | null>(null);
-  const [findings, setFindings] = useState<Finding[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-
-  useEffect(() => {
-    fetch(`/api/payslips/${id}`)
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("not found"))))
-      .then((data: { payslip: PublicPayslip; findings: Finding[] }) => {
-        setSlip(data.payslip);
-        setFindings(data.findings);
-      })
-      .catch(() => setError("This payslip is not on this device."));
-  }, [id]);
+  const [error, setError] = useState<string | null>(null);
 
   async function onDelete() {
     setPending(true);
-    const res = await fetch(`/api/payslips/${id}`, { method: "DELETE" });
-    if (res.ok) router.push("/payslips");
-    else setPending(false);
-  }
-
-  if (error) {
-    return <p className="text-sm text-destructive">{error}</p>;
-  }
-  if (!slip) {
-    return <p className="text-sm text-muted-foreground">Opening slip…</p>;
+    setError(null);
+    try {
+      const res = await fetch(`/api/payslips/${slip.id}`, {
+        method: "DELETE",
+        credentials: "same-origin",
+      });
+      if (res.ok) {
+        router.push("/payslips");
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      setError(data?.error ?? "Could not delete this slip.");
+    } catch {
+      setError("Could not delete this slip.");
+    }
+    setPending(false);
   }
 
   const employer = slip.employerSlug
@@ -79,6 +79,7 @@ export function PayslipDetail({ id }: { id: string }) {
           {pending ? "Deleting…" : "Delete this slip"}
         </Button>
       </div>
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       <div className="stub-paper rounded-xl p-5 ring-1 ring-foreground/10">
         <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-muted-foreground uppercase">

@@ -10,7 +10,7 @@ export function WipeSession() {
 
   async function onWipe() {
     setPending(true);
-    await fetch("/api/session", { method: "DELETE" });
+    await fetch("/api/session", { method: "DELETE", credentials: "same-origin" });
     window.dispatchEvent(new Event("truckpay-payslips-changed"));
     router.push("/payslips");
     router.refresh();

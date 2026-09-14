@@ -15,7 +15,7 @@ export function PayslipList() {
 
   useEffect(() => {
     function load() {
-      fetch("/api/payslips")
+      fetch("/api/payslips", { credentials: "same-origin" })
         .then((res) => (res.ok ? res.json() : Promise.reject(new Error("Could not load"))))
         .then((data: { payslips?: PublicPayslip[] }) => setSlips(data.payslips ?? []))
         .catch(() => setError("Payslips could not be loaded."));

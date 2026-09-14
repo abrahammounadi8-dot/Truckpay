@@ -30,7 +30,7 @@ export function AnalysisBoard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/analysis")
+    fetch("/api/analysis", { credentials: "same-origin" })
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then(setData)
       .catch(() => setError("Analysis could not be loaded."));
