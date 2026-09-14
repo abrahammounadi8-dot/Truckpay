@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,31 +91,22 @@ function readDraft(): { form: FormState; allowances: Line[]; deductions: Line[] 
 }
 
 export function PayslipForm() {
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
-
-  if (!mounted) {
-    return <p className="text-sm text-muted-foreground">Loading the form…</p>;
-  }
-
-  return <PayslipFormFields />;
-}
-
-function PayslipFormFields() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const draft = readDraft();
-  const [form, setForm] = useState<FormState>(draft?.form ?? emptyForm);
-  const [allowances, setAllowances] = useState<Line[]>(
-    draft?.allowances ?? [emptyLine("allowance-seed")],
-  );
-  const [deductions, setDeductions] = useState<Line[]>(
-    draft?.deductions ?? [emptyLine("deduction-seed")],
-  );
+  const [form, setForm] = useState<FormState>(emptyForm);
+  const [allowances, setAllowances] = useState<Line[]>(() => [emptyLine("allowance-seed")]);
+  const [deductions, setDeductions] = useState<Line[]>(() => [emptyLine("deduction-seed")]);
+
+  useEffect(() => {
+    const draft = readDraft();
+    if (!draft) return;
+    /* eslint-disable react-hooks/set-state-in-effect -- restore session draft once after mount */
+    setForm(draft.form);
+    setAllowances(draft.allowances);
+    setDeductions(draft.deductions);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
 
   useEffect(() => {
     sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ form, allowances, deductions }));
