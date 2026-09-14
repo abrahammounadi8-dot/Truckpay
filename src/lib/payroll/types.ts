@@ -10,6 +10,119 @@ export type StatutoryClass = "statutory" | "non_statutory" | "unknown";
 
 export type ReviewStatus = "extracted" | "needs_review" | "confirmed";
 
+export type DataOrigin = "source" | "derived" | "unverified";
+
+export type VerificationStatus = "source" | "derived" | "unverified" | "needs_review";
+
+export type WeekAssignmentBasis =
+  | "printed_week_number"
+  | "period_dates"
+  | "period_start"
+  | "period_end"
+  | "insufficient";
+
+export type WeekAssignment = {
+  countryCode: CountryCode;
+  year: number | null;
+  weekNumber: number | null;
+  basis: WeekAssignmentBasis;
+  derived: boolean;
+  verification_status: VerificationStatus;
+  confidence: number;
+  reason: string;
+};
+
+export type ProvenanceField<T> = {
+  value: T | null;
+  source: DataOrigin;
+  derived: boolean;
+  confidence: number;
+  verification_status: VerificationStatus;
+};
+
+export type YearToDateTotals = {
+  gross: number | null;
+  tax: number | null;
+  prsi: number | null;
+  usc: number | null;
+  pension: number | null;
+  insurableWeeks: number | null;
+};
+
+export type PayslipProvenance = {
+  employer: ProvenanceField<string>;
+  grossPay: ProvenanceField<number>;
+  netPay: ProvenanceField<number>;
+  basicHours: ProvenanceField<number>;
+  overtimeHours: ProvenanceField<number>;
+  hourlyRate: ProvenanceField<number>;
+  overtimeRate: ProvenanceField<number>;
+  allowances: ProvenanceField<number>;
+  tax: ProvenanceField<number>;
+  prsi: ProvenanceField<number>;
+  usc: ProvenanceField<number>;
+  pension: ProvenanceField<number>;
+  otherDeductions: ProvenanceField<number>;
+  holidayPay: ProvenanceField<number>;
+  weekNumber: ProvenanceField<number>;
+  payPeriodStart: ProvenanceField<string>;
+  payPeriodEnd: ProvenanceField<string>;
+  yearToDate: ProvenanceField<YearToDateTotals>;
+};
+
+export type WeeklyNormalizedRecord = {
+  payslipId: string;
+  countryCode: CountryCode;
+  year: number | null;
+  weekNumber: number | null;
+  weekAssigned: boolean;
+  actual: {
+    grossPay: number | null;
+    netPay: number | null;
+    basicHours: number | null;
+    overtimeHours: number | null;
+    hourlyRate: number | null;
+    overtimeRate: number | null;
+    holidayPay: number | null;
+    allowancesTotal: number | null;
+  };
+  expected: {
+    grossPay: number | null;
+    status: "calculated" | "insufficient_data";
+    derived: true;
+    reason: string;
+    components: {
+      basic: number | null;
+      overtime: number | null;
+      allowances: number | null;
+      holidayPay: number | null;
+    };
+  };
+  comparable: boolean;
+  variance: number | null;
+  varianceNote: string | null;
+};
+
+export type AnomalyStatus = "confirmed" | "possible_anomaly" | "needs_review" | "insufficient_data";
+
+export type AnomalyKind =
+  | "missing_hours"
+  | "incorrect_hourly_rate"
+  | "unpaid_overtime"
+  | "unexpected_deduction"
+  | "duplicate_payslip"
+  | "missing_week"
+  | "payslip_inconsistency";
+
+export type Anomaly = {
+  id: string;
+  kind: AnomalyKind;
+  status: AnomalyStatus;
+  payslipId: string | null;
+  summary: string;
+  evidence: { fields: string[]; note: string };
+};
+
 export type Epistemic = "fact" | "inference" | "unknown";
 
 export type DocumentKind =
@@ -131,14 +244,22 @@ export type Payslip = {
   deductions: MoneyLine[];
   grossPay: number | null;
   netPay: number | null;
+  holidayPay: number | null;
+  weekNumber: number | null;
   cumulativeGross: number | null;
   cumulativeTax: number | null;
+  cumulativePrsi: number | null;
+  cumulativeUsc: number | null;
+  cumulativePension: number | null;
   totalInsurableWeeks: number | null;
   sourceDocumentId: string | null;
   contentHash: string;
   extractionConfidence: number;
   reviewStatus: ReviewStatus;
   createdAt: string;
+  weekAssignment?: WeekAssignment;
+  provenance?: PayslipProvenance;
+  weeklyRecord?: WeeklyNormalizedRecord;
 };
 
 export type EmploymentProfile = {
@@ -193,9 +314,28 @@ export type PayslipInput = {
   deductions?: { rawLabel: string; amount: number }[];
   grossPay?: number | null;
   netPay?: number | null;
+  holidayPay?: number | null;
+  weekNumber?: number | null;
   cumulativeGross?: number | null;
   cumulativeTax?: number | null;
+  cumulativePrsi?: number | null;
+  cumulativeUsc?: number | null;
+  cumulativePension?: number | null;
   totalInsurableWeeks?: number | null;
+};
+
+export const ANOMALY_STATUS_LABELS: Record<AnomalyStatus, string> = {
+  confirmed: "Confirmed",
+  possible_anomaly: "Possible anomaly",
+  needs_review: "Needs review",
+  insufficient_data: "Insufficient data",
+};
+
+export const WEEK_STATUS_LABELS: Record<VerificationStatus, string> = {
+  source: "On the document",
+  derived: "Derived",
+  unverified: "Not on the document",
+  needs_review: "Needs review",
 };
 
 export const DEDUCTION_LABELS: Record<DeductionCategory, string> = {

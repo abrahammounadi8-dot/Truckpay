@@ -1,4 +1,5 @@
-import { REQUIRED_PAYSLIPS, type AnalysisStatus, type EmploymentProfile, type Payslip } from "@/lib/payroll/types";
+import { detectSetAnomalies } from "@/lib/payroll/anomalies";
+import { REQUIRED_PAYSLIPS, type AnalysisStatus, type Anomaly, type EmploymentProfile, type Payslip } from "@/lib/payroll/types";
 import { inspectSequence, type SequenceReport } from "@/lib/payroll/sequence";
 import { weeklyEquivalentGross, weeklyEquivalentHours, median } from "@/lib/payroll/weekly";
 import { isDocumentVerifiedTenure } from "@/lib/payroll/tenure";
@@ -15,6 +16,7 @@ export type SetAnalysis = {
   ownMedianWeeklyGross: number | null;
   ownMedianWeeklyHours: number | null;
   ownMedianBaseRate: number | null;
+  anomalies: Anomaly[];
 };
 
 export function analyseLatestSet(all: Payslip[], profile: EmploymentProfile | null): SetAnalysis {
@@ -72,6 +74,7 @@ export function analyseLatestSet(all: Payslip[], profile: EmploymentProfile | nu
     ownMedianWeeklyGross: median(weeklyGross),
     ownMedianWeeklyHours: median(weeklyHours),
     ownMedianBaseRate: median(rates),
+    anomalies: detectSetAnomalies(latest, profile),
   };
 }
 

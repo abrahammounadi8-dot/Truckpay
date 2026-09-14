@@ -65,6 +65,9 @@ export function PayslipList() {
               <p className="text-xs text-muted-foreground">
                 {FREQUENCY_LABELS[slip.payFrequency]}
                 {slip.employmentWeeks != null ? ` · ${slip.employmentWeeks} insurable week(s)` : ""}
+                {slip.weekAssignment?.weekNumber != null
+                  ? ` · week ${slip.weekAssignment.weekNumber}${slip.weekAssignment.derived ? " (derived)" : ""}`
+                  : " · week not assigned"}
                 {slip.reviewStatus === "needs_review" ? " · needs review" : ""}
               </p>
             </div>

@@ -35,14 +35,22 @@ CREATE TABLE payslips (
   pay_period_end DATE,
   pay_frequency TEXT NOT NULL,
   employment_weeks NUMERIC,
+  week_number INTEGER,
   basic_hours NUMERIC,
   basic_rate NUMERIC,
   basic_pay NUMERIC,
   overtime_hours NUMERIC,
   overtime_rate NUMERIC,
   overtime_pay NUMERIC,
+  holiday_pay NUMERIC,
   gross_pay NUMERIC,
   net_pay NUMERIC,
+  cumulative_gross NUMERIC,
+  cumulative_tax NUMERIC,
+  cumulative_prsi NUMERIC,
+  cumulative_usc NUMERIC,
+  cumulative_pension NUMERIC,
+  total_insurable_weeks NUMERIC,
   content_hash TEXT NOT NULL,
   extraction_confidence NUMERIC NOT NULL,
   review_status TEXT NOT NULL,
@@ -51,6 +59,57 @@ CREATE TABLE payslips (
 );
 
 CREATE UNIQUE INDEX payslips_user_hash ON payslips (user_id, content_hash);
+
+-- Week assignment (source printed week vs derived Irish tax week vs needs_review)
+CREATE TABLE payslip_week_assignments (
+  payslip_id UUID PRIMARY KEY REFERENCES payslips (id) ON DELETE CASCADE,
+  country_code TEXT NOT NULL,
+  year INTEGER,
+  week_number INTEGER,
+  basis TEXT NOT NULL,
+  derived BOOLEAN NOT NULL,
+  verification_status TEXT NOT NULL,
+  confidence NUMERIC NOT NULL,
+  reason TEXT NOT NULL
+);
+
+-- Provenance for important extracted/derived fields (value may be null)
+CREATE TABLE payslip_field_provenance (
+  id UUID PRIMARY KEY,
+  payslip_id UUID NOT NULL REFERENCES payslips (id) ON DELETE CASCADE,
+  field_name TEXT NOT NULL,
+  value_numeric NUMERIC,
+  value_text TEXT,
+  source TEXT NOT NULL, -- source | derived | unverified
+  derived BOOLEAN NOT NULL,
+  confidence NUMERIC NOT NULL,
+  verification_status TEXT NOT NULL,
+  UNIQUE (payslip_id, field_name)
+);
+
+-- Normalized weekly record for later EXPECTED vs ACTUAL (expected only when calculable)
+CREATE TABLE weekly_pay_records (
+  payslip_id UUID PRIMARY KEY REFERENCES payslips (id) ON DELETE CASCADE,
+  country_code TEXT NOT NULL,
+  year INTEGER,
+  week_number INTEGER,
+  week_assigned BOOLEAN NOT NULL,
+  actual_gross NUMERIC,
+  actual_net NUMERIC,
+  expected_gross NUMERIC,
+  expected_status TEXT NOT NULL, -- calculated | insufficient_data
+  comparable BOOLEAN NOT NULL,
+  variance NUMERIC
+);
+
+CREATE TABLE payroll_anomalies (
+  id TEXT PRIMARY KEY,
+  payslip_id UUID REFERENCES payslips (id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  status TEXT NOT NULL, -- confirmed | possible_anomaly | needs_review | insufficient_data
+  summary TEXT NOT NULL,
+  evidence_note TEXT NOT NULL
+);
 
 -- 4. Normalized lines (raw_label always kept)
 CREATE TABLE payslip_lines (

@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { payslipContentHash } from "@/lib/payroll/fingerprint";
+import { hydratePayslip } from "@/lib/payroll/process";
 import type { Payslip } from "@/lib/payroll/types";
 
 /** JSON stand-in. Target schema: src/lib/persistence/schema.sql — do not treat /tmp as durable. */
@@ -25,7 +26,7 @@ async function readAll(): Promise<Payslip[]> {
     const raw = await readFile(storePath(), "utf8");
     const parsed = JSON.parse(raw) as Disk | Payslip[];
     const list = Array.isArray(parsed) ? parsed : (parsed.payslips ?? []);
-    globalStore.truckpayPayslips = list.filter(isPayslip).map(ensureHash);
+    globalStore.truckpayPayslips = list.filter(isPayslip).map((slip) => hydratePayslip(ensureHash(slip)));
     return globalStore.truckpayPayslips;
   } catch {
     globalStore.truckpayPayslips = [];
@@ -64,6 +65,8 @@ function ensureHash(slip: Payslip): Payslip {
       netPay: slip.netPay,
       basicPay: slip.basicPay,
       basicHours: slip.basicHours,
+      weekNumber: slip.weekNumber,
+      holidayPay: slip.holidayPay,
     }),
   };
 }

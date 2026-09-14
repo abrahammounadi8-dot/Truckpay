@@ -8,11 +8,15 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { fleet } from "@/lib/data";
 import { formatEuro, formatEuroMaybe } from "@/lib/payroll/format";
 import {
+  ANOMALY_STATUS_LABELS,
   DEDUCTION_LABELS,
   FREQUENCY_LABELS,
+  WEEK_STATUS_LABELS,
+  type Anomaly,
   type Epistemic,
   type Finding,
   type Payslip,
+  type ProvenanceField,
 } from "@/lib/payroll/types";
 import { cn } from "@/lib/utils";
 
@@ -27,9 +31,11 @@ const epistemicLabel: Record<Epistemic, string> = {
 export function PayslipDetail({
   slip,
   findings,
+  anomalies = [],
 }: {
   slip: PublicPayslip;
   findings: Finding[];
+  anomalies?: Anomaly[];
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -73,6 +79,7 @@ export function PayslipDetail({
             {slip.payPeriodStart && slip.payPeriodEnd
               ? ` · ${slip.payPeriodStart} → ${slip.payPeriodEnd}`
               : ""}
+            {slip.weekNumber != null ? ` · printed week ${slip.weekNumber}` : ""}
           </p>
         </div>
         <Button variant="outline" size="sm" disabled={pending} onClick={onDelete}>
@@ -80,6 +87,8 @@ export function PayslipDetail({
         </Button>
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+      <WeekBanner slip={slip} />
 
       <div className="stub-paper rounded-xl p-5 ring-1 ring-foreground/10">
         <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
@@ -101,18 +110,31 @@ export function PayslipDetail({
 
       <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
         <h2 className="font-heading text-xl font-semibold">Hours and rates</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Figures below are from the document unless marked derived. Blank fields stay blank — TruckPay does not guess.
+        </p>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-          <Item label="Basic hours" value={n(slip.basicHours)} />
-          <Item label="Basic rate" value={formatEuroMaybe(slip.basicRate)} />
+          <ProvenanceItem label="Basic hours" field={slip.provenance?.basicHours} fallback={n(slip.basicHours)} />
+          <ProvenanceItem label="Basic rate" field={slip.provenance?.hourlyRate} fallback={formatEuroMaybe(slip.basicRate)} money />
           <Item label="Basic pay" value={formatEuroMaybe(slip.basicPay)} />
-          <Item label="Overtime hours" value={n(slip.overtimeHours)} />
-          <Item label="Overtime rate" value={formatEuroMaybe(slip.overtimeRate)} />
+          <ProvenanceItem label="Overtime hours" field={slip.provenance?.overtimeHours} fallback={n(slip.overtimeHours)} />
+          <ProvenanceItem label="Overtime rate" field={slip.provenance?.overtimeRate} fallback={formatEuroMaybe(slip.overtimeRate)} money />
           <Item label="Overtime pay" value={formatEuroMaybe(slip.overtimePay)} />
+          <ProvenanceItem label="Holiday pay" field={slip.provenance?.holidayPay} fallback={formatEuroMaybe(slip.holidayPay ?? null)} money />
+          <ProvenanceItem label="Tax (PAYE lines)" field={slip.provenance?.tax} fallback="—" money />
+          <ProvenanceItem label="PRSI" field={slip.provenance?.prsi} fallback="—" money />
+          <ProvenanceItem label="USC" field={slip.provenance?.usc} fallback="—" money />
+          <ProvenanceItem label="Pension" field={slip.provenance?.pension} fallback="—" money />
           <Item label="Cumulative gross" value={formatEuroMaybe(slip.cumulativeGross)} />
           <Item label="Cumulative tax" value={formatEuroMaybe(slip.cumulativeTax)} />
+          <Item label="Cumulative PRSI" value={formatEuroMaybe(slip.cumulativePrsi ?? null)} />
+          <Item label="Cumulative USC" value={formatEuroMaybe(slip.cumulativeUsc ?? null)} />
+          <Item label="Cumulative pension" value={formatEuroMaybe(slip.cumulativePension ?? null)} />
           <Item label="YTD insurable weeks" value={n(slip.totalInsurableWeeks)} />
         </dl>
       </section>
+
+      <ExpectedPay record={slip.weeklyRecord} />
 
       <Lines title="Allowances" rows={slip.allowances.map((line) => ({
         label: line.rawLabel,
@@ -136,6 +158,33 @@ export function PayslipDetail({
                   </p>
                 </div>
                 <p className="font-mono text-sm tabular-nums">{formatEuro(line.amount)}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-heading text-2xl font-semibold">Anomaly watch</h2>
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Confirmed only with enough evidence. Otherwise TruckPay uses possible anomaly, needs review, or
+          insufficient data. Nothing here is an accusation.
+        </p>
+        {anomalies.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border bg-card px-5 py-8 text-sm text-muted-foreground">
+            No anomaly flags on the figures you entered.
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {anomalies.map((item) => (
+              <li key={item.id} className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={item.status === "confirmed" ? "default" : item.status === "insufficient_data" ? "secondary" : "destructive"}>
+                    {ANOMALY_STATUS_LABELS[item.status]}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">{item.kind.replaceAll("_", " ")}</span>
+                </div>
+                <p className="mt-2 text-sm leading-6">{item.summary}</p>
               </li>
             ))}
           </ul>
@@ -183,6 +232,83 @@ export function PayslipDetail({
       <Link href="/payslips" className={cn(buttonVariants({ variant: "outline" }))}>
         Back to my slips
       </Link>
+    </div>
+  );
+}
+
+function WeekBanner({ slip }: { slip: PublicPayslip }) {
+  const assignment = slip.weekAssignment;
+  if (!assignment) {
+    return (
+      <p className="rounded-xl border border-dashed border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+        Week not classified yet.
+      </p>
+    );
+  }
+  const title =
+    assignment.weekNumber != null && assignment.year != null
+      ? `Week ${assignment.weekNumber} of ${assignment.year}`
+      : "Week not assigned";
+  return (
+    <section className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="font-heading text-lg font-semibold">{title}</p>
+        <Badge variant={assignment.verification_status === "source" ? "default" : assignment.verification_status === "derived" ? "secondary" : "destructive"}>
+          {WEEK_STATUS_LABELS[assignment.verification_status]}
+        </Badge>
+        {assignment.derived ? <span className="text-xs text-muted-foreground">Derived — not printed as a week number</span> : null}
+      </div>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{assignment.reason}</p>
+    </section>
+  );
+}
+
+function ExpectedPay({ record }: { record: PublicPayslip["weeklyRecord"] }) {
+  if (!record) return null;
+  return (
+    <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
+      <h2 className="font-heading text-xl font-semibold">Expected vs actual (this week)</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Expected pay is derived from hours × rates when those figures are on the document. It is never
+        presented as a printed payslip amount.
+      </p>
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+        <Item label="Actual gross (source)" value={formatEuroMaybe(record.actual.grossPay)} />
+        <Item
+          label="Expected gross (derived)"
+          value={record.expected.grossPay == null ? "Not calculated" : formatEuro(record.expected.grossPay)}
+        />
+        <Item label="Variance" value={record.variance == null ? "—" : formatEuro(record.variance)} />
+      </dl>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">{record.expected.reason}</p>
+    </section>
+  );
+}
+
+function ProvenanceItem({
+  label,
+  field,
+  fallback,
+  money,
+}: {
+  label: string;
+  field: ProvenanceField<number | string> | undefined;
+  fallback: string;
+  money?: boolean;
+}) {
+  const display =
+    field == null || field.value == null
+      ? fallback
+      : money && typeof field.value === "number"
+        ? formatEuro(field.value)
+        : String(field.value);
+  return (
+    <div>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="font-mono tabular-nums">{display}</dd>
+      <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+        {field ? WEEK_STATUS_LABELS[field.verification_status] : "Not on the document"}
+      </p>
     </div>
   );
 }

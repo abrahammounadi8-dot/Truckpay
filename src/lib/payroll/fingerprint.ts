@@ -10,6 +10,8 @@ export function payslipContentHash(input: {
   netPay: number | null;
   basicPay: number | null;
   basicHours: number | null;
+  weekNumber?: number | null;
+  holidayPay?: number | null;
 }): string {
   const payload = [
     input.employerSlug ?? "",
@@ -20,6 +22,8 @@ export function payslipContentHash(input: {
     num(input.netPay),
     num(input.basicPay),
     num(input.basicHours),
+    input.weekNumber == null ? "" : String(input.weekNumber),
+    num(input.holidayPay ?? null),
   ].join("|");
   return createHash("sha256").update(payload).digest("hex");
 }
@@ -34,6 +38,8 @@ export function hashFromInput(input: PayslipInput): string {
     netPay: input.netPay ?? null,
     basicPay: input.basicPay ?? null,
     basicHours: input.basicHours ?? null,
+    weekNumber: input.weekNumber ?? null,
+    holidayPay: input.holidayPay ?? null,
   });
 }
 

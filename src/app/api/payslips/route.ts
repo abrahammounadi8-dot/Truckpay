@@ -1,5 +1,6 @@
 import { parsePayslipInput, toStoredPayslip } from "@/lib/payroll/parse";
 import { findDuplicate, hashFromInput } from "@/lib/payroll/fingerprint";
+import { publicError } from "@/lib/payroll/privacy";
 import { getOrCreateUserId } from "@/lib/payroll/session";
 import { listPayslipsForUser, savePayslip } from "@/lib/payroll/store";
 import { toPublicPayslip } from "@/lib/payroll/format";
@@ -22,12 +23,12 @@ export async function POST(request: Request) {
   try {
     payload = await request.json();
   } catch {
-    return Response.json({ error: "Send JSON." }, { status: 400 });
+    return Response.json(publicError("Send JSON."), { status: 400 });
   }
 
   const parsed = parsePayslipInput(payload);
   if (parsed.error || !parsed.input) {
-    return Response.json({ error: parsed.error ?? "Invalid payslip." }, { status: 400 });
+    return Response.json(publicError(parsed.error ?? "Invalid payslip."), { status: 400 });
   }
 
   const userId = await getOrCreateUserId();
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
   if (duplicate) {
     return Response.json(
       {
-        error: "That payslip looks like one you already entered (same dates and totals).",
+        ...publicError("That payslip looks like one you already entered (same dates and totals)."),
         duplicateOf: duplicate.id,
       },
       { status: 409 },

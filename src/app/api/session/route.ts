@@ -5,12 +5,11 @@ import { deleteAllForUser } from "@/lib/payroll/store";
 export const runtime = "nodejs";
 
 export async function GET() {
-  const userId = await getOrCreateUserId();
+  await getOrCreateUserId();
   return Response.json({
     userIdPresent: true,
     identity: "random-uuid",
     note: "This id is not a PPSN, licence number, or employee number.",
-    userIdSuffix: userId.slice(-4),
   });
 }
 

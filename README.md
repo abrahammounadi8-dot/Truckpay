@@ -6,7 +6,9 @@ Ireland-first payroll control and salary intelligence for haulage drivers.
 
 A payslip is **not** assumed to be one working week. It may cover several weeks, overtime, allowances, back pay or deductions from different periods.
 
-TruckPay does **not** invent reviews, ratings or pay figures. Unknown deduction labels stay unknown and are flagged for review — never classified as illegal.
+Work/pay week is assigned only from a printed week number or from period dates that sit inside a single Irish tax week (1 January week-numbering, not ISO week). Payment date alone is never used. If the week cannot be determined reliably, it is marked for review — never guessed.
+
+TruckPay does **not** invent reviews, ratings or pay figures. Missing payroll fields are stored as null. Derived figures (including expected pay) are labelled derived and are never shown as if they were printed on the slip. Unknown deduction labels stay unknown and are flagged for review — never classified as illegal.
 
 ## Three layers
 
@@ -34,7 +36,9 @@ The intended schema is in `src/lib/persistence/schema.sql` (users, documents, ex
 npm test
 ```
 
-Covers multi-week equivalents, duplicates, Irish deduction classification, sequence gaps, tenure bands, three-slip verification, personal pay-change remainder, and the three-driver median publish rule.
+Covers multi-week equivalents, duplicates, Irish deduction classification, sequence gaps, tenure bands, three-slip verification, personal pay-change remainder, the three-driver median publish rule, **weekly classification** (printed vs derived vs needs review), **no-guess / null storage**, expected-pay gating, and the anomaly-status foundation.
+
+Synthetic payroll fixtures exist only in `src/lib/payroll/*.test.ts` and are labelled as test data.
 
 ## Run locally
 

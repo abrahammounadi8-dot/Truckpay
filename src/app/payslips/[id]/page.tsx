@@ -4,6 +4,7 @@ import { PayslipDetail } from "@/components/payslip-detail";
 import { buttonVariants } from "@/components/ui/button";
 import { toPublicPayslip } from "@/lib/payroll/format";
 import { reconcilePayslip } from "@/lib/payroll/reconcile";
+import { detectPayslipAnomalies } from "@/lib/payroll/anomalies";
 import { readUserId } from "@/lib/payroll/session";
 import { getPayslipForUser, listPayslipsForUser } from "@/lib/payroll/store";
 import { cn } from "@/lib/utils";
@@ -34,10 +35,11 @@ export default async function PayslipPage({
 
   const prior = await listPayslipsForUser(userId);
   const findings = reconcilePayslip(payslip, prior);
+  const anomalies = detectPayslipAnomalies(payslip, prior, null);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <PayslipDetail slip={toPublicPayslip(payslip)} findings={findings} />
+      <PayslipDetail slip={toPublicPayslip(payslip)} findings={findings} anomalies={anomalies} />
     </div>
   );
 }

@@ -24,16 +24,21 @@ type FormState = {
   payPeriodEnd: string;
   payFrequency: PayFrequency;
   employmentWeeks: string;
+  weekNumber: string;
   basicHours: string;
   basicRate: string;
   basicPay: string;
   overtimeHours: string;
   overtimeRate: string;
   overtimePay: string;
+  holidayPay: string;
   grossPay: string;
   netPay: string;
   cumulativeGross: string;
   cumulativeTax: string;
+  cumulativePrsi: string;
+  cumulativeUsc: string;
+  cumulativePension: string;
   totalInsurableWeeks: string;
 };
 
@@ -46,16 +51,21 @@ const emptyForm: FormState = {
   payPeriodEnd: "",
   payFrequency: "unknown",
   employmentWeeks: "",
+  weekNumber: "",
   basicHours: "",
   basicRate: "",
   basicPay: "",
   overtimeHours: "",
   overtimeRate: "",
   overtimePay: "",
+  holidayPay: "",
   grossPay: "",
   netPay: "",
   cumulativeGross: "",
   cumulativeTax: "",
+  cumulativePrsi: "",
+  cumulativeUsc: "",
+  cumulativePension: "",
   totalInsurableWeeks: "",
 };
 
@@ -158,9 +168,10 @@ export function PayslipForm() {
   return (
     <form onSubmit={onSubmit} autoComplete="off" className="space-y-8">
       <p className="rounded-xl bg-card p-4 text-sm leading-6 text-muted-foreground ring-1 ring-foreground/10">
-        Type figures from the slip. TruckPay Verified Analysis needs your latest three unique
-        payslips. A payslip is not assumed to be one week — set the period and insurable weeks as
-        printed. Duplicate dates and totals are rejected. Documents are not stored.
+        Type figures that actually appear on the slip. Leave a box blank if it is not printed — TruckPay
+        will store null and will not guess. TruckPay Verified Analysis needs your latest three unique
+        payslips. A payslip is not assumed to be one week. Duplicate dates and totals are rejected.
+        Documents are not stored.
       </p>
 
       <Section title="Who and when">
@@ -236,6 +247,16 @@ export function PayslipForm() {
               placeholder="May be more than 1"
             />
           </Field>
+          <Field label="Week number as printed">
+            <Input
+              id="weekNumber"
+              name="weekNumber"
+              inputMode="numeric"
+              value={form.weekNumber}
+              onChange={(event) => set("weekNumber", event.target.value)}
+              placeholder="Leave blank if not shown"
+            />
+          </Field>
         </div>
       </Section>
 
@@ -259,6 +280,9 @@ export function PayslipForm() {
           <Field label="Overtime pay (€)">
             <Input inputMode="decimal" value={form.overtimePay} onChange={(event) => set("overtimePay", event.target.value)} />
           </Field>
+          <Field label="Holiday pay (€)">
+            <Input id="holidayPay" name="holidayPay" inputMode="decimal" value={form.holidayPay} onChange={(event) => set("holidayPay", event.target.value)} />
+          </Field>
         </div>
       </Section>
 
@@ -275,6 +299,15 @@ export function PayslipForm() {
           </Field>
           <Field label="Cumulative tax (€)">
             <Input inputMode="decimal" value={form.cumulativeTax} onChange={(event) => set("cumulativeTax", event.target.value)} />
+          </Field>
+          <Field label="Cumulative PRSI (€)">
+            <Input inputMode="decimal" value={form.cumulativePrsi} onChange={(event) => set("cumulativePrsi", event.target.value)} />
+          </Field>
+          <Field label="Cumulative USC (€)">
+            <Input inputMode="decimal" value={form.cumulativeUsc} onChange={(event) => set("cumulativeUsc", event.target.value)} />
+          </Field>
+          <Field label="Cumulative pension (€)">
+            <Input inputMode="decimal" value={form.cumulativePension} onChange={(event) => set("cumulativePension", event.target.value)} />
           </Field>
           <Field label="Total insurable weeks (YTD)">
             <Input inputMode="decimal" value={form.totalInsurableWeeks} onChange={(event) => set("totalInsurableWeeks", event.target.value)} />

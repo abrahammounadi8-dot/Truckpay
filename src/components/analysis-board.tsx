@@ -10,6 +10,7 @@ import type { CompanyPayStats } from "@/lib/payroll/company-stats";
 import type { PayFactor } from "@/lib/payroll/explain";
 import { formatEuroMaybe, payslipTitle } from "@/lib/payroll/format";
 import {
+  ANOMALY_STATUS_LABELS,
   EVIDENCE_LEVEL_LABELS,
   FREQUENCY_LABELS,
   PAY_CONFIDENCE_LABELS,
@@ -99,6 +100,26 @@ export function AnalysisBoard() {
         </ul>
       ) : null}
 
+      {analysis.anomalies?.length ? (
+        <section className="space-y-3">
+          <h2 className="font-heading text-xl font-semibold">Anomaly watch</h2>
+          <p className="text-sm text-muted-foreground">
+            Confirmed only with enough evidence. Possible anomaly, needs review, and insufficient data
+            are not treated as proof of an error.
+          </p>
+          <ul className="space-y-2">
+            {analysis.anomalies.map((item) => (
+              <li key={item.id} className="rounded-xl bg-card p-4 text-sm ring-1 ring-foreground/10">
+                <Badge variant={item.status === "confirmed" ? "default" : item.status === "insufficient_data" ? "secondary" : "destructive"}>
+                  {ANOMALY_STATUS_LABELS[item.status]}
+                </Badge>
+                <p className="mt-2 leading-6">{item.summary}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {profile?.employmentStartDate ? (
         <p className="text-sm text-muted-foreground">
           Tenure: {profile.tenureMonths} months
@@ -124,6 +145,9 @@ export function AnalysisBoard() {
                 <Link href={`/payslips/${slip.id}`} className="flex justify-between rounded-xl bg-card px-4 py-3 text-sm ring-1 ring-foreground/10">
                   <span>
                     {payslipTitle(slip)} · {FREQUENCY_LABELS[slip.payFrequency]}
+                    {slip.weekAssignment?.weekNumber != null
+                      ? ` · week ${slip.weekAssignment.weekNumber}${slip.weekAssignment.derived ? " (derived)" : ""}`
+                      : " · week not assigned"}
                     {slip.payPeriodStart && slip.payPeriodEnd
                       ? ` · ${slip.payPeriodStart} → ${slip.payPeriodEnd}`
                       : " · period missing"}
