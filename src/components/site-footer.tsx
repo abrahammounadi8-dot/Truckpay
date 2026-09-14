@@ -31,6 +31,12 @@ export function SiteFooter() {
             Join
           </p>
           <div className="mt-3 flex flex-col gap-2 text-primary-foreground/75">
+            <Link href="/analysis" className="hover:text-primary-foreground">
+              Verified analysis
+            </Link>
+            <Link href="/profile" className="hover:text-primary-foreground">
+              Employment profile
+            </Link>
             <Link href="/payslips" className="hover:text-primary-foreground">
               Check my pay
             </Link>

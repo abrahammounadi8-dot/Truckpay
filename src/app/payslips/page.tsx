@@ -20,17 +20,26 @@ export default function PayslipsPage() {
         <div>
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">My payslips</h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-            Check whether the figures on a slip add up. Nothing here is published to the haulier
-            directory. Documents are not stored. Delete anytime.
+            Check whether the figures add up. Verified analysis needs three unique slips. Nothing
+            here is published as “the company salary”. Delete anytime.
           </p>
         </div>
         <Link href="/payslips/new" className={cn(buttonVariants(), "bg-accent text-accent-foreground hover:bg-accent/90")}>
-          Check a payslip
+          Add a payslip
         </Link>
       </div>
       <div className="mt-8">
         <PayslipList />
       </div>
+      <p className="mt-6 text-sm">
+        <Link href="/analysis" className="underline">
+          Open analysis
+        </Link>
+        {" · "}
+        <Link href="/profile" className="underline">
+          Employment profile
+        </Link>
+      </p>
       <div className="mt-10 border-t border-border pt-6">
         <WipeSession />
       </div>

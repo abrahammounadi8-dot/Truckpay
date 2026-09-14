@@ -66,11 +66,19 @@ export function PayslipForm() {
           deductions: packed(deductions),
         }),
       });
-      const data = (await res.json()) as { error?: string; payslip?: { id: string } };
+      const data = (await res.json()) as {
+        error?: string;
+        payslip?: { id: string };
+        readyForAnalysis?: boolean;
+        duplicateOf?: string;
+      };
+      if (res.status === 409) {
+        throw new Error(data.error ?? "Duplicate payslip.");
+      }
       if (!res.ok || !data.payslip) {
         throw new Error(data.error ?? "Could not save the payslip.");
       }
-      router.push(`/payslips/${data.payslip.id}`);
+      router.push(data.readyForAnalysis ? "/analysis" : `/payslips/${data.payslip.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save");
     } finally {
@@ -81,9 +89,9 @@ export function PayslipForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-8">
       <p className="rounded-xl bg-card p-4 text-sm leading-6 text-muted-foreground ring-1 ring-foreground/10">
-        Type figures from the slip. A payslip is not assumed to be one week — set the period and
-        insurable weeks as printed. Documents are not uploaded or stored. You are identified only by
-        a random id on this device, never a PPSN, licence or employee number.
+        Type figures from the slip. TruckPay Verified Analysis needs your latest three unique
+        payslips. A payslip is not assumed to be one week — set the period and insurable weeks as
+        printed. Duplicate dates and totals are rejected. Documents are not stored.
       </p>
 
       <Section title="Who and when">
@@ -96,7 +104,7 @@ export function PayslipForm() {
               onChange={(event) => set("paymentDate", event.target.value)}
             />
           </Field>
-          <Field label="Employer (optional — listed firms only)">
+          <Field label="Employer (needed for verified analysis)">
             <select
               className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
               value={form.employerSlug}
@@ -113,6 +121,7 @@ export function PayslipForm() {
           <Field label="Period start">
             <Input
               type="date"
+              required
               value={form.payPeriodStart}
               onChange={(event) => set("payPeriodStart", event.target.value)}
             />
@@ -120,6 +129,7 @@ export function PayslipForm() {
           <Field label="Period end">
             <Input
               type="date"
+              required
               value={form.payPeriodEnd}
               onChange={(event) => set("payPeriodEnd", event.target.value)}
             />

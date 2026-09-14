@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { formatEuroMaybe, payslipTitle } from "@/lib/payroll/format";
-import { FREQUENCY_LABELS, type Payslip } from "@/lib/payroll/types";
+import { FREQUENCY_LABELS, REQUIRED_PAYSLIPS, type Payslip } from "@/lib/payroll/types";
 import { cn } from "@/lib/utils";
 
 type PublicPayslip = Omit<Payslip, "userId">;
@@ -36,7 +36,7 @@ export function PayslipList() {
       <div className="rounded-xl border border-dashed border-border bg-card px-6 py-16 text-center">
         <p className="font-heading text-xl font-semibold">No payslips on this device yet</p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Check the first one privately. It is not posted to the public haulier board.
+          Check the first of three unique slips. It is not posted to the public board.
         </p>
         <Link href="/payslips/new" className={cn(buttonVariants(), "mt-5 inline-flex")}>
           Check a payslip
@@ -45,8 +45,15 @@ export function PayslipList() {
     );
   }
 
+  const towardVerified = Math.min(slips.length, REQUIRED_PAYSLIPS);
+
   return (
-    <ul className="space-y-3">
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        {towardVerified} of {REQUIRED_PAYSLIPS} unique slips toward TruckPay Verified Analysis. Duplicates
+        are rejected. One slip is not one week.
+      </p>
+      <ul className="space-y-3">
       {slips.map((slip) => (
         <li key={slip.id}>
           <Link
@@ -67,6 +74,7 @@ export function PayslipList() {
           </Link>
         </li>
       ))}
-    </ul>
+      </ul>
+    </div>
   );
 }

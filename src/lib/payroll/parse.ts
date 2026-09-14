@@ -1,5 +1,6 @@
 import { fleet } from "@/lib/data";
 import { classifyAllowance, classifyDeduction } from "@/lib/payroll/classify";
+import { hashFromInput } from "@/lib/payroll/fingerprint";
 import type { PayFrequency, Payslip, PayslipInput } from "@/lib/payroll/types";
 
 const FREQUENCIES: PayFrequency[] = ["weekly", "fortnightly", "lunar", "monthly", "unknown"];
@@ -121,6 +122,7 @@ export function toStoredPayslip(userId: string, input: PayslipInput): Payslip {
     cumulativeTax: input.cumulativeTax ?? null,
     totalInsurableWeeks: input.totalInsurableWeeks ?? null,
     sourceDocumentId: null,
+    contentHash: hashFromInput(input),
     extractionConfidence: 1,
     reviewStatus: needsReview ? "needs_review" : "extracted",
     createdAt: new Date().toISOString(),

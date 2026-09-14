@@ -45,7 +45,37 @@ export type FindingKind =
   | "multi_week_payment"
   | "unknown_deduction"
   | "rate_change"
-  | "recurring_deduction";
+  | "recurring_deduction"
+  | "duplicate_payslip"
+  | "missing_period"
+  | "non_consecutive"
+  | "mixed_employer";
+
+export type TenureBand = "0_1" | "1_3" | "3_5" | "5_plus";
+
+export type TenureSource =
+  | "payslip"
+  | "employment_contract"
+  | "user_declared"
+  | "other_verified_document";
+
+export type JobType = "distribution" | "trunking" | "specialised" | "other";
+
+export type VehicleType =
+  | "articulated"
+  | "rigid"
+  | "tanker"
+  | "fuel"
+  | "refrigerated"
+  | "container"
+  | "specialised"
+  | "unknown";
+
+export type TimeFraction = "full_time" | "part_time";
+
+export type ShiftType = "day" | "night" | "rotating" | "mixed";
+
+export type AnalysisStatus = "need_more" | "incomplete" | "verified";
 
 export type MoneyLine = {
   rawLabel: string;
@@ -99,9 +129,28 @@ export type Payslip = {
   cumulativeTax: number | null;
   totalInsurableWeeks: number | null;
   sourceDocumentId: string | null;
+  contentHash: string;
   extractionConfidence: number;
   reviewStatus: ReviewStatus;
   createdAt: string;
+};
+
+export type EmploymentProfile = {
+  userId: string;
+  employerSlug: string | null;
+  employmentStartDate: string | null;
+  tenureMonths: number | null;
+  tenureBand: TenureBand | null;
+  tenureSource: TenureSource | null;
+  tenureConfidence: number | null;
+  jobType: JobType;
+  vehicleType: VehicleType;
+  timeFraction: TimeFraction;
+  shiftType: ShiftType;
+  payType: "hourly" | "day" | "salary" | "percentage";
+  agreedBaseRate: number | null;
+  countryCode: CountryCode;
+  updatedAt: string;
 };
 
 export type FindingEvidence = {
@@ -166,3 +215,44 @@ export const FREQUENCY_LABELS: Record<PayFrequency, string> = {
   monthly: "Monthly",
   unknown: "Not stated",
 };
+
+export const TENURE_BAND_LABELS: Record<TenureBand, string> = {
+  "0_1": "0–1 year",
+  "1_3": "1–3 years",
+  "3_5": "3–5 years",
+  "5_plus": "5+ years",
+};
+
+export const TENURE_SOURCE_LABELS: Record<TenureSource, string> = {
+  payslip: "Taken from a payslip",
+  employment_contract: "Taken from an employment contract",
+  user_declared: "You told us — not document-verified",
+  other_verified_document: "Taken from another document",
+};
+
+export const JOB_TYPE_LABELS: Record<JobType, string> = {
+  distribution: "Distribution",
+  trunking: "Trunking / long haul",
+  specialised: "Specialised",
+  other: "Other",
+};
+
+export const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
+  articulated: "Articulated",
+  rigid: "Rigid",
+  tanker: "Tanker",
+  fuel: "Fuel",
+  refrigerated: "Refrigerated",
+  container: "Container",
+  specialised: "Specialised",
+  unknown: "Not stated",
+};
+
+export const SHIFT_TYPE_LABELS: Record<ShiftType, string> = {
+  day: "Day",
+  night: "Night",
+  rotating: "Rotating",
+  mixed: "Mixed",
+};
+
+export const REQUIRED_PAYSLIPS = 3;

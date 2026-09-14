@@ -1,3 +1,4 @@
+import { deleteProfile } from "@/lib/payroll/profile-store";
 import { getOrCreateUserId, rotateUserId } from "@/lib/payroll/session";
 import { deleteAllForUser } from "@/lib/payroll/store";
 
@@ -16,6 +17,7 @@ export async function GET() {
 export async function DELETE() {
   const userId = await getOrCreateUserId();
   const removed = await deleteAllForUser(userId);
+  await deleteProfile(userId);
   await rotateUserId();
   return Response.json({ ok: true, deletedPayslips: removed });
 }

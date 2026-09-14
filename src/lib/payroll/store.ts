@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { payslipContentHash } from "@/lib/payroll/fingerprint";
 import type { Payslip } from "@/lib/payroll/types";
 
 type Disk = { payslips: Payslip[] };
@@ -22,7 +23,7 @@ async function readAll(): Promise<Payslip[]> {
     const raw = await readFile(storePath(), "utf8");
     const parsed = JSON.parse(raw) as Disk | Payslip[];
     const list = Array.isArray(parsed) ? parsed : (parsed.payslips ?? []);
-    globalStore.truckpayPayslips = list.filter(isPayslip);
+    globalStore.truckpayPayslips = list.filter(isPayslip).map(ensureHash);
     return globalStore.truckpayPayslips;
   } catch {
     globalStore.truckpayPayslips = [];
@@ -46,6 +47,27 @@ function isPayslip(value: unknown): value is Payslip {
     typeof slip.paymentDate === "string" &&
     Array.isArray(slip.deductions)
   );
+}
+
+function ensureHash(slip: Payslip): Payslip {
+  if (slip.contentHash) return slip;
+  return {
+    ...slip,
+    contentHash: payslipContentHash({
+      employerSlug: slip.employerSlug,
+      paymentDate: slip.paymentDate,
+      payPeriodStart: slip.payPeriodStart,
+      payPeriodEnd: slip.payPeriodEnd,
+      grossPay: slip.grossPay,
+      netPay: slip.netPay,
+      basicPay: slip.basicPay,
+      basicHours: slip.basicHours,
+    }),
+  };
+}
+
+export async function listAllPayslips(): Promise<Payslip[]> {
+  return readAll();
 }
 
 export async function listPayslipsForUser(userId: string): Promise<Payslip[]> {

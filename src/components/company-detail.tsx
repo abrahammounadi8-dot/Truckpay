@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { PayGapBar } from "@/components/pay-gap-bar";
 import { ReviewCard } from "@/components/review-card";
 import { EmptyStub, SettlementStub } from "@/components/settlement-stub";
+import { CompanyPayStatsPanel } from "@/components/company-pay-stats";
 import { useAppStore } from "@/lib/store";
 import type { Company } from "@/lib/types";
 import { companyStats, equipmentLabels, formatMoney, operationLabels, reportsFor } from "@/lib/metrics";
@@ -142,6 +143,8 @@ export function CompanyDetail({ company }: { company: Company }) {
             />
           </dl>
         </section>
+
+        <CompanyPayStatsPanel slug={company.slug} />
 
         <section className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

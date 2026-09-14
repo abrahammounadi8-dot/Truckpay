@@ -8,6 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
+  { href: "/analysis", label: "Analysis" },
   { href: "/payslips", label: "My payslips" },
   { href: "/companies", label: "Hauliers" },
   { href: "/rankings", label: "Pay gaps" },

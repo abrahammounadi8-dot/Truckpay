@@ -8,8 +8,9 @@ Truckpay does **not** invent reviews, ratings or pay figures. Unknown deduction 
 
 ## Two layers
 
-1. **Private ledger** (`/payslips`) — you type figures from your slip. Identity is a random UUID cookie, not a PPSN, licence or employee number. Documents are not uploaded. Findings are labelled Fact / Inference / Unknown and do not accuse an employer.
-2. **Public board** (`/companies`) — real Irish hauliers with public facts only. Optional community “file a slip” remains a separate legacy flow (`/report`).
+1. **Private ledger** (`/payslips`) — type figures from a slip. Verified analysis (`/analysis`) needs **three unique payslips** with pay date and period. Duplicates are rejected. One slip is never treated as one week. Identity is a random UUID, not a PPSN or licence.
+2. **Employment profile** (`/profile`) — start date, tenure **months** (calculated), band, job/vehicle/shift. A date you type is labelled “not document-verified”.
+3. **Public board** (`/companies`) — real Irish hauliers. Observed pay by tenure uses **medians** and sample size, only from verified three-slip sets. Never “the company salary”. Small samples are not published as medians.
 
 ## Deduction categories (Ireland)
 
