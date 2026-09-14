@@ -16,8 +16,8 @@ export default async function ReportPage({
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">File a pay report</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Use a settlement, not memory of the recruiter call. Reports in this build
-        stay in your browser so you can try the flow without an account.
+        Use a settlement, not memory of the recruiter call. Reports are stored on
+        the server and show up on the company file. No account required.
       </p>
       <div className="mt-8">
         <ReportForm defaultCompany={company} />

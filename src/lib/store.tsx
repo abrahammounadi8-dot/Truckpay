@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
 import type { DriverReport } from "@/lib/types";
 
 const STORAGE_KEY = "truckpay.reports";
@@ -11,6 +11,7 @@ type Store = {
   reports: DriverReport[];
   compareSlugs: string[];
   addReport: (report: DriverReport) => void;
+  submitReport: (report: Omit<DriverReport, "id" | "date">) => Promise<DriverReport>;
   toggleCompare: (slug: string) => void;
   clearCompare: () => void;
   ready: boolean;
@@ -53,6 +54,12 @@ function emit() {
   window.dispatchEvent(new Event(EVENT));
 }
 
+function cacheReports(reports: DriverReport[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+  loadCaches();
+  emit();
+}
+
 function getReports() {
   return reportsCache;
 }
@@ -69,6 +76,14 @@ function getServerEmptyCompare(): string[] {
   return [];
 }
 
+function mergeReports(server: DriverReport[], local: DriverReport[]): DriverReport[] {
+  const byId = new Map<string, DriverReport>();
+  for (const report of [...local, ...server]) {
+    byId.set(report.id, report);
+  }
+  return [...byId.values()].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+}
+
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const reports = useSyncExternalStore(subscribe, getReports, getServerEmptyReports);
   const compareSlugs = useSyncExternalStore(subscribe, getCompare, getServerEmptyCompare);
@@ -78,11 +93,39 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     () => false,
   );
 
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/reports")
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error("fetch failed"))))
+      .then((payload: { reports?: DriverReport[] }) => {
+        if (cancelled) return;
+        const server = Array.isArray(payload.reports) ? payload.reports : [];
+        cacheReports(mergeReports(server, readJson<DriverReport[]>(STORAGE_KEY, [])));
+      })
+      .catch(() => {
+        /* Keep whatever is already on this device. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const addReport = useCallback((report: DriverReport) => {
-    const next = [report, ...readJson<DriverReport[]>(STORAGE_KEY, [])];
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    loadCaches();
-    emit();
+    cacheReports(mergeReports([report], readJson<DriverReport[]>(STORAGE_KEY, [])));
+  }, []);
+
+  const submitReport = useCallback(async (input: Omit<DriverReport, "id" | "date">) => {
+    const res = await fetch("/api/reports", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const payload = (await res.json()) as { report?: DriverReport; error?: string };
+    if (!res.ok || !payload.report) {
+      throw new Error(payload.error ?? "Could not file the report.");
+    }
+    cacheReports(mergeReports([payload.report], readJson<DriverReport[]>(STORAGE_KEY, [])));
+    return payload.report;
   }, []);
 
   const toggleCompare = useCallback((slug: string) => {
@@ -105,8 +148,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ reports, compareSlugs, addReport, toggleCompare, clearCompare, ready }),
-    [reports, compareSlugs, addReport, toggleCompare, clearCompare, ready],
+    () => ({ reports, compareSlugs, addReport, submitReport, toggleCompare, clearCompare, ready }),
+    [reports, compareSlugs, addReport, submitReport, toggleCompare, clearCompare, ready],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

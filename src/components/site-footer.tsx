@@ -31,7 +31,7 @@ export function SiteFooter() {
             <Link href="/report" className="hover:text-primary-foreground">
               File a pay report
             </Link>
-            <p>Reports stay on this device until you publish a backend.</p>
+            <p>Reports are posted to the company file for other drivers to read.</p>
           </div>
         </div>
       </div>

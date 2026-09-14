@@ -20,7 +20,7 @@ import type { PayType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
-  const { addReport } = useAppStore();
+  const { submitReport } = useAppStore();
   const [companySlug, setCompanySlug] = useState(defaultCompany ?? "");
   const [nickname, setNickname] = useState("");
   const [role, setRole] = useState("");
@@ -36,13 +36,14 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
   const [recommend, setRecommend] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const company = useMemo(
     () => fleet.find((item) => item.slug === companySlug),
     [companySlug],
   );
 
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
     const weekly = Number(weeklyPay);
@@ -64,34 +65,38 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
       setError("Miles per week has to be a number.");
       return;
     }
-    const id = `local-${Date.now()}`;
-    addReport({
-      id,
-      companySlug,
-      nickname: nickname.trim(),
-      role: role.trim() || "Driver",
-      tenure,
-      payType,
-      cpm: cpm ? Number(cpm) : undefined,
-      weeklyPay: weekly,
-      milesPerWeek: milesNum,
-      homeTime: homeTime.trim() || "Not specified",
-      rating: ratingNum,
-      title: title.trim(),
-      body: body.trim(),
-      wouldRecommend: recommend,
-      date: new Date().toISOString().slice(0, 10),
-    });
-    setSavedId(id);
+    setSubmitting(true);
+    try {
+      const saved = await submitReport({
+        companySlug,
+        nickname: nickname.trim(),
+        role: role.trim() || "Driver",
+        tenure,
+        payType,
+        cpm: cpm ? Number(cpm) : undefined,
+        weeklyPay: weekly,
+        milesPerWeek: milesNum,
+        homeTime: homeTime.trim() || "Not specified",
+        rating: ratingNum,
+        title: title.trim(),
+        body: body.trim(),
+        wouldRecommend: recommend,
+      });
+      setSavedId(saved.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not file the report.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (savedId && company) {
     return (
       <div className="rounded-xl border border-border bg-card px-6 py-12 text-center">
-        <p className="font-heading text-2xl font-semibold">Report filed on this device</p>
+        <p className="font-heading text-2xl font-semibold">Report filed</p>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          It is attached to {company.name} in this browser. Nothing is uploaded —
-          this build keeps driver reports local until you add a backend.
+          It is on the {company.name} file. Anyone on this Truckpay instance can
+          read the settlement numbers you posted.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <Link href={`/companies/${company.slug}`} className={cn(buttonVariants())}>
@@ -234,8 +239,8 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
         <Checkbox checked={recommend} onCheckedChange={(value) => setRecommend(value === true)} />
         I would take this job again
       </label>
-      <Button type="submit" className="w-full sm:w-auto">
-        File report
+      <Button type="submit" className="w-full sm:w-auto" disabled={submitting}>
+        {submitting ? "Filing…" : "File report"}
       </Button>
     </form>
   );

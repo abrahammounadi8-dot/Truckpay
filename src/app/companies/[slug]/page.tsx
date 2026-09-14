@@ -130,7 +130,7 @@ export default async function CompanyPage({
       <section className="mt-12">
         <h2 className="text-2xl font-semibold tracking-tight">Driver reports</h2>
         <p className="mt-1 mb-5 text-sm text-muted-foreground">
-          Seeded reports plus anything you file in this browser.
+          Seeded settlements plus community reports filed on this Truckpay instance.
         </p>
         <CompanyReviews slug={company.slug} seeded={seeded} />
       </section>
