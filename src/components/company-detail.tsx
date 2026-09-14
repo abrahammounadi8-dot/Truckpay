@@ -8,15 +8,25 @@ import { useAppStore } from "@/lib/store";
 import type { DriverReview } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function CompanyActions({ slug }: { slug: string }) {
+export function CompanyActions({ slug, onDark = false }: { slug: string; onDark?: boolean }) {
   const { toggleCompare, compareSlugs } = useAppStore();
   const selected = compareSlugs.includes(slug);
   return (
     <div className="flex flex-wrap gap-2">
-      <Button variant={selected ? "secondary" : "default"} onClick={() => toggleCompare(slug)}>
+      <Button
+        variant={selected ? "secondary" : "default"}
+        className={onDark && !selected ? "bg-accent text-accent-foreground hover:bg-accent/90" : undefined}
+        onClick={() => toggleCompare(slug)}
+      >
         {selected ? "In compare list" : "Add to compare"}
       </Button>
-      <Link href={`/report?company=${slug}`} className={cn(buttonVariants({ variant: "outline" }))}>
+      <Link
+        href={`/report?company=${slug}`}
+        className={cn(
+          buttonVariants({ variant: "outline" }),
+          onDark && "border-primary-foreground/25 bg-transparent text-primary-foreground hover:bg-primary-foreground/10",
+        )}
+      >
         File a report
       </Link>
     </div>

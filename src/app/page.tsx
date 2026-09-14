@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 import { CompanyCard } from "@/components/company-card";
+import { SettlementStub } from "@/components/settlement-stub";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fleet } from "@/lib/data";
@@ -17,84 +18,97 @@ export default function HomePage() {
 
   return (
     <div>
-      <section className="border-b border-border">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-[1.2fr_0.8fr] lg:py-16">
+      <section className="bg-primary text-primary-foreground">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
           <div>
-            <p className="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+            <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-accent uppercase">
               Driver-reported settlements
             </p>
-            <h1 className="mt-3 max-w-xl text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl">
-              Recruiters quote a CPM. Drivers report what actually clears.
+            <h1 className="mt-4 max-w-xl text-4xl leading-[0.95] font-semibold tracking-tight sm:text-6xl">
+              The billboard pays one number. The stub pays another.
             </h1>
-            <p className="mt-4 max-w-lg text-base leading-7 text-muted-foreground">
-              Truckpay puts advertised pay next to driver-reported weekly take-home,
-              miles, home time, detention, and the rest of the job they do not print
-              on the billboard.
+            <p className="mt-5 max-w-lg text-base leading-7 text-primary-foreground/75">
+              Truckpay lines advertised CPM and salary up against what drivers say
+              actually clears: weekly take-home, miles, home time, detention, and
+              the rest they do not print on the side of the truck.
             </p>
-            <form action="/companies" className="mt-6 flex max-w-xl flex-col gap-2 sm:flex-row">
+            <form action="/companies" className="mt-8 flex max-w-xl flex-col gap-2 sm:flex-row">
               <Input
                 name="q"
                 placeholder="Search Swift, reefer, Phoenix…"
-                className="h-10 bg-card"
+                className="h-11 border-primary-foreground/15 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/45"
               />
-              <button type="submit" className={cn(buttonVariants({ size: "lg" }), "h-10")}>
+              <button
+                type="submit"
+                className={cn(buttonVariants({ size: "lg" }), "h-11 bg-accent text-accent-foreground hover:bg-accent/90")}
+              >
                 Search carriers
               </button>
             </form>
-            <div className="mt-8 grid grid-cols-3 gap-3 max-w-lg">
-              <Stat value={String(fleet.length)} label="Carriers on the board" />
-              <Stat value={reports.toLocaleString()} label="Driver reports" />
-              <Stat value={`${avgGap}%`} label="Average pay gap" />
+            <div className="mt-10 grid max-w-lg grid-cols-3 gap-6 border-t border-primary-foreground/12 pt-6">
+              <Stat value={String(fleet.length)} label="Carriers" />
+              <Stat value={reports.toLocaleString()} label="Reports" />
+              <Stat value={`${avgGap}%`} label="Avg. gap" />
             </div>
           </div>
-          <div className="grid gap-3">
-            <Highlight
-              kicker="Widest gap"
-              title={worst.name}
-              detail={`${payGapPercent(worst)}% under advertised weekly`}
-              href={`/companies/${worst.slug}`}
-            />
-            <Highlight
-              kicker="Highest reported weekly"
-              title={bestPay.name}
-              detail={`${formatMoney(reportedWeekly(bestPay))} typical take-home`}
-              href={`/companies/${bestPay.slug}`}
-            />
-            <Highlight
-              kicker="Closest to the ad"
-              title={closest.name}
-              detail={`${payGapPercent(closest)}% gap — recruiter number mostly holds`}
-              href={`/companies/${closest.slug}`}
-            />
+          <div className="lg:pl-4">
+            <p className="mb-3 text-[0.68rem] font-semibold tracking-[0.18em] text-primary-foreground/55 uppercase">
+              Worst gap on the board this week
+            </p>
+            <SettlementStub company={worst} />
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <div className="mb-6 flex items-end justify-between gap-4">
+      <section className="border-b border-border bg-card/60">
+        <div className="mx-auto grid max-w-6xl gap-px px-4 py-0 sm:grid-cols-3 sm:px-0">
+          <Mini
+            kicker="Widest gap"
+            title={worst.shortName}
+            detail={`${payGapPercent(worst)}% under advertised weekly`}
+            href={`/companies/${worst.slug}`}
+          />
+          <Mini
+            kicker="Highest reported weekly"
+            title={bestPay.shortName}
+            detail={`${formatMoney(reportedWeekly(bestPay))} typical take-home`}
+            href={`/companies/${bestPay.slug}`}
+          />
+          <Mini
+            kicker="Closest to the ad"
+            title={closest.shortName}
+            detail={`${payGapPercent(closest)}% gap — the pitch mostly holds`}
+            href={`/companies/${closest.slug}`}
+          />
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-14">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight">Biggest advertised-vs-real gaps</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Biggest advertised-vs-real gaps</h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
               Sorted by how far weekly take-home sits under the recruiting number.
+              Open a file before you fly to orientation.
             </p>
           </div>
-          <Link href="/rankings" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+          <Link href="/rankings" className={cn(buttonVariants({ variant: "outline" }))}>
             Full ranking
             <ArrowRightIcon />
           </Link>
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2">
           {featured.map((company) => (
             <CompanyCard key={company.slug} company={company} />
           ))}
         </div>
       </section>
 
-      <section className="border-t border-border bg-card/50">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 md:grid-cols-3">
+      <section className="border-t border-border bg-primary text-primary-foreground">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-3">
           <Step n="01" title="Read the ad" body="We log the CPM, salary, miles, and bonus the carrier still publishes." />
-          <Step n="02" title="Read the settlement" body="Drivers file weekly take-home, real miles, home time, and whether detention paid." />
-          <Step n="03" title="See the gap" body="Compare up to three companies before you fly to orientation." />
+          <Step n="02" title="Read the stub" body="Drivers file weekly take-home, real miles, home time, and whether detention paid." />
+          <Step n="03" title="See the gap" body="Compare up to three companies. The missing dollars sit on one line." />
         </div>
       </section>
     </div>
@@ -103,14 +117,14 @@ export default function HomePage() {
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card px-3 py-3">
-      <p className="font-heading text-2xl font-semibold tabular-nums">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <div>
+      <p className="font-heading text-3xl font-semibold tabular-nums">{value}</p>
+      <p className="mt-1 text-xs tracking-wide text-primary-foreground/55 uppercase">{label}</p>
     </div>
   );
 }
 
-function Highlight({
+function Mini({
   kicker,
   title,
   detail,
@@ -122,14 +136,11 @@ function Highlight({
   href: string;
 }) {
   return (
-    <Link
-      href={href}
-      className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/25"
-    >
-      <p className="text-[0.7rem] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+    <Link href={href} className="px-4 py-6 transition-colors hover:bg-muted/70 sm:px-8">
+      <p className="text-[0.68rem] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
         {kicker}
       </p>
-      <p className="mt-1 font-heading text-xl font-semibold">{title}</p>
+      <p className="mt-1 font-heading text-2xl font-semibold">{title}</p>
       <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
     </Link>
   );
@@ -138,9 +149,9 @@ function Highlight({
 function Step({ n, title, body }: { n: string; title: string; body: string }) {
   return (
     <div>
-      <p className="font-mono text-xs text-muted-foreground">{n}</p>
-      <h3 className="mt-1 text-xl font-semibold">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{body}</p>
+      <p className="font-mono text-xs text-accent">{n}</p>
+      <h3 className="mt-2 text-2xl font-semibold">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-primary-foreground/70">{body}</p>
     </div>
   );
 }

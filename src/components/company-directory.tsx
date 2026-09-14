@@ -53,7 +53,7 @@ export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string 
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-3 rounded-xl border border-border bg-card p-4 sm:grid-cols-3">
+      <div className="grid gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:grid-cols-3">
         <div className="sm:col-span-1">
           <Label htmlFor="search">Search</Label>
           <Input

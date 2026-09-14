@@ -6,7 +6,6 @@ import { PayGapBar } from "@/components/pay-gap-bar";
 import { StarRating } from "@/components/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { equipmentLabels, formatCpm, homeTimeLabel, payGapPercent } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
 import type { Company } from "@/lib/types";
@@ -18,36 +17,34 @@ export function CompanyCard({ company }: { company: Company }) {
   const gap = payGapPercent(company);
 
   return (
-    <Card className="h-full bg-card/80">
-      <CardHeader className="flex flex-row items-start gap-3">
+    <article className="flex h-full flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+      <div className="flex items-start gap-3 px-5 pt-5">
         <CompanyMark company={company} />
         <div className="min-w-0 flex-1">
           <Link
             href={`/companies/${company.slug}`}
-            className="font-heading text-lg font-semibold tracking-tight hover:underline"
+            className="font-heading text-xl font-semibold tracking-tight hover:underline"
           >
             {company.name}
           </Link>
           <p className="text-xs text-muted-foreground">
             {company.headquarters} · {company.fleetSize.toLocaleString()} trucks
           </p>
-          <div className="mt-1.5">
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
             <StarRating value={company.reported.rating} />
-            <span className="ml-1 text-xs text-muted-foreground">
-              {company.reported.reviewCount} reports
-            </span>
+            <span className="text-xs text-muted-foreground">{company.reported.reviewCount} reports</span>
           </div>
         </div>
         <Badge variant={gap >= 12 ? "destructive" : gap <= 8 ? "secondary" : "outline"}>
-          {gap}% gap
+          {gap}% short
         </Badge>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      </div>
+      <div className="flex-1 space-y-4 px-5 py-4">
         <PayGapBar company={company} />
-        <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs sm:grid-cols-3">
-          <Stat label="Advertised CPM" value={formatCpm(company.advertised.cpm)} />
-          <Stat label="Reported CPM" value={formatCpm(company.reported.cpm)} />
-          <Stat label="Home time" value={homeTimeLabel(company.reported.homeTimeDaysOut)} />
+        <dl className="grid grid-cols-3 gap-2 border-t border-dashed border-border pt-3 text-xs">
+          <Stat label="Ad CPM" value={formatCpm(company.advertised.cpm)} />
+          <Stat label="Real CPM" value={formatCpm(company.reported.cpm)} />
+          <Stat label="Home" value={homeTimeLabel(company.reported.homeTimeDaysOut)} />
         </dl>
         <div className="flex flex-wrap gap-1">
           {company.equipment.map((item) => (
@@ -56,23 +53,16 @@ export function CompanyCard({ company }: { company: Company }) {
             </Badge>
           ))}
         </div>
-      </CardContent>
-      <CardFooter className="gap-2">
-        <Link
-          href={`/companies/${company.slug}`}
-          className={cn(buttonVariants({ size: "sm" }), "flex-1")}
-        >
+      </div>
+      <div className="flex gap-2 border-t border-border bg-muted/40 px-5 py-3">
+        <Link href={`/companies/${company.slug}`} className={cn(buttonVariants({ size: "sm" }), "flex-1")}>
           Open file
         </Link>
-        <Button
-          size="sm"
-          variant={selected ? "secondary" : "outline"}
-          onClick={() => toggleCompare(company.slug)}
-        >
+        <Button size="sm" variant={selected ? "secondary" : "outline"} onClick={() => toggleCompare(company.slug)}>
           {selected ? "In compare" : "Compare"}
         </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </article>
   );
 }
 
