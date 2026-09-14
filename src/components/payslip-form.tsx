@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,41 +17,111 @@ const frequencies: { value: PayFrequency; label: string }[] = [
   { value: "monthly", label: "Monthly" },
 ];
 
-function emptyLine(): Line {
-  return { key: crypto.randomUUID(), rawLabel: "", amount: "" };
+type FormState = {
+  employerSlug: string;
+  paymentDate: string;
+  payPeriodStart: string;
+  payPeriodEnd: string;
+  payFrequency: PayFrequency;
+  employmentWeeks: string;
+  basicHours: string;
+  basicRate: string;
+  basicPay: string;
+  overtimeHours: string;
+  overtimeRate: string;
+  overtimePay: string;
+  grossPay: string;
+  netPay: string;
+  cumulativeGross: string;
+  cumulativeTax: string;
+  totalInsurableWeeks: string;
+};
+
+const DRAFT_KEY = "truckpay.payslip-draft";
+
+const emptyForm: FormState = {
+  employerSlug: "",
+  paymentDate: "",
+  payPeriodStart: "",
+  payPeriodEnd: "",
+  payFrequency: "unknown",
+  employmentWeeks: "",
+  basicHours: "",
+  basicRate: "",
+  basicPay: "",
+  overtimeHours: "",
+  overtimeRate: "",
+  overtimePay: "",
+  grossPay: "",
+  netPay: "",
+  cumulativeGross: "",
+  cumulativeTax: "",
+  totalInsurableWeeks: "",
+};
+
+function emptyLine(seed?: string): Line {
+  return { key: seed ?? crypto.randomUUID(), rawLabel: "", amount: "" };
+}
+
+function readDraft(): { form: FormState; allowances: Line[]; deductions: Line[] } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as {
+      form?: Partial<FormState>;
+      allowances?: Line[];
+      deductions?: Line[];
+    };
+    if (!parsed.form) return null;
+    return {
+      form: { ...emptyForm, ...parsed.form },
+      allowances:
+        Array.isArray(parsed.allowances) && parsed.allowances.length
+          ? parsed.allowances
+          : [emptyLine("allowance-seed")],
+      deductions:
+        Array.isArray(parsed.deductions) && parsed.deductions.length
+          ? parsed.deductions
+          : [emptyLine("deduction-seed")],
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function PayslipForm() {
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
+  if (!mounted) {
+    return <p className="text-sm text-muted-foreground">Loading the form…</p>;
+  }
+
+  return <PayslipFormFields />;
+}
+
+function PayslipFormFields() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const draft = readDraft();
+  const [form, setForm] = useState<FormState>(draft?.form ?? emptyForm);
+  const [allowances, setAllowances] = useState<Line[]>(
+    draft?.allowances ?? [emptyLine("allowance-seed")],
+  );
+  const [deductions, setDeductions] = useState<Line[]>(
+    draft?.deductions ?? [emptyLine("deduction-seed")],
+  );
 
   useEffect(() => {
-    void fetch("/api/payslips", { credentials: "same-origin" });
-  }, []);
-  const [form, setForm] = useState({
-    employerSlug: "",
-    paymentDate: "",
-    payPeriodStart: "",
-    payPeriodEnd: "",
-    payFrequency: "unknown" as PayFrequency,
-    employmentWeeks: "",
-    basicHours: "",
-    basicRate: "",
-    basicPay: "",
-    overtimeHours: "",
-    overtimeRate: "",
-    overtimePay: "",
-    grossPay: "",
-    netPay: "",
-    cumulativeGross: "",
-    cumulativeTax: "",
-    totalInsurableWeeks: "",
-  });
-  const [allowances, setAllowances] = useState<Line[]>([emptyLine()]);
-  const [deductions, setDeductions] = useState<Line[]>([emptyLine()]);
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ form, allowances, deductions }));
+  }, [form, allowances, deductions]);
 
-  function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
+  function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -83,6 +153,7 @@ export function PayslipForm() {
       if (!res.ok || !data.payslip) {
         throw new Error(data.error ?? "Could not save the payslip.");
       }
+      sessionStorage.removeItem(DRAFT_KEY);
       const next = data.readyForAnalysis ? "/analysis" : `/payslips/${data.payslip.id}`;
       router.push(next);
       router.refresh();
@@ -94,7 +165,7 @@ export function PayslipForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-8">
+    <form onSubmit={onSubmit} autoComplete="off" className="space-y-8">
       <p className="rounded-xl bg-card p-4 text-sm leading-6 text-muted-foreground ring-1 ring-foreground/10">
         Type figures from the slip. TruckPay Verified Analysis needs your latest three unique
         payslips. A payslip is not assumed to be one week — set the period and insurable weeks as
@@ -105,6 +176,8 @@ export function PayslipForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Payment date">
             <Input
+              id="paymentDate"
+              name="paymentDate"
               type="date"
               required
               value={form.paymentDate}
@@ -113,6 +186,8 @@ export function PayslipForm() {
           </Field>
           <Field label="Employer (needed for verified analysis)">
             <select
+              id="employerSlug"
+              name="employerSlug"
               className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
               value={form.employerSlug}
               onChange={(event) => set("employerSlug", event.target.value)}
@@ -127,6 +202,8 @@ export function PayslipForm() {
           </Field>
           <Field label="Period start">
             <Input
+              id="payPeriodStart"
+              name="payPeriodStart"
               type="date"
               required
               value={form.payPeriodStart}
@@ -135,6 +212,8 @@ export function PayslipForm() {
           </Field>
           <Field label="Period end">
             <Input
+              id="payPeriodEnd"
+              name="payPeriodEnd"
               type="date"
               required
               value={form.payPeriodEnd}
@@ -143,6 +222,8 @@ export function PayslipForm() {
           </Field>
           <Field label="Pay frequency as printed">
             <select
+              id="payFrequency"
+              name="payFrequency"
               className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
               value={form.payFrequency}
               onChange={(event) => set("payFrequency", event.target.value as PayFrequency)}
@@ -156,6 +237,8 @@ export function PayslipForm() {
           </Field>
           <Field label="Employment / insurable weeks on this slip">
             <Input
+              id="employmentWeeks"
+              name="employmentWeeks"
               inputMode="decimal"
               value={form.employmentWeeks}
               onChange={(event) => set("employmentWeeks", event.target.value)}
@@ -168,13 +251,13 @@ export function PayslipForm() {
       <Section title="Basic and overtime">
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Basic hours">
-            <Input inputMode="decimal" value={form.basicHours} onChange={(event) => set("basicHours", event.target.value)} />
+            <Input id="basicHours" name="basicHours" inputMode="decimal" value={form.basicHours} onChange={(event) => set("basicHours", event.target.value)} />
           </Field>
           <Field label="Basic rate (€)">
-            <Input inputMode="decimal" value={form.basicRate} onChange={(event) => set("basicRate", event.target.value)} />
+            <Input id="basicRate" name="basicRate" inputMode="decimal" value={form.basicRate} onChange={(event) => set("basicRate", event.target.value)} />
           </Field>
           <Field label="Basic pay (€)">
-            <Input inputMode="decimal" value={form.basicPay} onChange={(event) => set("basicPay", event.target.value)} />
+            <Input id="basicPay" name="basicPay" inputMode="decimal" value={form.basicPay} onChange={(event) => set("basicPay", event.target.value)} />
           </Field>
           <Field label="Overtime hours">
             <Input inputMode="decimal" value={form.overtimeHours} onChange={(event) => set("overtimeHours", event.target.value)} />
@@ -191,10 +274,10 @@ export function PayslipForm() {
       <Section title="Gross, net, year to date">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Gross pay (€)">
-            <Input inputMode="decimal" value={form.grossPay} onChange={(event) => set("grossPay", event.target.value)} />
+            <Input id="grossPay" name="grossPay" inputMode="decimal" value={form.grossPay} onChange={(event) => set("grossPay", event.target.value)} />
           </Field>
           <Field label="Net pay (€)">
-            <Input inputMode="decimal" value={form.netPay} onChange={(event) => set("netPay", event.target.value)} />
+            <Input id="netPay" name="netPay" inputMode="decimal" value={form.netPay} onChange={(event) => set("netPay", event.target.value)} />
           </Field>
           <Field label="Cumulative gross (€)">
             <Input inputMode="decimal" value={form.cumulativeGross} onChange={(event) => set("cumulativeGross", event.target.value)} />
@@ -220,6 +303,7 @@ export function PayslipForm() {
           rows={allowances}
           onChange={setAllowances}
           labelPlaceholder="e.g. Night out, subsistence"
+          namePrefix="allowance"
         />
       </Section>
 
@@ -239,6 +323,7 @@ export function PayslipForm() {
           rows={deductions}
           onChange={setDeductions}
           labelPlaceholder="e.g. PAYE, PRSI, uniform"
+          namePrefix="deduction"
         />
       </Section>
 
@@ -289,16 +374,19 @@ function LineTable({
   rows,
   onChange,
   labelPlaceholder,
+  namePrefix,
 }: {
   rows: Line[];
   onChange: (rows: Line[]) => void;
   labelPlaceholder: string;
+  namePrefix: string;
 }) {
   return (
     <div className="space-y-2">
       {rows.map((row, index) => (
         <div key={row.key} className="grid gap-2 sm:grid-cols-[1fr_8rem_auto]">
           <Input
+            name={`${namePrefix}-label-${index}`}
             value={row.rawLabel}
             placeholder={labelPlaceholder}
             onChange={(event) => {
@@ -308,6 +396,7 @@ function LineTable({
             }}
           />
           <Input
+            name={`${namePrefix}-amount-${index}`}
             inputMode="decimal"
             placeholder="€"
             value={row.amount}
