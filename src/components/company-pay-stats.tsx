@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { formatEuroMaybe } from "@/lib/payroll/format";
 import type { CompanyPayStats } from "@/lib/payroll/company-stats";
@@ -15,18 +14,7 @@ import {
   VEHICLE_TYPE_LABELS,
 } from "@/lib/payroll/types";
 
-export function CompanyPayStatsPanel({ slug }: { slug: string }) {
-  const [stats, setStats] = useState<CompanyPayStats | null>(null);
-
-  useEffect(() => {
-    fetch(`/api/companies/${slug}/stats`)
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data: { stats: CompanyPayStats }) => setStats(data.stats))
-      .catch(() => setStats(null));
-  }, [slug]);
-
-  if (!stats) return null;
-
+export function CompanyPayStatsPanel({ stats }: { stats: CompanyPayStats }) {
   const publishedSlices = stats.slices.filter((slice) => slice.published);
 
   return (
