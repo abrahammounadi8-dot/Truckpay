@@ -58,23 +58,18 @@ export function CompanyDetail({ company }: { company: Company }) {
               </div>
             </div>
             {stats.count > 0 && stats.avgWeekly != null ? (
-              <div className="text-left lg:text-right">
-                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-primary-foreground/55">
-                  Driver-filed take-home
+              <div className="max-w-xs rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-4 text-left lg:text-right">
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-accent">
+                  Driver reported
                 </p>
-                <p className="font-heading text-5xl">
-                  {formatMoney(stats.avgWeekly)}
-                  <span className="ml-1 font-sans text-base font-normal text-primary-foreground/55">
-                    /wk
-                  </span>
-                </p>
-                <p className="mt-1 text-xs text-primary-foreground/55">
-                  {stats.count} wage {stats.count === 1 ? "slip" : "slips"}
+                <p className="mt-1 text-sm text-primary-foreground/80">
+                  {stats.count} public wage {stats.count === 1 ? "stub" : "stubs"} on file. That is not
+                  payroll-verified and is not “{company.shortName} pays {formatMoney(stats.avgWeekly)}/week”.
                 </p>
               </div>
             ) : (
               <div className="max-w-xs rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-4 text-sm text-primary-foreground/75 lg:text-right">
-                No take-home figures yet. Truckpay will not invent them. The first slip from a driver at this firm appears here.
+                No take-home figures yet. TruckPay will not invent them. Driver-reported stubs and payroll-verified medians are kept separate.
               </div>
             )}
           </div>
@@ -111,7 +106,19 @@ export function CompanyDetail({ company }: { company: Company }) {
         </div>
 
         {stats.count > 0 ? (
-          <SettlementStub company={company} stats={stats} />
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-heading text-2xl font-semibold">Driver-reported stubs</h2>
+              <span className="rounded-md bg-muted px-2 py-0.5 text-[0.68rem] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+                Driver reported
+              </span>
+            </div>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              Voluntary community slips. Not the same evidence as payroll-verified medians from My TruckPay.
+              Averages here are not “the company salary”.
+            </p>
+            <SettlementStub company={company} stats={stats} />
+          </section>
         ) : (
           <EmptyStub />
         )}
@@ -149,9 +156,9 @@ export function CompanyDetail({ company }: { company: Company }) {
         <section className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="font-heading text-2xl font-semibold">Wage slips</h2>
+              <h2 className="font-heading text-2xl font-semibold">Driver-reported wage slips</h2>
               <p className="text-sm text-muted-foreground">
-                Only reports filed on Truckpay. Empty until a driver at this firm submits one.
+                Public stubs only. Private My TruckPay payslips never appear here.
               </p>
             </div>
             <Link href={`/report?company=${company.slug}`} className={cn(buttonVariants())}>

@@ -121,14 +121,37 @@ export function reconcilePayslip(slip: Payslip, prior: Payslip[]): Finding[] {
     const priorLabels = new Set(last.deductions.map((line) => line.rawLabel.trim().toLowerCase()));
     for (const line of slip.deductions) {
       const key = line.rawLabel.trim().toLowerCase();
-      if (key && priorLabels.has(key) && line.normalizedCategory !== "PAYE" && line.normalizedCategory !== "PRSI" && line.normalizedCategory !== "USC") {
+      if (!key) continue;
+      if (priorLabels.has(key)) {
+        if (line.normalizedCategory !== "PAYE" && line.normalizedCategory !== "PRSI" && line.normalizedCategory !== "USC") {
+          findings.push(
+            make(
+              slip.id,
+              "recurring_deduction",
+              "inference",
+              0.55,
+              `“${line.rawLabel}” also appeared on the previous slip. Recurring lines are noted so you can check them. Repetition is not proof of an error.`,
+              {
+                fields: ["deductions.rawLabel"],
+                expected: null,
+                actual: line.amount,
+                note: line.rawLabel,
+              },
+            ),
+          );
+        }
+      } else if (
+        line.normalizedCategory !== "PAYE" &&
+        line.normalizedCategory !== "PRSI" &&
+        line.normalizedCategory !== "USC"
+      ) {
         findings.push(
           make(
             slip.id,
-            "recurring_deduction",
-            "inference",
-            0.55,
-            `“${line.rawLabel}” also appeared on the previous slip. Recurring lines are noted so you can check them. Repetition is not proof of an error.`,
+            "new_deduction",
+            "fact",
+            0.8,
+            `“${line.rawLabel}” did not appear on the previous slip. It is flagged as new so you can check it. A new line is not classified as illegal.`,
             {
               fields: ["deductions.rawLabel"],
               expected: null,

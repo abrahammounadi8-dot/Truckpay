@@ -34,13 +34,15 @@ export function HomeBoard() {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
           <div>
             <p className="text-[0.72rem] font-semibold tracking-[0.22em] text-accent uppercase">
-              Ireland · your slip, then the board
+              Ireland · My TruckPay + Companies
             </p>
             <h1 className="mt-4 max-w-xl text-4xl leading-[0.95] font-semibold tracking-tight sm:text-6xl">
-              Check the payslip. A payment is not one week.
+              TruckPay understands your payslip, so you don’t have to.
             </h1>
             <p className="mt-5 max-w-lg text-base leading-7 text-primary-foreground/75">
-              Type the figures from an Irish haulage payslip. Truckpay flags arithmetic and unknown deductions without accusing anyone. The public directory is separate — still public facts only, never invented reviews.
+              Check each new Irish haulage slip privately. Three unique payslips unlock verified analysis.
+              A payment is not assumed to be one week. Company intelligence is aggregated separately — never
+              invented reviews, never your identity on the board.
             </p>
             <form action="/companies" className="mt-8 flex max-w-xl flex-col gap-2 sm:flex-row">
               <input
@@ -55,7 +57,7 @@ export function HomeBoard() {
                   "h-11 bg-accent text-accent-foreground hover:bg-accent/90",
                 )}
               >
-                Search hauliers
+                Search companies
               </button>
             </form>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -64,6 +66,15 @@ export function HomeBoard() {
                 className={cn(buttonVariants({ size: "lg" }), "bg-accent text-accent-foreground hover:bg-accent/90")}
               >
                 Check my pay
+              </Link>
+              <Link
+                href="/companies"
+                className={cn(
+                  buttonVariants({ size: "lg", variant: "outline" }),
+                  "border-primary-foreground/25 bg-transparent text-primary-foreground hover:bg-primary-foreground/10",
+                )}
+              >
+                Explore companies
               </Link>
               <Link
                 href="/report"
@@ -86,7 +97,7 @@ export function HomeBoard() {
             </div>
             <div className="mt-10 grid max-w-lg grid-cols-3 gap-6 border-t border-primary-foreground/12 pt-6">
               <Stat value={String(fleet.length)} label="Hauliers listed" />
-              <Stat value={String(totals.slipCount)} label="Wage slips" />
+              <Stat value={String(totals.slipCount)} label="Driver-reported stubs" />
               <Stat
                 value={totals.avgGapPercent != null ? `${totals.avgGapPercent}%` : "—"}
                 label="Avg. quote gap"

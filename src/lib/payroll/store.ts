@@ -3,6 +3,8 @@ import path from "node:path";
 import { payslipContentHash } from "@/lib/payroll/fingerprint";
 import type { Payslip } from "@/lib/payroll/types";
 
+/** JSON stand-in. Target schema: src/lib/persistence/schema.sql — do not treat /tmp as durable. */
+
 type Disk = { payslips: Payslip[] };
 
 type GlobalStore = {

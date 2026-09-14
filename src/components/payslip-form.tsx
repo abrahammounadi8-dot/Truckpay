@@ -285,7 +285,7 @@ export function PayslipForm() {
       <Section
         title="Allowances"
         action={
-          <Button type="button" size="sm" variant="outline" onClick={() => setAllowances((rows) => [...rows, emptyLine()])}>
+          <Button type="button" id="add-allowance" size="sm" variant="outline" onClick={() => setAllowances((rows) => [...rows, emptyLine()])}>
             Add line
           </Button>
         }
@@ -301,7 +301,7 @@ export function PayslipForm() {
       <Section
         title="Deductions"
         action={
-          <Button type="button" size="sm" variant="outline" onClick={() => setDeductions((rows) => [...rows, emptyLine()])}>
+          <Button type="button" id="add-deduction" size="sm" variant="outline" onClick={() => setDeductions((rows) => [...rows, emptyLine()])}>
             Add line
           </Button>
         }

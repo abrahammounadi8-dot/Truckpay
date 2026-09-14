@@ -5,11 +5,14 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import type { SetAnalysis } from "@/lib/payroll/analysis";
+import type { PayChangeReport } from "@/lib/payroll/change";
 import type { CompanyPayStats } from "@/lib/payroll/company-stats";
 import type { PayFactor } from "@/lib/payroll/explain";
 import { formatEuroMaybe, payslipTitle } from "@/lib/payroll/format";
 import {
+  EVIDENCE_LEVEL_LABELS,
   FREQUENCY_LABELS,
+  PAY_CONFIDENCE_LABELS,
   REQUIRED_PAYSLIPS,
   TENURE_BAND_LABELS,
   TENURE_SOURCE_LABELS,
@@ -23,6 +26,7 @@ type Payload = {
   profile: Omit<EmploymentProfile, "userId"> | null;
   companyStats: CompanyPayStats | null;
   factors: PayFactor[];
+  payChange: PayChangeReport | null;
 };
 
 export function AnalysisBoard() {
@@ -39,7 +43,7 @@ export function AnalysisBoard() {
   if (error) return <p className="text-sm text-destructive">{error}</p>;
   if (!data) return <p className="text-sm text-muted-foreground">Reading your latest slips…</p>;
 
-  const { analysis, profile, companyStats, factors } = data;
+  const { analysis, profile, companyStats, factors, payChange } = data;
   const remaining = Math.max(0, analysis.required - analysis.have);
 
   return (
@@ -132,6 +136,24 @@ export function AnalysisBoard() {
         </section>
       ) : null}
 
+      {payChange?.lines.length ? (
+        <section className="space-y-3">
+          <h2 className="font-heading text-xl font-semibold">This slip versus your recent slips</h2>
+          <p className="text-sm text-muted-foreground">
+            Weekly equivalents use printed insurable weeks or the pay period. One slip is not assumed to be
+            one working week. Unexplained remainder stays unexplained.
+          </p>
+          {payChange.lines.map((line) => (
+            <article key={`${line.kind}-${line.summary}`} className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+              <Badge variant={line.epistemic === "fact" ? "default" : line.epistemic === "unknown" ? "destructive" : "secondary"}>
+                {line.epistemic}
+              </Badge>
+              <p className="mt-2 text-sm leading-6">{line.summary}</p>
+            </article>
+          ))}
+        </section>
+      ) : null}
+
       {analysis.status === "verified" ? (
         <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
           <h2 className="font-heading text-xl font-semibold">Your weekly-equivalent medians</h2>
@@ -172,7 +194,10 @@ export function AnalysisBoard() {
       ) : null}
 
       {companyStats ? (
-        <p className="text-xs text-muted-foreground">{companyStats.headline} {companyStats.disclaimer}</p>
+        <p className="text-xs text-muted-foreground">
+          {EVIDENCE_LEVEL_LABELS[companyStats.evidenceLevel]} · confidence{" "}
+          {PAY_CONFIDENCE_LABELS[companyStats.confidence]}. {companyStats.headline} {companyStats.disclaimer}
+        </p>
       ) : null}
 
       <div className="flex flex-wrap gap-3">

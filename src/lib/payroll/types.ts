@@ -46,10 +46,16 @@ export type FindingKind =
   | "unknown_deduction"
   | "rate_change"
   | "recurring_deduction"
+  | "new_deduction"
+  | "pay_change"
   | "duplicate_payslip"
   | "missing_period"
   | "non_consecutive"
   | "mixed_employer";
+
+export type EvidenceLevel = "driver_reported" | "payroll_verified";
+
+export type PayConfidence = "low" | "medium" | "high";
 
 export type TenureBand = "0_1" | "1_3" | "3_5" | "5_plus";
 
@@ -255,4 +261,20 @@ export const SHIFT_TYPE_LABELS: Record<ShiftType, string> = {
   mixed: "Mixed",
 };
 
+export const TIME_FRACTION_LABELS: Record<TimeFraction, string> = {
+  full_time: "Full-time",
+  part_time: "Part-time",
+};
+
 export const REQUIRED_PAYSLIPS = 3;
+
+export const EVIDENCE_LEVEL_LABELS: Record<EvidenceLevel, string> = {
+  driver_reported: "Driver reported",
+  payroll_verified: "Payroll verified",
+};
+
+export const PAY_CONFIDENCE_LABELS: Record<PayConfidence, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+};

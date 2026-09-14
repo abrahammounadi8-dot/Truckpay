@@ -10,7 +10,7 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <p className="text-[0.72rem] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-        This job only
+        My TruckPay · this job
       </p>
       <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Employment profile</h1>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">

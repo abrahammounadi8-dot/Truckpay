@@ -26,11 +26,11 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Truckpay — check an Irish haulage payslip",
-    template: "%s · Truckpay",
+    default: "TruckPay — understands your Irish haulage payslip",
+    template: "%s · TruckPay",
   },
   description:
-    "Privately check Irish haulage payslips. One payment is not assumed to be one week. The public directory lists hauliers with facts they publish — no invented reviews.",
+    "Privately check Irish haulage payslips. One payment is not assumed to be one week. Company intelligence uses labelled evidence — never invented reviews.",
   icons: { icon: "/favicon.svg" },
 };
 

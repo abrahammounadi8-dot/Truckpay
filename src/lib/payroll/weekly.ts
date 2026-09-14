@@ -13,28 +13,34 @@ function periodDays(start: string | null, end: string | null): number | null {
  * one payslip is one working week.
  */
 export function weeklyEquivalentGross(slip: Payslip): number | null {
-  if (slip.grossPay == null) return null;
-  if (slip.employmentWeeks && slip.employmentWeeks > 0) {
-    return round2(slip.grossPay / slip.employmentWeeks);
-  }
-  const days = periodDays(slip.payPeriodStart, slip.payPeriodEnd);
-  if (days && days > 0) return round2(slip.grossPay / (days / 7));
-  if (slip.payFrequency === "weekly") return round2(slip.grossPay);
-  if (slip.payFrequency === "fortnightly") return round2(slip.grossPay / 2);
-  if (slip.payFrequency === "lunar") return round2(slip.grossPay / 4);
-  return null;
+  return scaleToWeek(slip, slip.grossPay);
 }
 
 export function weeklyEquivalentHours(slip: Payslip): number | null {
-  if (slip.basicHours == null) return null;
+  return scaleToWeek(slip, slip.basicHours);
+}
+
+export type WeeklyMethod = "insurable_weeks" | "period_days" | "stated_frequency" | "unknown";
+
+export function weeklyMethod(slip: Payslip): WeeklyMethod {
+  if (slip.employmentWeeks && slip.employmentWeeks > 0) return "insurable_weeks";
+  if (periodDays(slip.payPeriodStart, slip.payPeriodEnd)) return "period_days";
+  if (slip.payFrequency === "weekly" || slip.payFrequency === "fortnightly" || slip.payFrequency === "lunar") {
+    return "stated_frequency";
+  }
+  return "unknown";
+}
+
+function scaleToWeek(slip: Payslip, value: number | null): number | null {
+  if (value == null) return null;
   if (slip.employmentWeeks && slip.employmentWeeks > 0) {
-    return round2(slip.basicHours / slip.employmentWeeks);
+    return round2(value / slip.employmentWeeks);
   }
   const days = periodDays(slip.payPeriodStart, slip.payPeriodEnd);
-  if (days && days > 0) return round2(slip.basicHours / (days / 7));
-  if (slip.payFrequency === "weekly") return round2(slip.basicHours);
-  if (slip.payFrequency === "fortnightly") return round2(slip.basicHours / 2);
-  if (slip.payFrequency === "lunar") return round2(slip.basicHours / 4);
+  if (days && days > 0) return round2(value / (days / 7));
+  if (slip.payFrequency === "weekly") return round2(value);
+  if (slip.payFrequency === "fortnightly") return round2(value / 2);
+  if (slip.payFrequency === "lunar") return round2(value / 4);
   return null;
 }
 
@@ -46,6 +52,6 @@ export function median(values: number[]): number | null {
   return round2((sorted[mid - 1]! + sorted[mid]!) / 2);
 }
 
-function round2(value: number) {
+export function round2(value: number) {
   return Math.round(value * 100) / 100;
 }

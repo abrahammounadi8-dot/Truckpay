@@ -11,18 +11,18 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-3">
           <Step
             n="01"
-            title="Check the slip"
-            body="Payment date, period, hours, rates, gross, net and each deduction — privately. One slip is not assumed to be one week."
+            title="My TruckPay"
+            body="Type each new slip. Three unique payslips, with dates and periods, unlock verified analysis. One slip is not assumed to be one week."
           />
           <Step
             n="02"
-            title="Public facts only"
-            body="HQ, lanes and fleet notes come from the haulier’s own site. No invented ratings or reviews."
+            title="TruckPay Companies"
+            body="Explore hauliers with public facts plus two evidence levels: driver reported, and payroll verified from real slips. Medians need sample size. Never a single ‘company salary’."
           />
           <Step
             n="03"
-            title="Optional public stub"
-            body="If you choose to file a community slip, that is a separate, older flow. Your private ledger is not posted to the board."
+            title="Later: firms and recruiters"
+            body="Company accounts are not built yet. When they are, they will never see a driver’s private payslips, history or identity."
           />
         </div>
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 pb-14 sm:flex-row">

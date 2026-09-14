@@ -25,7 +25,7 @@ export function RankingsBoard() {
       <div className="rounded-xl border border-dashed border-border bg-card px-6 py-16 text-center">
         <p className="font-heading text-xl font-semibold">No quote gaps to rank yet</p>
         <p className="mt-2 text-sm text-muted-foreground">
-          A ranking needs a wage slip that includes both take-home and what the firm quoted. Truckpay will not invent either number.
+          A ranking needs a wage slip that includes both take-home and what the firm quoted. That is driver-reported evidence. TruckPay will not invent either number.
         </p>
         <Link href="/report" className={cn(buttonVariants(), "mt-5 inline-flex")}>
           File a wage slip

@@ -1,4 +1,5 @@
 import { analyseLatestSet } from "@/lib/payroll/analysis";
+import { compareLatestToRecent } from "@/lib/payroll/change";
 import { companyPayStats } from "@/lib/payroll/company-stats";
 import { explainPayDifferences } from "@/lib/payroll/explain";
 import { toPublicPayslip } from "@/lib/payroll/format";
@@ -39,6 +40,8 @@ export async function GET() {
         })
       : [];
 
+  const payChange = compareLatestToRecent(slips);
+
   return Response.json({
     analysis: {
       ...analysis,
@@ -47,6 +50,7 @@ export async function GET() {
     profile: profile ? stripUser(profile) : null,
     companyStats: company,
     factors,
+    payChange,
   });
 }
 

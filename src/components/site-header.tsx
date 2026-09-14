@@ -8,14 +8,15 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/analysis", label: "Analysis" },
-  { href: "/payslips", label: "My payslips" },
-  { href: "/companies", label: "Hauliers" },
-  { href: "/rankings", label: "Pay gaps" },
-  { href: "/compare", label: "Compare" },
-  { href: "/report", label: "File a slip" },
-  { href: "/list", label: "List your firm" },
+  { href: "/payslips", label: "My TruckPay", match: ["/payslips", "/profile"] },
+  { href: "/companies", label: "Companies", match: ["/companies", "/rankings"] },
+  { href: "/analysis", label: "Analysis", match: ["/analysis"] },
+  { href: "/compare", label: "Compare", match: ["/compare"] },
 ];
+
+function isActive(pathname: string, match: string[]) {
+  return match.some((href) => pathname === href || pathname.startsWith(`${href}/`));
+}
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -28,12 +29,11 @@ export function SiteHeader() {
           <span className="flex size-8 items-center justify-center rounded-md bg-accent text-[0.7rem] font-bold tracking-wide text-accent-foreground">
             TP
           </span>
-          <span className="font-heading text-xl font-semibold tracking-wide">Truckpay</span>
+          <span className="font-heading text-xl font-semibold tracking-wide">TruckPay</span>
         </Link>
         <nav className="hidden items-center gap-0.5 md:flex">
           {links.map((link) => {
-            const active =
-              pathname === link.href || (link.href !== "/" && pathname.startsWith(`${link.href}/`));
+            const active = isActive(pathname, link.match);
             return (
               <Link
                 key={link.href}

@@ -6,22 +6,22 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "My payslips",
-  description: "Privately check Irish haulage payslips. One slip is not assumed to be one week.",
+  title: "My TruckPay",
+  description: "Private Irish haulage payslips. One slip is not assumed to be one week.",
 };
 
 export default function PayslipsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <p className="text-[0.72rem] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-        Private ledger
+        My TruckPay · private
       </p>
       <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">My payslips</h1>
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">My TruckPay</h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-            Check whether the figures add up. Verified analysis needs three unique slips. Nothing
-            here is published as “the company salary”. Delete anytime.
+            Your personal payroll workspace. Check each new slip. Verified analysis needs three unique
+            payslips. Nothing here is published as “the company salary”. Delete anytime.
           </p>
         </div>
         <Link href="/payslips/new" className={cn(buttonVariants(), "bg-accent text-accent-foreground hover:bg-accent/90")}>

@@ -21,7 +21,8 @@ export default async function ComparePage({
       </p>
       <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Compare</h1>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-        HQ, equipment and lanes sit on one line. Take-home and quote gaps appear only if drivers have filed slips for those firms.
+        HQ, equipment and lanes sit on one line. Driver-reported take-home appears only if drivers have
+        filed public stubs. That is not payroll-verified company pay.
       </p>
       <div className="mt-8">
         <CompareTable ids={list} />
