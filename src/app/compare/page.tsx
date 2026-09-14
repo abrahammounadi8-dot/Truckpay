@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { CompareTable } from "@/components/compare-table";
 
 export const metadata: Metadata = {
-  title: "Compare carriers",
-  description: "Side-by-side advertised pay, driver-reported take-home, and working conditions.",
+  title: "Compare hauliers",
+  description: "Side-by-side Irish haulage: public facts, and pay only where drivers have filed slips.",
 };
 
 export default async function ComparePage({
@@ -21,8 +21,7 @@ export default async function ComparePage({
       </p>
       <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Compare</h1>
       <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-        Put advertised weekly next to reported weekly. Detention, forced dispatch,
-        and home time sit on the same line so the recruiter pitch has nowhere to hide.
+        HQ, equipment and lanes sit on one line. Take-home and quote gaps appear only if drivers have filed slips for those firms.
       </p>
       <div className="mt-8">
         <CompareTable ids={list} />

@@ -1,15 +1,24 @@
-import { advertisedWeekly, formatMoney, payGapDollars, payGapPercent, reportedWeekly } from "@/lib/metrics";
-import type { Company } from "@/lib/types";
+import type { CompanyStats } from "@/lib/metrics";
+import { formatMoney } from "@/lib/metrics";
 import { cn } from "@/lib/utils";
 
-export function PayGapBar({ company, compact = false }: { company: Company; compact?: boolean }) {
-  const advertised = advertisedWeekly(company);
-  const reported = reportedWeekly(company);
-  const gap = payGapPercent(company);
-  const dollars = payGapDollars(company);
+export function PayGapBar({ stats, compact = false }: { stats: CompanyStats; compact?: boolean }) {
+  if (stats.count === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        No driver settlements on file yet. The first wage slip sets the board.
+      </p>
+    );
+  }
+
+  const advertised = stats.avgQuoted ?? 0;
+  const reported = stats.avgWeekly ?? 0;
   const max = Math.max(advertised, reported, 1);
-  const worse = gap >= 12;
-  const close = gap <= 8;
+  const gap = stats.gapPercent;
+  const euros = stats.gapEuro;
+  const worse = (gap ?? 0) >= 12;
+  const close = gap != null && gap <= 8;
+  const hasQuote = stats.avgQuoted != null;
 
   return (
     <div className="space-y-3">
@@ -17,30 +26,32 @@ export function PayGapBar({ company, compact = false }: { company: Company; comp
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              Missing vs the ad
+              {hasQuote ? "Missing vs the quote" : "Average take-home"}
             </p>
             <p
               className={cn(
                 "font-heading text-3xl leading-none font-semibold tabular-nums",
-                worse ? "text-pay-down" : close ? "text-pay-up" : "text-foreground",
+                hasQuote ? (worse ? "text-pay-down" : close ? "text-pay-up" : "text-foreground") : "text-foreground",
               )}
             >
-              {dollars > 0 ? `−${formatMoney(dollars)}` : dollars < 0 ? `+${formatMoney(Math.abs(dollars))}` : formatMoney(0)}
+              {hasQuote && euros != null
+                ? euros > 0
+                  ? `−${formatMoney(euros)}`
+                  : euros < 0
+                    ? `+${formatMoney(Math.abs(euros))}`
+                    : formatMoney(0)
+                : formatMoney(reported)}
               <span className="ml-1.5 text-base font-medium text-muted-foreground">/wk</span>
             </p>
           </div>
-          <p
-            className={cn(
-              "rounded-full px-2 py-0.5 font-mono text-xs font-medium tabular-nums",
-              worse ? "bg-pay-down/10 text-pay-down" : close ? "bg-pay-up/10 text-pay-up" : "bg-muted text-foreground",
-            )}
-          >
-            {gap > 0 ? `${gap}% short` : gap < 0 ? `${Math.abs(gap)}% over` : "matches ad"}
+          <p className="rounded-full bg-muted px-2 py-0.5 font-mono text-xs tabular-nums">
+            {stats.count} {stats.count === 1 ? "slip" : "slips"}
+            {gap != null ? ` · ${gap}%` : ""}
           </p>
         </div>
       ) : null}
-      <Bar label="Billboard" value={advertised} max={max} tone="ad" />
-      <Bar label="Settlement" value={reported} max={max} tone={worse ? "down" : "up"} />
+      {hasQuote ? <Bar label="Quoted" value={advertised} max={max} tone="ad" /> : null}
+      <Bar label="Cleared" value={reported} max={max} tone={hasQuote && worse ? "down" : "up"} />
     </div>
   );
 }

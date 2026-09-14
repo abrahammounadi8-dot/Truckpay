@@ -7,18 +7,19 @@ export function SiteFooter() {
         <div>
           <p className="font-heading text-2xl font-semibold tracking-wide">Truckpay</p>
           <p className="mt-3 max-w-xs text-sm leading-6 text-primary-foreground/70">
-            Advertised pay next to what drivers actually take home. Built from
-            settlements, not recruiter scripts.
+            Irish haulage first. Check a payslip privately. The public file still shows only facts firms publish — never invented reviews.
           </p>
         </div>
         <div className="text-sm">
-          <p className="text-[0.68rem] font-semibold tracking-[0.16em] text-primary-foreground/50 uppercase">Look up</p>
+          <p className="text-[0.68rem] font-semibold tracking-[0.16em] text-primary-foreground/50 uppercase">
+            Look up
+          </p>
           <div className="mt-3 flex flex-col gap-2 text-primary-foreground/75">
             <Link href="/companies" className="hover:text-primary-foreground">
-              Company directory
+              Haulier directory
             </Link>
             <Link href="/rankings" className="hover:text-primary-foreground">
-              Biggest pay gaps
+              Pay gaps
             </Link>
             <Link href="/compare" className="hover:text-primary-foreground">
               Side-by-side compare
@@ -26,12 +27,23 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="text-sm">
-          <p className="text-[0.68rem] font-semibold tracking-[0.16em] text-primary-foreground/50 uppercase">Drivers</p>
+          <p className="text-[0.68rem] font-semibold tracking-[0.16em] text-primary-foreground/50 uppercase">
+            Join
+          </p>
           <div className="mt-3 flex flex-col gap-2 text-primary-foreground/75">
-            <Link href="/report" className="hover:text-primary-foreground">
-              File a pay report
+            <Link href="/payslips" className="hover:text-primary-foreground">
+              Check my pay
             </Link>
-            <p>Reports land on the company file for other drivers to read.</p>
+            <Link href="/privacy" className="hover:text-primary-foreground">
+              Privacy
+            </Link>
+            <Link href="/report" className="hover:text-primary-foreground">
+              File a public slip
+            </Link>
+            <Link href="/list" className="hover:text-primary-foreground">
+              List your firm
+            </Link>
+            <p>Drivers file numbers. Operators request a listing. Truckpay does not invent either.</p>
           </div>
         </div>
       </div>

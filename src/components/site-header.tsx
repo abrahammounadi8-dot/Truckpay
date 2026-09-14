@@ -8,10 +8,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/companies", label: "Companies" },
+  { href: "/payslips", label: "My payslips" },
+  { href: "/companies", label: "Hauliers" },
   { href: "/rankings", label: "Pay gaps" },
   { href: "/compare", label: "Compare" },
-  { href: "/report", label: "File a report" },
+  { href: "/report", label: "File a slip" },
+  { href: "/list", label: "List your firm" },
 ];
 
 export function SiteHeader() {
@@ -49,13 +51,13 @@ export function SiteHeader() {
         </nav>
         <div className="flex items-center gap-2">
           <Link
-            href="/report"
+            href="/payslips/new"
             className={cn(
               buttonVariants({ size: "sm" }),
               "hidden bg-accent text-accent-foreground hover:bg-accent/90 sm:inline-flex",
             )}
           >
-            Report your pay
+            Check my pay
           </Link>
           <Button
             variant="ghost"

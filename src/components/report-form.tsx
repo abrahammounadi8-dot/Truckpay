@@ -1,246 +1,189 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { fleet } from "@/lib/data";
+import { equipmentLabels, operationLabels, payTypeLabels } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
-import type { PayType } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import type { Equipment, Operation, PayType } from "@/lib/types";
+
+const payTypes: PayType[] = ["hourly", "day", "salary", "percentage"];
+const equipment: Equipment[] = ["curtain", "reefer", "flatbed", "tanker", "specialized"];
+const operations: Operation[] = ["domestic", "uk", "europe"];
 
 export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
+  const router = useRouter();
   const { submitReport } = useAppStore();
-  const [companySlug, setCompanySlug] = useState(defaultCompany ?? "");
-  const [nickname, setNickname] = useState("");
-  const [role, setRole] = useState("");
-  const [tenure, setTenure] = useState("1–2 years");
-  const [payType, setPayType] = useState<PayType>("cpm");
-  const [cpm, setCpm] = useState("");
-  const [weeklyPay, setWeeklyPay] = useState("");
-  const [miles, setMiles] = useState("");
-  const [homeTime, setHomeTime] = useState("");
-  const [rating, setRating] = useState("3");
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [recommend, setRecommend] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [savedId, setSavedId] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [pending, setPending] = useState(false);
+  const initialSlug =
+    defaultCompany && fleet.some((company) => company.slug === defaultCompany)
+      ? defaultCompany
+      : fleet[0]?.slug ?? "";
+  const [form, setForm] = useState({
+    companySlug: initialSlug,
+    role: "HGV driver",
+    tenure: "1–2 years",
+    payType: "hourly" as PayType,
+    equipment: "curtain" as Equipment,
+    operation: "domestic" as Operation,
+    quotedWeekly: "",
+    hourlyRate: "",
+    weeklyPay: "",
+    kmPerWeek: "",
+    hoursPerWeek: "45",
+    body: "",
+  });
 
-  const company = useMemo(
-    () => fleet.find((item) => item.slug === companySlug),
-    [companySlug],
-  );
-
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
-    setError(null);
-    const weekly = Number(weeklyPay);
-    const milesNum = Number(miles);
-    const ratingNum = Number(rating);
-    if (!companySlug) {
-      setError("Pick the carrier you drove for.");
-      return;
-    }
-    if (!title.trim() || !body.trim() || !nickname.trim()) {
-      setError("Need a nickname, a headline, and the story.");
-      return;
-    }
-    if (!Number.isFinite(weekly) || weekly <= 0) {
-      setError("Weekly take-home has to be a number.");
-      return;
-    }
-    if (!Number.isFinite(milesNum) || milesNum <= 0) {
-      setError("Miles per week has to be a number.");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const saved = await submitReport({
-        companySlug,
-        nickname: nickname.trim(),
-        role: role.trim() || "Driver",
-        tenure,
-        payType,
-        cpm: cpm ? Number(cpm) : undefined,
-        weeklyPay: weekly,
-        milesPerWeek: milesNum,
-        homeTime: homeTime.trim() || "Not specified",
-        rating: ratingNum,
-        title: title.trim(),
-        body: body.trim(),
-        wouldRecommend: recommend,
-      });
-      setSavedId(saved.id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not file the report.");
-    } finally {
-      setSubmitting(false);
-    }
+  function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
+    setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  if (savedId && company) {
-    return (
-      <div className="rounded-xl border border-border bg-card px-6 py-12 text-center">
-        <p className="font-heading text-2xl font-semibold">Report filed</p>
-        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          It is on the {company.name} file. Anyone on this Truckpay instance can
-          read the settlement numbers you posted.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <Link href={`/companies/${company.slug}`} className={cn(buttonVariants())}>
-            See it on the company file
-          </Link>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSavedId(null);
-              setTitle("");
-              setBody("");
-              setWeeklyPay("");
-            }}
-          >
-            File another
-          </Button>
-        </div>
-      </div>
-    );
+  async function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setPending(true);
+    setError(null);
+    try {
+      await submitReport({
+        companySlug: form.companySlug,
+        role: form.role,
+        tenure: form.tenure,
+        payType: form.payType,
+        equipment: form.equipment,
+        operation: form.operation,
+        quotedWeekly: form.quotedWeekly ? Number(form.quotedWeekly) : undefined,
+        hourlyRate: form.hourlyRate ? Number(form.hourlyRate) : undefined,
+        weeklyPay: Number(form.weeklyPay),
+        kmPerWeek: form.kmPerWeek ? Number(form.kmPerWeek) : undefined,
+        hoursPerWeek: Number(form.hoursPerWeek),
+        body: form.body,
+      });
+      router.push(`/companies/${form.companySlug}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
-    <form onSubmit={submit} className="space-y-5 rounded-xl border border-border bg-card p-5 sm:p-6">
-      {error ? (
-        <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      ) : null}
-
+    <form onSubmit={onSubmit} className="space-y-5 rounded-xl bg-card p-5 ring-1 ring-foreground/10">
+      <Field label="Haulage firm">
+        <select
+          className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
+          value={form.companySlug}
+          onChange={(event) => set("companySlug", event.target.value)}
+        >
+          {fleet.map((company) => (
+            <option key={company.slug} value={company.slug}>
+              {company.name}
+            </option>
+          ))}
+        </select>
+      </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Carrier">
-          <Select value={companySlug || null} onValueChange={(value) => setCompanySlug(value ?? "")}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a company" />
-            </SelectTrigger>
-            <SelectContent>
-              {fleet.map((item) => (
-                <SelectItem key={item.slug} value={item.slug}>
-                  {item.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Field label="Job title">
+          <Input value={form.role} onChange={(event) => set("role", event.target.value)} />
         </Field>
-        <Field label="Nickname shown on the report">
-          <Input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="OTR_Maria" />
-        </Field>
-        <Field label="Seat / account">
-          <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Solo reefer, dedicated" />
-        </Field>
-        <Field label="Tenure">
-          <Select value={tenure} onValueChange={(value) => setTenure(value ?? tenure)}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Under a year">Under a year</SelectItem>
-              <SelectItem value="1–2 years">1–2 years</SelectItem>
-              <SelectItem value="2–5 years">2–5 years</SelectItem>
-              <SelectItem value="5+ years">5+ years</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Pay type">
-          <Select value={payType} onValueChange={(value) => setPayType((value as PayType) ?? "cpm")}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cpm">Per mile</SelectItem>
-              <SelectItem value="salary">Salary</SelectItem>
-              <SelectItem value="hourly">Hourly</SelectItem>
-              <SelectItem value="percentage">Percentage</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="CPM you actually ran (optional)">
-          <Input
-            inputMode="decimal"
-            value={cpm}
-            onChange={(e) => setCpm(e.target.value)}
-            placeholder="0.52"
-          />
-        </Field>
-        <Field label="Average weekly take-home">
-          <Input
-            inputMode="numeric"
-            value={weeklyPay}
-            onChange={(e) => setWeeklyPay(e.target.value)}
-            placeholder="1350"
-          />
-        </Field>
-        <Field label="Miles per week">
-          <Input
-            inputMode="numeric"
-            value={miles}
-            onChange={(e) => setMiles(e.target.value)}
-            placeholder="2400"
-          />
-        </Field>
-        <Field label="Home time">
-          <Input
-            value={homeTime}
-            onChange={(e) => setHomeTime(e.target.value)}
-            placeholder="14 days out, 2 home"
-          />
-        </Field>
-        <Field label="Rating">
-          <Select value={rating} onValueChange={(value) => setRating(value ?? "3")}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">1 — walk away</SelectItem>
-              <SelectItem value="2">2 — only if desperate</SelectItem>
-              <SelectItem value="3">3 — mixed</SelectItem>
-              <SelectItem value="4">4 — would recommend</SelectItem>
-              <SelectItem value="5">5 — closest to the ad</SelectItem>
-            </SelectContent>
-          </Select>
+        <Field label="How long there">
+          <Input value={form.tenure} onChange={(event) => set("tenure", event.target.value)} />
         </Field>
       </div>
-
-      <Field label="Headline">
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="The 0.60 was loaded miles after six months"
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Field label="How you are paid">
+          <select
+            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
+            value={form.payType}
+            onChange={(event) => set("payType", event.target.value as PayType)}
+          >
+            {payTypes.map((payType) => (
+              <option key={payType} value={payType}>
+                {payTypeLabels[payType]}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Trailer / work">
+          <select
+            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
+            value={form.equipment}
+            onChange={(event) => set("equipment", event.target.value as Equipment)}
+          >
+            {equipment.map((item) => (
+              <option key={item} value={item}>
+                {equipmentLabels[item]}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Usual lanes">
+          <select
+            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
+            value={form.operation}
+            onChange={(event) => set("operation", event.target.value as Operation)}
+          >
+            {operations.map((item) => (
+              <option key={item} value={item}>
+                {operationLabels[item]}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Weekly take-home (€) — required">
+          <Input
+            inputMode="decimal"
+            value={form.weeklyPay}
+            onChange={(event) => set("weeklyPay", event.target.value)}
+            placeholder="What actually landed"
+            required
+          />
+        </Field>
+        <Field label="What they quoted weekly (€) — optional">
+          <Input
+            inputMode="decimal"
+            value={form.quotedWeekly}
+            onChange={(event) => set("quotedWeekly", event.target.value)}
+            placeholder="Only if they named a figure"
+          />
+        </Field>
+        <Field label="Hourly rate (€) — optional">
+          <Input
+            inputMode="decimal"
+            value={form.hourlyRate}
+            onChange={(event) => set("hourlyRate", event.target.value)}
+          />
+        </Field>
+        <Field label="Hours / week">
+          <Input
+            inputMode="numeric"
+            value={form.hoursPerWeek}
+            onChange={(event) => set("hoursPerWeek", event.target.value)}
+            required
+          />
+        </Field>
+        <Field label="Km / week — optional">
+          <Input
+            inputMode="numeric"
+            value={form.kmPerWeek}
+            onChange={(event) => set("kmPerWeek", event.target.value)}
+          />
+        </Field>
+      </div>
+      <Field label="Notes — optional. Facts from your slip only.">
+        <textarea
+          className="min-h-28 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm"
+          value={form.body}
+          onChange={(event) => set("body", event.target.value)}
+          placeholder="Hours, wait time, what was deducted — only what you saw."
         />
       </Field>
-      <Field label="What actually hit the settlement">
-        <Textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          rows={6}
-          placeholder="Miles, detention, escrow, truck age, whether home time was real..."
-        />
-      </Field>
-      <label className="flex items-center gap-2 text-sm">
-        <Checkbox checked={recommend} onCheckedChange={(value) => setRecommend(value === true)} />
-        I would take this job again
-      </label>
-      <Button type="submit" className="w-full sm:w-auto" disabled={submitting}>
-        {submitting ? "Filing…" : "File report"}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+        {pending ? "Filing…" : "File wage slip"}
       </Button>
     </form>
   );
@@ -248,9 +191,9 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1.5">
-      <Label>{label}</Label>
+    <label className="block space-y-1.5">
+      <span className="text-sm font-medium">{label}</span>
       {children}
-    </div>
+    </label>
   );
 }

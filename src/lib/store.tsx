@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
 import type { DriverReport } from "@/lib/types";
+import type { ReportInput } from "@/lib/report-input";
 
 const STORAGE_KEY = "truckpay.reports";
 const COMPARE_KEY = "truckpay.compare";
@@ -10,8 +11,7 @@ const EVENT = "truckpay-store";
 type Store = {
   reports: DriverReport[];
   compareSlugs: string[];
-  addReport: (report: DriverReport) => void;
-  submitReport: (report: Omit<DriverReport, "id" | "date">) => Promise<DriverReport>;
+  submitReport: (input: ReportInput) => Promise<DriverReport>;
   toggleCompare: (slug: string) => void;
   clearCompare: () => void;
   ready: boolean;
@@ -32,8 +32,23 @@ function readJson<T>(key: string, fallback: T): T {
 let reportsCache: DriverReport[] = [];
 let compareCache: string[] = [];
 
+function isLiveReport(value: unknown): value is DriverReport {
+  if (!value || typeof value !== "object") return false;
+  const report = value as DriverReport;
+  return (
+    typeof report.id === "string" &&
+    typeof report.companySlug === "string" &&
+    typeof report.weeklyPay === "number" &&
+    typeof report.hoursPerWeek === "number" &&
+    typeof report.submittedAt === "string" &&
+    typeof report.payType === "string" &&
+    typeof report.equipment === "string" &&
+    typeof report.operation === "string"
+  );
+}
+
 function loadCaches() {
-  reportsCache = readJson<DriverReport[]>(STORAGE_KEY, []);
+  reportsCache = readJson<unknown[]>(STORAGE_KEY, []).filter(isLiveReport);
   compareCache = readJson<string[]>(COMPARE_KEY, []).slice(0, 3);
 }
 
@@ -78,10 +93,12 @@ function getServerEmptyCompare(): string[] {
 
 function mergeReports(server: DriverReport[], local: DriverReport[]): DriverReport[] {
   const byId = new Map<string, DriverReport>();
-  for (const report of [...local, ...server]) {
+  for (const report of [...local, ...server].filter(isLiveReport)) {
     byId.set(report.id, report);
   }
-  return [...byId.values()].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  return [...byId.values()].sort(
+    (a, b) => b.submittedAt.localeCompare(a.submittedAt) || b.id.localeCompare(a.id),
+  );
 }
 
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
@@ -110,11 +127,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const addReport = useCallback((report: DriverReport) => {
-    cacheReports(mergeReports([report], readJson<DriverReport[]>(STORAGE_KEY, [])));
-  }, []);
-
-  const submitReport = useCallback(async (input: Omit<DriverReport, "id" | "date">) => {
+  const submitReport = useCallback(async (input: ReportInput) => {
     const res = await fetch("/api/reports", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -122,7 +135,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     });
     const payload = (await res.json()) as { report?: DriverReport; error?: string };
     if (!res.ok || !payload.report) {
-      throw new Error(payload.error ?? "Could not file the report.");
+      throw new Error(payload.error ?? "Could not file the wage slip.");
     }
     cacheReports(mergeReports([payload.report], readJson<DriverReport[]>(STORAGE_KEY, [])));
     return payload.report;
@@ -148,8 +161,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ reports, compareSlugs, addReport, submitReport, toggleCompare, clearCompare, ready }),
-    [reports, compareSlugs, addReport, submitReport, toggleCompare, clearCompare, ready],
+    () => ({ reports, compareSlugs, submitReport, toggleCompare, clearCompare, ready }),
+    [reports, compareSlugs, submitReport, toggleCompare, clearCompare, ready],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

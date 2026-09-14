@@ -1,45 +1,54 @@
-import { StarRating } from "@/components/star-rating";
 import { Badge } from "@/components/ui/badge";
-import { formatCpm, formatMoney } from "@/lib/metrics";
-import type { DriverReview } from "@/lib/types";
+import { equipmentLabels, formatMoney, formatNumber, operationLabels, payTypeLabels } from "@/lib/metrics";
+import type { DriverReport } from "@/lib/types";
 
-export function ReviewCard({ review }: { review: DriverReview }) {
+export function ReviewCard({ review }: { review: DriverReport }) {
   return (
     <article className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-heading text-xl font-semibold leading-snug">{review.title}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {review.nickname} · {review.role} · {review.tenure}
+          <p className="text-sm font-medium">
+            {review.role} · {review.tenure}
           </p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{review.submittedAt} · Filed here</p>
         </div>
-        <StarRating value={review.rating} />
-      </div>
-      <p className="mt-4 text-sm leading-7 text-pretty">{review.body}</p>
-      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 border-t border-dashed border-border pt-3 font-mono text-xs tabular-nums text-muted-foreground">
-        {review.cpm != null ? <span>{formatCpm(review.cpm)}</span> : null}
-        <span>{formatMoney(review.weeklyPay)}/wk</span>
-        <span>{review.milesPerWeek.toLocaleString()} mi/wk</span>
-        <span>{review.homeTime}</span>
-        <span>{review.date}</span>
+        <div className="text-right">
+          <p className="font-heading text-2xl font-semibold">{formatMoney(review.weeklyPay)}</p>
+          <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">take-home / week</p>
+        </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
-        {review.wouldRecommend ? (
-          <Badge variant="secondary">Would take the job again</Badge>
-        ) : (
-          <Badge variant="destructive">Would not go back</Badge>
-        )}
-        {review.pros.map((item) => (
-          <Badge key={item} variant="outline">
-            + {item}
-          </Badge>
-        ))}
-        {review.cons.map((item) => (
-          <Badge key={item} variant="outline">
-            − {item}
-          </Badge>
-        ))}
+        <Badge variant="outline">{payTypeLabels[review.payType]}</Badge>
+        <Badge variant="secondary">{equipmentLabels[review.equipment]}</Badge>
+        <Badge variant="outline">{operationLabels[review.operation]}</Badge>
       </div>
+      <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+        <div>
+          <dt className="text-xs text-muted-foreground">Quoted weekly</dt>
+          <dd className="font-medium">
+            {review.quotedWeekly != null ? formatMoney(review.quotedWeekly) : "Not given"}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Hourly (if given)</dt>
+          <dd className="font-medium">
+            {review.hourlyRate != null ? `${formatMoney(review.hourlyRate)}/hr` : "—"}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Km / week</dt>
+          <dd className="font-medium">
+            {review.kmPerWeek != null ? formatNumber(review.kmPerWeek) : "—"}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Hours / week</dt>
+          <dd className="font-medium">{review.hoursPerWeek}</dd>
+        </div>
+      </dl>
+      {review.body ? (
+        <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{review.body}</p>
+      ) : null}
     </article>
   );
 }

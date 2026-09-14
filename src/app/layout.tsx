@@ -26,18 +26,18 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Truckpay — advertised pay vs driver-reported take-home",
+    default: "Truckpay — check an Irish haulage payslip",
     template: "%s · Truckpay",
   },
   description:
-    "Compare trucking companies by advertised CPM and salary against what drivers actually report for pay, miles, home time, and working conditions.",
+    "Privately check Irish haulage payslips. One payment is not assumed to be one week. The public directory lists hauliers with facts they publish — no invented reviews.",
   icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="en-IE"
       className={`${sans.variable} ${heading.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">

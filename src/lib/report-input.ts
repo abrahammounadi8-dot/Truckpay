@@ -1,74 +1,76 @@
 import { fleet } from "@/lib/data";
-import type { DriverReport, PayType } from "@/lib/types";
+import type { DriverReport, Equipment, Operation, PayType } from "@/lib/types";
 
-const PAY_TYPES: PayType[] = ["cpm", "salary", "percentage", "hourly"];
-const TENURES = ["Under a year", "1–2 years", "2–5 years", "5+ years"];
+const PAY_TYPES: PayType[] = ["hourly", "day", "salary", "percentage"];
+const EQUIPMENT: Equipment[] = ["curtain", "reefer", "flatbed", "tanker", "specialized"];
+const OPERATIONS: Operation[] = ["domestic", "uk", "europe"];
 
 export type ReportInput = {
   companySlug: string;
-  nickname: string;
   role: string;
   tenure: string;
   payType: PayType;
-  cpm?: number;
+  equipment: Equipment;
+  operation: Operation;
+  quotedWeekly?: number;
+  hourlyRate?: number;
   weeklyPay: number;
-  milesPerWeek: number;
-  homeTime: string;
-  rating: number;
-  title: string;
+  kmPerWeek?: number;
+  hoursPerWeek: number;
   body: string;
-  wouldRecommend: boolean;
 };
 
 export function parseReportInput(raw: unknown): { report?: ReportInput; error?: string } {
   if (!raw || typeof raw !== "object") {
-    return { error: "Send a JSON report." };
+    return { error: "Send a JSON wage slip." };
   }
   const body = raw as Record<string, unknown>;
   const companySlug = asString(body.companySlug);
   if (!fleet.some((company) => company.slug === companySlug)) {
-    return { error: "Pick a carrier on the board." };
+    return { error: "Pick a haulier on the board." };
   }
-  const nickname = asString(body.nickname).slice(0, 40);
-  const title = asString(body.title).slice(0, 140);
-  const story = asString(body.body).slice(0, 4000);
-  if (nickname.length < 2 || title.length < 8 || story.length < 20) {
-    return { error: "Need a nickname, a headline, and the story from the settlement." };
-  }
+
   const weeklyPay = Number(body.weeklyPay);
-  const milesPerWeek = Number(body.milesPerWeek);
-  const rating = Number(body.rating);
   if (!Number.isFinite(weeklyPay) || weeklyPay <= 0 || weeklyPay > 20000) {
-    return { error: "Weekly take-home has to be a real number." };
+    return { error: "Weekly take-home has to be a euro amount." };
   }
-  if (!Number.isFinite(milesPerWeek) || milesPerWeek <= 0 || milesPerWeek > 8000) {
-    return { error: "Miles per week has to be a real number." };
+
+  const hoursPerWeek = Number(body.hoursPerWeek);
+  if (!Number.isFinite(hoursPerWeek) || hoursPerWeek < 1 || hoursPerWeek > 90) {
+    return { error: "Hours per week has to be a real number." };
   }
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    return { error: "Rating has to be 1 through 5." };
+
+  const quotedWeekly = optionalNumber(body.quotedWeekly, 20000);
+  const hourlyRate = optionalNumber(body.hourlyRate, 80);
+  const kmPerWeek = optionalNumber(body.kmPerWeek, 10000);
+  if (quotedWeekly === false || hourlyRate === false || kmPerWeek === false) {
+    return { error: "Quoted pay, hourly rate, and km have to be real numbers if you fill them in." };
   }
-  const payType = PAY_TYPES.includes(body.payType as PayType) ? (body.payType as PayType) : "cpm";
-  const tenure = TENURES.includes(asString(body.tenure)) ? asString(body.tenure) : "1–2 years";
-  const cpm = body.cpm === undefined || body.cpm === null || body.cpm === "" ? undefined : Number(body.cpm);
-  if (cpm !== undefined && (!Number.isFinite(cpm) || cpm <= 0 || cpm > 5)) {
-    return { error: "CPM has to be a number like 0.52." };
-  }
+
+  const payType = PAY_TYPES.includes(body.payType as PayType)
+    ? (body.payType as PayType)
+    : "hourly";
+  const equipment = EQUIPMENT.includes(body.equipment as Equipment)
+    ? (body.equipment as Equipment)
+    : "curtain";
+  const operation = OPERATIONS.includes(body.operation as Operation)
+    ? (body.operation as Operation)
+    : "domestic";
 
   return {
     report: {
       companySlug,
-      nickname,
-      role: asString(body.role).slice(0, 80) || "Driver",
-      tenure,
+      role: asString(body.role).slice(0, 80) || "HGV driver",
+      tenure: asString(body.tenure).slice(0, 40) || "1–2 years",
       payType,
-      cpm,
+      equipment,
+      operation,
+      quotedWeekly,
+      hourlyRate,
       weeklyPay: Math.round(weeklyPay),
-      milesPerWeek: Math.round(milesPerWeek),
-      homeTime: asString(body.homeTime).slice(0, 80) || "Not specified",
-      rating,
-      title,
-      body: story,
-      wouldRecommend: Boolean(body.wouldRecommend),
+      kmPerWeek,
+      hoursPerWeek: Math.round(hoursPerWeek),
+      body: asString(body.body).slice(0, 4000),
     },
   };
 }
@@ -77,10 +79,17 @@ export function toStoredReport(input: ReportInput): DriverReport {
   return {
     id: `rpt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
     ...input,
-    date: new Date().toISOString().slice(0, 10),
+    submittedAt: new Date().toISOString().slice(0, 10),
   };
 }
 
 function asString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function optionalNumber(value: unknown, max: number): number | undefined | false {
+  if (value === undefined || value === null || value === "") return undefined;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0 || parsed > max) return false;
+  return parsed;
 }

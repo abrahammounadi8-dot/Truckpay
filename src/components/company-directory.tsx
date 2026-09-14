@@ -12,24 +12,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fleet } from "@/lib/data";
-import { payGapPercent, reportedWeekly } from "@/lib/metrics";
+import { companyStats } from "@/lib/metrics";
+import { useAppStore } from "@/lib/store";
 import type { Equipment } from "@/lib/types";
 
 const equipmentOptions: { value: Equipment | "all"; label: string }[] = [
   { value: "all", label: "All equipment" },
-  { value: "dry-van", label: "Dry van" },
+  { value: "curtain", label: "Curtain / box" },
   { value: "reefer", label: "Reefer" },
   { value: "flatbed", label: "Flatbed" },
   { value: "tanker", label: "Tanker" },
   { value: "specialized", label: "Specialized" },
 ];
 
-type SortKey = "gap" | "reported" | "rating" | "home";
+type SortKey = "name" | "reports" | "pay" | "county";
 
 export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string }) {
+  const { reports } = useAppStore();
   const [query, setQuery] = useState(initialQuery);
   const [equipment, setEquipment] = useState<Equipment | "all">("all");
-  const [sort, setSort] = useState<SortKey>("gap");
+  const [sort, setSort] = useState<SortKey>("name");
 
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -38,29 +40,32 @@ export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string 
         !needle ||
         company.name.toLowerCase().includes(needle) ||
         company.headquarters.toLowerCase().includes(needle) ||
+        company.county.toLowerCase().includes(needle) ||
         company.summary.toLowerCase().includes(needle);
       const matchesEquipment = equipment === "all" || company.equipment.includes(equipment);
       return matchesQuery && matchesEquipment;
     });
 
     return [...filtered].sort((a, b) => {
-      if (sort === "gap") return payGapPercent(b) - payGapPercent(a);
-      if (sort === "reported") return reportedWeekly(b) - reportedWeekly(a);
-      if (sort === "rating") return b.reported.rating - a.reported.rating;
-      return a.reported.homeTimeDaysOut - b.reported.homeTimeDaysOut;
+      const statsA = companyStats(a.slug, reports);
+      const statsB = companyStats(b.slug, reports);
+      if (sort === "reports") return statsB.count - statsA.count;
+      if (sort === "pay") return (statsB.avgWeekly ?? 0) - (statsA.avgWeekly ?? 0);
+      if (sort === "county") return a.county.localeCompare(b.county);
+      return a.name.localeCompare(b.name);
     });
-  }, [query, equipment, sort]);
+  }, [query, equipment, sort, reports]);
 
   return (
     <div className="space-y-6">
       <div className="grid gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:grid-cols-3">
-        <div className="sm:col-span-1">
+        <div>
           <Label htmlFor="search">Search</Label>
           <Input
             id="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Carrier, city, or keyword"
+            placeholder="Haulier, county, or lane"
             className="mt-1.5"
           />
         </div>
@@ -81,15 +86,15 @@ export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string 
         </div>
         <div>
           <Label>Sort</Label>
-          <Select value={sort} onValueChange={(value) => setSort((value as SortKey) ?? "gap")}>
+          <Select value={sort} onValueChange={(value) => setSort((value as SortKey) ?? "name")}>
             <SelectTrigger className="mt-1.5 w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="gap">Biggest pay gap</SelectItem>
-              <SelectItem value="reported">Highest reported weekly</SelectItem>
-              <SelectItem value="rating">Best rating</SelectItem>
-              <SelectItem value="home">Best home time</SelectItem>
+              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="county">County</SelectItem>
+              <SelectItem value="reports">Most slips</SelectItem>
+              <SelectItem value="pay">Highest reported weekly</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -97,13 +102,11 @@ export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string 
 
       {results.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card/60 px-6 py-16 text-center">
-          <p className="font-heading text-lg font-semibold">No carriers match that search</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Try a company name, or clear equipment to see the full board.
-          </p>
+          <p className="font-heading text-lg font-semibold">No hauliers match that search</p>
+          <p className="mt-1 text-sm text-muted-foreground">Try a county, or clear equipment.</p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2">
           {results.map((company) => (
             <CompanyCard key={company.slug} company={company} />
           ))}

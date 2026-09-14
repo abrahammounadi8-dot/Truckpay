@@ -1,20 +1,21 @@
 # Truckpay
 
-Compare trucking companies by **advertised pay** versus **driver-reported take-home**, miles, home time, and working conditions.
+Ireland-first tool for haulage drivers: **check a payslip privately**, then (optionally) use the public haulier directory.
 
-Recruiters quote a CPM. Truckpay puts that number next to what drivers say actually clears on the settlement.
+A payslip is **not** assumed to be one working week. It may cover several weeks, overtime, allowances, back pay or deductions from different periods.
 
-## What you can do
+Truckpay does **not** invent reviews, ratings or pay figures. Unknown deduction labels stay unknown and are flagged for review — never classified as illegal.
 
-- Browse carriers with advertised weekly vs reported weekly on every card
-- Open a company file for detention, forced dispatch, orientation pay, and driver reports
-- Rank the widest pay gaps
-- Compare up to three companies side by side
-- File a pay report (`POST /api/reports`) so it shows on the company file
+## Two layers
 
-Seed data covers Swift, Werner, Prime, Schneider, C.R. England, Roehl, Western Express, Knight, J.B. Hunt, and Maverick. Figures are illustrative composites of common driver reports, not official company filings.
+1. **Private ledger** (`/payslips`) — you type figures from your slip. Identity is a random UUID cookie, not a PPSN, licence or employee number. Documents are not uploaded. Findings are labelled Fact / Inference / Unknown and do not accuse an employer.
+2. **Public board** (`/companies`) — real Irish hauliers with public facts only. Optional community “file a slip” remains a separate legacy flow (`/report`).
 
-Community reports are stored on the server (`data/reports.json` locally). On Vercel the file lives in `/tmp`, so it survives as long as that deployment’s instance does. A database is the next step if you want reports to last across deploys.
+## Deduction categories (Ireland)
+
+PAYE, PRSI, USC, PENSION, ADVANCE, DAMAGE, EQUIPMENT, UNIFORM, ACCOMMODATION, TRAINING, LEGAL_ORDER, OTHER, UNKNOWN.
+
+The `raw_label` is always kept.
 
 ## Run locally
 
@@ -29,6 +30,8 @@ Open [http://localhost:43217](http://localhost:43217).
 npm run build
 npm start
 ```
+
+Private payslips are stored in `data/payslips.json` locally (scoped to your session cookie). On Vercel that file lives in `/tmp`. A proper database is the next persistence step.
 
 ## Stack
 

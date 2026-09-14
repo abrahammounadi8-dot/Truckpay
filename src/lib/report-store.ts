@@ -18,11 +18,23 @@ function storePath() {
 async function readFromDisk(): Promise<DriverReport[]> {
   try {
     const raw = await readFile(storePath(), "utf8");
-    const parsed = JSON.parse(raw) as DriverReport[];
-    return Array.isArray(parsed) ? parsed : [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(isStoredReport);
   } catch {
     return [];
   }
+}
+
+function isStoredReport(value: unknown): value is DriverReport {
+  if (!value || typeof value !== "object") return false;
+  const report = value as DriverReport;
+  return (
+    typeof report.id === "string" &&
+    typeof report.companySlug === "string" &&
+    typeof report.weeklyPay === "number" &&
+    typeof report.submittedAt === "string"
+  );
 }
 
 async function writeToDisk(reports: DriverReport[]) {

@@ -3,18 +3,17 @@
 import Link from "next/link";
 import { CompanyMark } from "@/components/company-mark";
 import { PayGapBar } from "@/components/pay-gap-bar";
-import { StarRating } from "@/components/star-rating";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { equipmentLabels, formatCpm, homeTimeLabel, payGapPercent } from "@/lib/metrics";
+import { companyStats, equipmentLabels, operationLabels } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
 import type { Company } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function CompanyCard({ company }: { company: Company }) {
-  const { compareSlugs, toggleCompare } = useAppStore();
+  const { compareSlugs, toggleCompare, reports } = useAppStore();
   const selected = compareSlugs.includes(company.slug);
-  const gap = payGapPercent(company);
+  const stats = companyStats(company.slug, reports);
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
@@ -27,29 +26,28 @@ export function CompanyCard({ company }: { company: Company }) {
           >
             {company.name}
           </Link>
-          <p className="text-xs text-muted-foreground">
-            {company.headquarters} · {company.fleetSize.toLocaleString()} trucks
-          </p>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <StarRating value={company.reported.rating} />
-            <span className="text-xs text-muted-foreground">{company.reported.reviewCount} reports</span>
-          </div>
+          <p className="text-xs text-muted-foreground">{company.headquarters}</p>
+          {stats.count > 0 ? (
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              {stats.count} wage {stats.count === 1 ? "slip" : "slips"} on file
+            </p>
+          ) : (
+            <p className="mt-1.5 text-xs text-muted-foreground">Awaiting the first wage slip</p>
+          )}
         </div>
-        <Badge variant={gap >= 12 ? "destructive" : gap <= 8 ? "secondary" : "outline"}>
-          {gap}% short
-        </Badge>
       </div>
       <div className="flex-1 space-y-4 px-5 py-4">
-        <PayGapBar company={company} />
-        <dl className="grid grid-cols-3 gap-2 border-t border-dashed border-border pt-3 text-xs">
-          <Stat label="Ad CPM" value={formatCpm(company.advertised.cpm)} />
-          <Stat label="Real CPM" value={formatCpm(company.reported.cpm)} />
-          <Stat label="Home" value={homeTimeLabel(company.reported.homeTimeDaysOut)} />
-        </dl>
-        <div className="flex flex-wrap gap-1">
+        <p className="text-sm leading-6 text-muted-foreground">{company.summary}</p>
+        <PayGapBar stats={stats} />
+        <div className="flex flex-wrap gap-1 border-t border-dashed border-border pt-3">
           {company.equipment.map((item) => (
             <Badge key={item} variant="outline">
               {equipmentLabels[item]}
+            </Badge>
+          ))}
+          {company.operations.map((item) => (
+            <Badge key={item} variant="secondary">
+              {operationLabels[item]}
             </Badge>
           ))}
         </div>
@@ -63,14 +61,5 @@ export function CompanyCard({ company }: { company: Company }) {
         </Button>
       </div>
     </article>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-mono text-sm tabular-nums">{value}</dd>
-    </div>
   );
 }

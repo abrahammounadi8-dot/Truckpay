@@ -1,14 +1,33 @@
 import Link from "next/link";
 import { CompanyMark } from "@/components/company-mark";
-import { advertisedWeekly, formatMoney, payGapDollars, payGapPercent, reportedWeekly } from "@/lib/metrics";
+import { buttonVariants } from "@/components/ui/button";
+import { formatMoney, type CompanyStats } from "@/lib/metrics";
 import type { Company } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function SettlementStub({ company }: { company: Company }) {
-  const advertised = advertisedWeekly(company);
-  const reported = reportedWeekly(company);
-  const gap = payGapPercent(company);
-  const missing = payGapDollars(company);
+export function EmptyStub() {
+  return (
+    <div className="stub-paper rounded-xl p-5 text-foreground shadow-[0_18px_40px_-24px_rgba(20,28,40,0.55)] ring-1 ring-black/8">
+      <p className="text-[0.68rem] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+        Ireland · weekly settlement
+      </p>
+      <p className="mt-2 font-heading text-2xl font-semibold">No slips on the board yet</p>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        Truckpay does not invent reviews or take-home figures. The first Irish
+        driver to file a real wage slip opens this board.
+      </p>
+      <div className="mt-5 border-t border-dashed border-foreground/20 pt-4">
+        <Link href="/report" className={cn(buttonVariants(), "w-full")}>
+          File the first slip
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+export function SettlementStub({ company, stats }: { company: Company; stats: CompanyStats }) {
+  const missing = stats.gapEuro ?? 0;
+  const gap = stats.gapPercent ?? 0;
 
   return (
     <Link
@@ -26,21 +45,44 @@ export function SettlementStub({ company }: { company: Company }) {
           </div>
         </div>
         <span className="font-mono text-[0.65rem] tracking-wider text-muted-foreground uppercase">
-          Stub 00{gap}
+          {stats.count} {stats.count === 1 ? "slip" : "slips"}
         </span>
       </div>
-
       <dl className="mt-5 space-y-2 font-mono text-sm">
-        <Row label="Advertised CPM × miles" value={formatMoney(advertised)} muted />
-        <Row label="Drivers actually clear" value={formatMoney(reported)} />
-        <div className="my-3 border-t border-dashed border-foreground/20" />
-        <div className="flex items-baseline justify-between gap-3">
-          <dt className="text-xs tracking-wide text-pay-down uppercase">Missing this week</dt>
-          <dd className={cn("font-heading text-3xl font-semibold tabular-nums text-pay-down")}>
-            {formatMoney(missing)}
-          </dd>
-        </div>
-        <p className="pt-1 text-right text-xs text-muted-foreground">{gap}% under the recruiter number</p>
+        {stats.avgQuoted != null ? (
+          <Row label="Quoted weekly" value={formatMoney(stats.avgQuoted)} muted />
+        ) : null}
+        <Row label="Drivers actually clear" value={formatMoney(stats.avgWeekly ?? 0)} />
+        {stats.avgQuoted != null ? (
+          <>
+            <div className="my-3 border-t border-dashed border-foreground/20" />
+            <div className="flex items-baseline justify-between gap-3">
+              <dt
+                className={cn(
+                  "text-xs tracking-wide uppercase",
+                  missing > 0 ? "text-pay-down" : "text-pay-up",
+                )}
+              >
+                {missing > 0 ? "Short of the quote" : missing < 0 ? "Ahead of the quote" : "Matches the quote"}
+              </dt>
+              <dd
+                className={cn(
+                  "font-heading text-3xl font-semibold tabular-nums",
+                  missing > 0 ? "text-pay-down" : "text-pay-up",
+                )}
+              >
+                {formatMoney(Math.abs(missing))}
+              </dd>
+            </div>
+            <p className="pt-1 text-right text-xs text-muted-foreground">
+              {missing === 0 ? "From filed slips" : `${Math.abs(gap)}% ${missing > 0 ? "under" : "over"} the quote`}
+            </p>
+          </>
+        ) : (
+          <p className="pt-2 text-xs text-muted-foreground">
+            Average of driver-filed slips. No invented figures.
+          </p>
+        )}
       </dl>
     </Link>
   );

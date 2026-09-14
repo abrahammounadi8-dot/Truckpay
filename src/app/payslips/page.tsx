@@ -1,0 +1,39 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { PayslipList } from "@/components/payslip-list";
+import { WipeSession } from "@/components/wipe-session";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+export const metadata: Metadata = {
+  title: "My payslips",
+  description: "Privately check Irish haulage payslips. One slip is not assumed to be one week.",
+};
+
+export default function PayslipsPage() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-10">
+      <p className="text-[0.72rem] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+        Private ledger
+      </p>
+      <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">My payslips</h1>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+            Check whether the figures on a slip add up. Nothing here is published to the haulier
+            directory. Documents are not stored. Delete anytime.
+          </p>
+        </div>
+        <Link href="/payslips/new" className={cn(buttonVariants(), "bg-accent text-accent-foreground hover:bg-accent/90")}>
+          Check a payslip
+        </Link>
+      </div>
+      <div className="mt-8">
+        <PayslipList />
+      </div>
+      <div className="mt-10 border-t border-border pt-6">
+        <WipeSession />
+      </div>
+    </div>
+  );
+}
