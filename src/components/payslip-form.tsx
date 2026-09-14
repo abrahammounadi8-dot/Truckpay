@@ -107,20 +107,24 @@ export function PayslipForm() {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [allowances, setAllowances] = useState<Line[]>(() => [emptyLine("allowance-seed")]);
   const [deductions, setDeductions] = useState<Line[]>(() => [emptyLine("deduction-seed")]);
+  const [draftReady, setDraftReady] = useState(false);
 
   useEffect(() => {
     const draft = readDraft();
-    if (!draft) return;
-    /* eslint-disable react-hooks/set-state-in-effect -- restore session draft once after mount */
-    setForm(draft.form);
-    setAllowances(draft.allowances);
-    setDeductions(draft.deductions);
-    /* eslint-enable react-hooks/set-state-in-effect */
+    if (draft) {
+      /* eslint-disable react-hooks/set-state-in-effect -- restore session draft once after mount */
+      setForm(draft.form);
+      setAllowances(draft.allowances);
+      setDeductions(draft.deductions);
+      /* eslint-enable react-hooks/set-state-in-effect */
+    }
+    setDraftReady(true);
   }, []);
 
   useEffect(() => {
+    if (!draftReady) return;
     sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ form, allowances, deductions }));
-  }, [form, allowances, deductions]);
+  }, [draftReady, form, allowances, deductions]);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));

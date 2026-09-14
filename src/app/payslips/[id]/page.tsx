@@ -6,6 +6,7 @@ import { toPublicPayslip } from "@/lib/payroll/format";
 import { reconcilePayslip } from "@/lib/payroll/reconcile";
 import { detectPayslipAnomalies } from "@/lib/payroll/anomalies";
 import { readUserId } from "@/lib/payroll/session";
+import { hydratePayslip } from "@/lib/payroll/process";
 import { getPayslipForUser, listPayslipsForUser } from "@/lib/payroll/store";
 import { cn } from "@/lib/utils";
 
@@ -28,11 +29,12 @@ export default async function PayslipPage({
     );
   }
 
-  const payslip = await getPayslipForUser(userId, id);
-  if (!payslip) {
+  const payslipRaw = await getPayslipForUser(userId, id);
+  if (!payslipRaw) {
     return <MissingSlip message="This payslip is not on this device." />;
   }
 
+  const payslip = hydratePayslip(payslipRaw);
   const prior = await listPayslipsForUser(userId);
   const findings = reconcilePayslip(payslip, prior);
   const anomalies = detectPayslipAnomalies(payslip, prior, null);

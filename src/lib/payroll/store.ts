@@ -21,17 +21,19 @@ function storePath() {
 
 async function readAll(): Promise<Payslip[]> {
   const globalStore = globalThis as GlobalStore;
-  if (globalStore.truckpayPayslips) return globalStore.truckpayPayslips;
-  try {
-    const raw = await readFile(storePath(), "utf8");
-    const parsed = JSON.parse(raw) as Disk | Payslip[];
-    const list = Array.isArray(parsed) ? parsed : (parsed.payslips ?? []);
-    globalStore.truckpayPayslips = list.filter(isPayslip).map((slip) => hydratePayslip(ensureHash(slip)));
-    return globalStore.truckpayPayslips;
-  } catch {
-    globalStore.truckpayPayslips = [];
-    return [];
+  if (!globalStore.truckpayPayslips) {
+    try {
+      const raw = await readFile(storePath(), "utf8");
+      const parsed = JSON.parse(raw) as Disk | Payslip[];
+      const list = Array.isArray(parsed) ? parsed : (parsed.payslips ?? []);
+      globalStore.truckpayPayslips = list.filter(isPayslip).map(ensureHash);
+    } catch {
+      globalStore.truckpayPayslips = [];
+    }
   }
+  // Always re-hydrate so in-memory slips from before processing still get week/provenance.
+  globalStore.truckpayPayslips = globalStore.truckpayPayslips.map(hydratePayslip);
+  return globalStore.truckpayPayslips;
 }
 
 async function writeAll(payslips: Payslip[]) {

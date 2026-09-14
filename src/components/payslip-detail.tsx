@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { fleet } from "@/lib/data";
 import { formatEuro, formatEuroMaybe } from "@/lib/payroll/format";
+import { classifyWorkWeek } from "@/lib/payroll/week";
 import {
   ANOMALY_STATUS_LABELS,
   DEDUCTION_LABELS,
@@ -237,14 +238,17 @@ export function PayslipDetail({
 }
 
 function WeekBanner({ slip }: { slip: PublicPayslip }) {
-  const assignment = slip.weekAssignment;
-  if (!assignment) {
-    return (
-      <p className="rounded-xl border border-dashed border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-        Week not classified yet.
-      </p>
-    );
-  }
+  const assignment =
+    slip.weekAssignment ??
+    classifyWorkWeek({
+      countryCode: slip.countryCode,
+      weekNumber: slip.weekNumber,
+      paymentDate: slip.paymentDate,
+      payPeriodStart: slip.payPeriodStart,
+      payPeriodEnd: slip.payPeriodEnd,
+      employmentWeeks: slip.employmentWeeks,
+      payFrequency: slip.payFrequency,
+    });
   const title =
     assignment.weekNumber != null && assignment.year != null
       ? `Week ${assignment.weekNumber} of ${assignment.year}`
@@ -306,9 +310,11 @@ function ProvenanceItem({
     <div>
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className="font-mono tabular-nums">{display}</dd>
-      <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
-        {field ? WEEK_STATUS_LABELS[field.verification_status] : "Not on the document"}
-      </p>
+      {field ? (
+        <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+          {WEEK_STATUS_LABELS[field.verification_status]}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -338,3 +338,51 @@ describe("anomaly detection foundation", () => {
     assert.equal(rate?.status, "insufficient_data");
   });
 });
+
+describe("hydrate legacy slips", () => {
+  it("attaches week assignment and source provenance to slips stored before processing existed", () => {
+    const legacy: Payslip = {
+      id: "test-legacy-monthly",
+      userId: TEST_USER,
+      countryCode: "IE",
+      currency: "EUR",
+      employerSlug: "nolan",
+      paymentDate: "2026-09-04",
+      payPeriodStart: "2026-08-01",
+      payPeriodEnd: "2026-08-31",
+      payFrequency: "monthly",
+      employmentWeeks: 4,
+      basicHours: 160,
+      basicRate: 16.5,
+      basicPay: 2500,
+      overtimeHours: 12,
+      overtimeRate: 24.75,
+      overtimePay: 297,
+      allowances: [],
+      deductions: [],
+      grossPay: 2897,
+      netPay: 2100,
+      holidayPay: null,
+      weekNumber: null,
+      cumulativeGross: null,
+      cumulativeTax: null,
+      cumulativePrsi: null,
+      cumulativeUsc: null,
+      cumulativePension: null,
+      totalInsurableWeeks: null,
+      sourceDocumentId: null,
+      contentHash: "test-legacy-monthly",
+      extractionConfidence: 1,
+      reviewStatus: "extracted",
+      createdAt: "2026-09-14T00:00:00.000Z",
+    };
+    const hydrated = hydratePayslip(legacy);
+    assert.equal(hydrated.weekAssignment?.weekNumber, null);
+    assert.equal(hydrated.weekAssignment?.verification_status, "needs_review");
+    assert.match(hydrated.weekAssignment?.reason ?? "", /more than one week/i);
+    assert.equal(hydrated.provenance?.basicHours.verification_status, "source");
+    assert.equal(hydrated.provenance?.basicHours.value, 160);
+    assert.equal(hydrated.provenance?.hourlyRate.verification_status, "source");
+    assert.equal(hydrated.weeklyRecord?.expected.status, "calculated");
+  });
+});
