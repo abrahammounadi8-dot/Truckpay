@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { FileUpIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { fleet } from "@/lib/data";
@@ -108,6 +109,11 @@ export function PayslipForm() {
   const [allowances, setAllowances] = useState<Line[]>(() => [emptyLine("allowance-seed")]);
   const [deductions, setDeductions] = useState<Line[]>(() => [emptyLine("deduction-seed")]);
   const [draftReady, setDraftReady] = useState(false);
+  const [fileLabel, setFileLabel] = useState<string | null>(null);
+  const [fileNote, setFileNote] = useState<string | null>(null);
+  const [readingFile, setReadingFile] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const draft = readDraft();
@@ -128,6 +134,60 @@ export function PayslipForm() {
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function onPickFile(file: File | undefined) {
+    if (!file) return;
+    setReadingFile(true);
+    setError(null);
+    setFileNote(null);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/payslips/extract", {
+        method: "POST",
+        credentials: "same-origin",
+        body,
+      });
+      const data = (await res.json()) as {
+        error?: string;
+        fileLabel?: string;
+        message?: string;
+        fields?: Record<string, string | number | null>;
+        deductions?: { rawLabel: string; amount: number }[];
+        allowances?: { rawLabel: string; amount: number }[];
+      };
+      if (!res.ok) throw new Error(data.error ?? "Could not read that file.");
+      setFileLabel(data.fileLabel ?? file.name);
+      setFileNote(data.message ?? "File read. The original was not stored.");
+      applyExtracted(data.fields ?? {}, data.deductions ?? [], data.allowances ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not read that file.");
+    } finally {
+      setReadingFile(false);
+    }
+  }
+
+  function applyExtracted(
+    fields: Record<string, string | number | null>,
+    extractedDeductions: { rawLabel: string; amount: number }[],
+    extractedAllowances: { rawLabel: string; amount: number }[],
+  ) {
+    setForm((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(emptyForm) as (keyof FormState)[]) {
+        const value = fields[key];
+        if (value == null || value === "") continue;
+        (next as Record<string, string>)[key] = String(value);
+      }
+      return next;
+    });
+    if (extractedDeductions.length) {
+      setDeductions(extractedDeductions.map((line) => ({ key: crypto.randomUUID(), rawLabel: line.rawLabel, amount: String(line.amount) })));
+    }
+    if (extractedAllowances.length) {
+      setAllowances(extractedAllowances.map((line) => ({ key: crypto.randomUUID(), rawLabel: line.rawLabel, amount: String(line.amount) })));
+    }
   }
 
   async function onSubmit(event: React.FormEvent) {
@@ -171,11 +231,64 @@ export function PayslipForm() {
 
   return (
     <form onSubmit={onSubmit} autoComplete="off" className="space-y-8">
+      <section
+        className={`rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+          dragging ? "border-accent bg-accent/10" : "border-foreground/20 bg-card"
+        }`}
+        onDragEnter={(event) => {
+          event.preventDefault();
+          setDragging(true);
+        }}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(event) => {
+          event.preventDefault();
+          setDragging(false);
+          void onPickFile(event.dataTransfer.files[0]);
+        }}
+      >
+        <input
+          ref={fileInputRef}
+          id="payslip-file"
+          name="payslip-file"
+          type="file"
+          accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp"
+          className="sr-only"
+          onChange={(event) => {
+            void onPickFile(event.target.files?.[0]);
+            event.target.value = "";
+          }}
+        />
+        <FileUpIcon className="mx-auto size-10 text-accent" aria-hidden />
+        <h2 className="font-heading mt-3 text-2xl font-semibold">Put your payslip here</h2>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+          Pon la nómina aquí. Arrastra un PDF o una foto, o pulsa el botón. TruckPay lee el archivo y lo
+          descarta — no lo guarda.
+        </p>
+        <Button
+          type="button"
+          className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90"
+          disabled={readingFile}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {readingFile ? "Reading…" : "Choose PDF or photo"}
+        </Button>
+        {fileLabel ? (
+          <p className="mt-3 text-sm font-medium">
+            Attached: {fileLabel}
+            <span className="block text-xs font-normal text-muted-foreground">Not stored on the server</span>
+          </p>
+        ) : null}
+        {fileNote ? <p className="mt-2 text-sm text-muted-foreground">{fileNote}</p> : null}
+      </section>
+
       <p className="rounded-xl bg-card p-4 text-sm leading-6 text-muted-foreground ring-1 ring-foreground/10">
-        Type figures that actually appear on the slip. Leave a box blank if it is not printed — TruckPay
-        will store null and will not guess. TruckPay Verified Analysis needs your latest three unique
-        payslips. A payslip is not assumed to be one week. Duplicate dates and totals are rejected.
-        Documents are not stored.
+        After the file, check the boxes below. Leave a box blank if it is not printed — TruckPay will
+        store null and will not guess. TruckPay Verified Analysis needs your latest three unique
+        payslips. A payslip is not assumed to be one week.
       </p>
 
       <Section title="Who and when">
@@ -211,7 +324,6 @@ export function PayslipForm() {
               id="payPeriodStart"
               name="payPeriodStart"
               type="date"
-              required
               value={form.payPeriodStart}
               onChange={(event) => set("payPeriodStart", event.target.value)}
             />
@@ -221,7 +333,6 @@ export function PayslipForm() {
               id="payPeriodEnd"
               name="payPeriodEnd"
               type="date"
-              required
               value={form.payPeriodEnd}
               onChange={(event) => set("payPeriodEnd", event.target.value)}
             />

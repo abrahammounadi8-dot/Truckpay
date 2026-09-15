@@ -1,3 +1,241 @@
 {
-  "payslips": []
+  "payslips": [
+    {
+      "id": "a34497f1-9f45-4111-98d9-a051eb5ed394",
+      "userId": "1997e88c-9d07-4ee6-b0cf-76f300a2fe6f",
+      "countryCode": "IE",
+      "currency": "EUR",
+      "employerSlug": "nolan",
+      "paymentDate": "2026-09-04",
+      "payPeriodStart": "2026-08-01",
+      "payPeriodEnd": "2026-08-31",
+      "payFrequency": "monthly",
+      "employmentWeeks": 4,
+      "basicHours": 160,
+      "basicRate": 16.5,
+      "basicPay": 2500,
+      "overtimeHours": 12,
+      "overtimeRate": 24.75,
+      "overtimePay": 297,
+      "allowances": [],
+      "deductions": [
+        {
+          "rawLabel": "PAYE",
+          "amount": 420,
+          "normalizedCategory": "PAYE",
+          "statutoryClass": "statutory",
+          "confidenceScore": 0.95,
+          "needsReview": false
+        },
+        {
+          "rawLabel": "PRSI",
+          "amount": 110,
+          "normalizedCategory": "PRSI",
+          "statutoryClass": "statutory",
+          "confidenceScore": 0.95,
+          "needsReview": false
+        },
+        {
+          "rawLabel": "USC",
+          "amount": 67,
+          "normalizedCategory": "USC",
+          "statutoryClass": "statutory",
+          "confidenceScore": 0.95,
+          "needsReview": false
+        },
+        {
+          "rawLabel": "Yard locker fee",
+          "amount": 200,
+          "normalizedCategory": "UNKNOWN",
+          "statutoryClass": "unknown",
+          "confidenceScore": 0,
+          "needsReview": true
+        }
+      ],
+      "grossPay": 2897,
+      "netPay": 2100,
+      "cumulativeGross": null,
+      "cumulativeTax": null,
+      "totalInsurableWeeks": null,
+      "sourceDocumentId": null,
+      "extractionConfidence": 1,
+      "reviewStatus": "needs_review",
+      "createdAt": "2026-09-14T08:30:00.271Z",
+      "weekNumber": null,
+      "holidayPay": null,
+      "cumulativePrsi": null,
+      "cumulativeUsc": null,
+      "cumulativePension": null,
+      "weekAssignment": {
+        "countryCode": "IE",
+        "year": null,
+        "weekNumber": null,
+        "basis": "insufficient",
+        "derived": false,
+        "verification_status": "needs_review",
+        "confidence": 0,
+        "reason": "This payslip covers more than one week (frequency, insurable weeks, or period length). It is not assigned to a single week."
+      },
+      "provenance": {
+        "employer": {
+          "value": "nolan",
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "grossPay": {
+          "value": 2897,
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "netPay": {
+          "value": 2100,
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "basicHours": {
+          "value": 160,
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "overtimeHours": {
+          "value": 12,
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "hourlyRate": {
+          "value": 16.5,
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "overtimeRate": {
+          "value": 24.75,
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "allowances": {
+          "value": null,
+          "source": "unverified",
+          "derived": false,
+          "confidence": 0,
+          "verification_status": "unverified"
+        },
+        "tax": {
+          "value": 420,
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "prsi": {
+          "value": 110,
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "usc": {
+          "value": 67,
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "pension": {
+          "value": null,
+          "source": "unverified",
+          "derived": false,
+          "confidence": 0,
+          "verification_status": "unverified"
+        },
+        "otherDeductions": {
+          "value": 200,
+          "source": "derived",
+          "derived": true,
+          "confidence": 0.9,
+          "verification_status": "derived"
+        },
+        "holidayPay": {
+          "value": null,
+          "source": "unverified",
+          "derived": false,
+          "confidence": 0,
+          "verification_status": "unverified"
+        },
+        "weekNumber": {
+          "value": null,
+          "source": "unverified",
+          "derived": false,
+          "confidence": 0,
+          "verification_status": "needs_review"
+        },
+        "payPeriodStart": {
+          "value": "2026-08-01",
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "payPeriodEnd": {
+          "value": "2026-08-31",
+          "source": "source",
+          "derived": false,
+          "confidence": 1,
+          "verification_status": "source"
+        },
+        "yearToDate": {
+          "value": null,
+          "source": "unverified",
+          "derived": false,
+          "confidence": 0,
+          "verification_status": "unverified"
+        }
+      },
+      "weeklyRecord": {
+        "payslipId": "a34497f1-9f45-4111-98d9-a051eb5ed394",
+        "countryCode": "IE",
+        "year": null,
+        "weekNumber": null,
+        "weekAssigned": false,
+        "actual": {
+          "grossPay": 2897,
+          "netPay": 2100,
+          "basicHours": 160,
+          "overtimeHours": 12,
+          "hourlyRate": 16.5,
+          "overtimeRate": 24.75,
+          "holidayPay": null,
+          "allowancesTotal": null
+        },
+        "expected": {
+          "grossPay": 2937,
+          "status": "calculated",
+          "derived": true,
+          "reason": "Derived from source hours × rates plus listed allowances. Holiday pay was not a separate printed figure and is not assumed. This figure was not printed on the payslip.",
+          "components": {
+            "basic": 2640,
+            "overtime": 297,
+            "allowances": 0,
+            "holidayPay": null
+          }
+        },
+        "comparable": false,
+        "variance": -40,
+        "varianceNote": "Actual gross differs from derived expected gross. Difference is not classified as employer wrongdoing."
+      }
+    }
+  ]
 }

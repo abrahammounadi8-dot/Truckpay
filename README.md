@@ -12,7 +12,7 @@ TruckPay does **not** invent reviews, ratings or pay figures. Missing payroll fi
 
 ## Three layers
 
-1. **My TruckPay** (`/payslips`, `/analysis`, `/profile`) — private workspace. Type figures from each new slip. **TruckPay Verified Analysis** needs **three unique payslips** with pay date and period. Duplicates are rejected. Identity is a random UUID, not a PPSN or licence. Employment start dates you type are labelled “not document-verified”.
+1. **My TruckPay** (`/payslips`, `/analysis`, `/profile`) — private workspace. Drop a payslip PDF or photo at **Add a payslip**, then check the figures. The file is read and discarded (not stored). Photos still need typed figures. **TruckPay Verified Analysis** needs **three unique payslips** with pay date and period. Duplicates are rejected. Identity is a random UUID, not a PPSN or licence. Employment start dates you type are labelled “not document-verified”.
 2. **TruckPay Companies** (`/companies`) — public haulier directory plus salary intelligence. **Driver reported** stubs and **payroll verified** medians are labelled separately and are not equivalent evidence. Medians need sample size (3+ drivers in a cell). Confidence is Low / Medium / High from published rules — not an arbitrary score. Never “Company X pays €1,000/week”.
 3. **Companies & recruiters** — not built. Architecture leaves room for company/recruiter accounts later. They must never see an individual driver’s private slips or identity.
 

@@ -39,8 +39,8 @@ export function PayslipList() {
           Check the first of three unique slips. It is not posted to the public board.
         </p>
         <Link href="/payslips/new" className={cn(buttonVariants(), "mt-5 inline-flex")}>
-          Check a payslip
-        </Link>
+            Add a payslip
+          </Link>
       </div>
     );
   }

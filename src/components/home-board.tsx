@@ -65,7 +65,7 @@ export function HomeBoard() {
                 href="/payslips/new"
                 className={cn(buttonVariants({ size: "lg" }), "bg-accent text-accent-foreground hover:bg-accent/90")}
               >
-                Check my pay
+                Add a payslip
               </Link>
               <Link
                 href="/companies"

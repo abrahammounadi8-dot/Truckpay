@@ -58,7 +58,7 @@ export function SiteHeader() {
               "hidden bg-accent text-accent-foreground hover:bg-accent/90 sm:inline-flex",
             )}
           >
-            Check my pay
+            Add a payslip
           </Link>
           <Button
             variant="ghost"
