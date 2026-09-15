@@ -45,6 +45,9 @@ describe("i18n dictionaries", () => {
 
 describe("i18n persist", () => {
   it("stores the language in a cookie and localStorage", () => {
+    const oldDocument = Object.getOwnPropertyDescriptor(globalThis, "document");
+    const oldWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+    try {
     const store: Record<string, string> = {};
     const html = { lang: "" };
     globalThis.document = {
@@ -64,5 +67,9 @@ describe("i18n persist", () => {
     assert.match(String(document.cookie), /tp_lang=ru/);
     assert.equal(html.lang, "ru");
     assert.equal(readStoredLocale(), "ru");
+    } finally {
+      if (oldDocument) Object.defineProperty(globalThis, "document", oldDocument); else Reflect.deleteProperty(globalThis, "document");
+      if (oldWindow) Object.defineProperty(globalThis, "window", oldWindow); else Reflect.deleteProperty(globalThis, "window");
+    }
   });
 });

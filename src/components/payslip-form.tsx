@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileUpIcon } from "lucide-react";
-import { useT } from "@/components/language-provider";
+import { useT, useUiCopy } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { frequencyMessageKey } from "@/lib/i18n";
@@ -49,6 +49,7 @@ function readDraft(): { form: FormState; allowances: Line[]; deductions: Line[] 
 export function PayslipForm() {
   const router = useRouter();
   const { t } = useT();
+  const tr = useUiCopy();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -102,6 +103,17 @@ export function PayslipForm() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  function applyExtracted(
+    fields: Record<string, string | number | null>,
+    extractedDeductions: { rawLabel: string; amount: number }[],
+    extractedAllowances: { rawLabel: string; amount: number }[],
+  ) {
+    const draft = draftFromExtraction(fields, extractedDeductions, extractedAllowances);
+    setForm(draft.form);
+    setDeductions(draft.deductions);
+    setAllowances(draft.allowances);
+  }
+
   async function onPickFile(file: File | undefined) {
     if (!file || fileReadLock.current || pending) return;
     fileReadLock.current = true;
@@ -121,6 +133,7 @@ export function PayslipForm() {
         kind?: string;
         fileLabel?: string;
         message?: string;
+        filledKeys?: string[];
         fields?: Record<string, string | number | null>;
         deductions?: { rawLabel: string; amount: number }[];
         allowances?: { rawLabel: string; amount: number }[];
@@ -129,7 +142,10 @@ export function PayslipForm() {
       if (data.kind === "unsupported") throw new Error(data.message ?? t("form.readError"));
       replacePhotoPreview(file);
       setFileLabel(data.fileLabel ?? file.name);
-      setFileNote(data.message ?? t("form.fileRead"));
+      const fieldCount = data.filledKeys?.length ?? 0;
+      setFileNote(fieldCount
+        ? `Read ${fieldCount} labelled fields. Check every value; missing figures are not guessed. The original file is not retained.`
+        : "No labelled figures could be read. Enter the printed values. The original file is not retained.");
       applyExtracted(data.fields ?? {}, data.deductions ?? [], data.allowances ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("form.readError"));
@@ -140,7 +156,9 @@ export function PayslipForm() {
   }
 
   const onPickFileRef = useRef(onPickFile);
-  onPickFileRef.current = onPickFile;
+  useEffect(() => {
+    onPickFileRef.current = onPickFile;
+  });
 
   useEffect(() => {
     const el = fileInputRef.current;
@@ -152,17 +170,6 @@ export function PayslipForm() {
     el.addEventListener("change", onChange);
     return () => el.removeEventListener("change", onChange);
   }, []);
-
-  function applyExtracted(
-    fields: Record<string, string | number | null>,
-    extractedDeductions: { rawLabel: string; amount: number }[],
-    extractedAllowances: { rawLabel: string; amount: number }[],
-  ) {
-    const draft = draftFromExtraction(fields, extractedDeductions, extractedAllowances);
-    setForm(draft.form);
-    setDeductions(draft.deductions);
-    setAllowances(draft.allowances);
-  }
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -260,7 +267,7 @@ export function PayslipForm() {
             <span className="block text-xs font-normal text-muted-foreground">{t("form.notStored")}</span>
           </p>
         ) : null}
-        {fileNote ? <p className="mt-2 text-sm text-muted-foreground">{fileNote}</p> : null}
+        {fileNote ? <p className="mt-2 text-sm text-muted-foreground">{tr(fileNote)}</p> : null}
       </section>
 
       <p className="rounded-xl bg-card p-4 text-sm leading-6 text-muted-foreground ring-1 ring-foreground/10">
@@ -437,7 +444,7 @@ export function PayslipForm() {
       </Section>
 
       </fieldset>
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p className="text-sm text-destructive">{tr(error)}</p> : null}
       <Button type="submit" disabled={pending || readingFile} className="bg-accent text-accent-foreground hover:bg-accent/90">
         {pending ? t("form.checking") : t("form.check")}
       </Button>

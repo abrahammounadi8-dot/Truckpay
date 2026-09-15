@@ -1,3 +1,4 @@
+import { DuplicatePayslipError } from "@/lib/persistence/documents";
 import { parsePayslipInput, toStoredPayslip } from "@/lib/payroll/parse";
 import { findDuplicate, hashFromInput } from "@/lib/payroll/fingerprint";
 import { publicError } from "@/lib/payroll/privacy";
@@ -32,7 +33,12 @@ export async function POST(request: Request) {
   }
 
   const userId = await getOrCreateUserId();
-  const existing = await listPayslipsForUser(userId);
+  let existing: Awaited<ReturnType<typeof listPayslipsForUser>>;
+  try {
+    existing = await listPayslipsForUser(userId);
+  } catch {
+    return Response.json(publicError("Could not save"), { status: 503 });
+  }
   const duplicate = findDuplicate(existing, hashFromInput(parsed.input));
   if (duplicate) {
     return Response.json(
@@ -44,7 +50,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const payslip = await savePayslip(toStoredPayslip(userId, parsed.input));
+  let payslip;
+  try {
+    payslip = await savePayslip(toStoredPayslip(userId, parsed.input));
+  } catch (error) {
+    if (error instanceof DuplicatePayslipError) return Response.json(publicError("That payslip has already been saved."), { status: 409 });
+    return Response.json(publicError("Could not save"), { status: 503 });
+  }
   const have = existing.length + 1;
   return Response.json(
     {

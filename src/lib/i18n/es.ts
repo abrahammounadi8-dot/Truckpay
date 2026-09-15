@@ -251,7 +251,7 @@ export const es: Messages = {
     p1: "TruckPay separa identidad y nómina. Te identifica un UUID aleatorio en este dispositivo — no un PPSN, permiso de conducir ni número de empleado.",
     p2: "Cinco capas se mantienen aparte:",
     l1: "Cuenta / identidad — solo el UUID aleatorio.",
-    l2: "Documentos originales — no se suben; la retención por defecto es procesar y borrar.",
+    l2: "Los documentos se suben para extraer los datos. Los archivos temporales de lectura se eliminan tras procesarlos; no se conservan los originales.",
     l3: "Nómina extraída — cifras que escribes, privadas en Mi TruckPay.",
     l4: "Nómina normalizada — categorías y equivalentes semanales para tu análisis.",
     l5: "Datos analíticos agregados — medianas y tamaños de muestra para TruckPay Empresas, sin identidad del conductor. Es agregación seudonimizada, no una afirmación de anonimato.",

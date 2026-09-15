@@ -12,6 +12,8 @@ import {
   type MessageKey,
 } from "@/lib/i18n";
 
+import { translateUi } from "@/lib/i18n/ui-copy";
+
 type Translate = (key: MessageKey, vars?: Record<string, string | number>) => string;
 
 type LanguageContextValue = {
@@ -60,4 +62,9 @@ export function useT(): LanguageContextValue {
   const ctx = useContext(LanguageContext);
   if (!ctx) throw new Error("useT must be used within LanguageProvider");
   return ctx;
+}
+
+export function useUiCopy() {
+  const { locale } = useT();
+  return useCallback((text: string, vars?: Record<string, string | number>) => translateUi(locale, text, vars), [locale]);
 }

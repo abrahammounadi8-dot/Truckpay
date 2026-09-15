@@ -1,4 +1,5 @@
 "use client";
+import { useUiCopy } from "@/components/language-provider";
 
 import Link from "next/link";
 import { CompanyMark } from "@/components/company-mark";
@@ -11,6 +12,7 @@ import type { Company } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function CompanyCard({ company }: { company: Company }) {
+  const tr = useUiCopy();
   const { compareSlugs, toggleCompare, reports } = useAppStore();
   const selected = compareSlugs.includes(company.slug);
   const stats = companyStats(company.slug, reports);
@@ -29,10 +31,10 @@ export function CompanyCard({ company }: { company: Company }) {
           <p className="text-xs text-muted-foreground">{company.headquarters}</p>
           {stats.count > 0 ? (
             <p className="mt-1.5 text-xs text-muted-foreground">
-              {stats.count} wage {stats.count === 1 ? "slip" : "slips"} on file
+              {tr("Saved slips: {n}", { n: stats.count })}
             </p>
           ) : (
-            <p className="mt-1.5 text-xs text-muted-foreground">Awaiting the first wage slip</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">{tr("Awaiting the first wage slip")}</p>
           )}
         </div>
       </div>
@@ -42,22 +44,20 @@ export function CompanyCard({ company }: { company: Company }) {
         <div className="flex flex-wrap gap-1 border-t border-dashed border-border pt-3">
           {company.equipment.map((item) => (
             <Badge key={item} variant="outline">
-              {equipmentLabels[item]}
+              {tr(equipmentLabels[item])}
             </Badge>
           ))}
           {company.operations.map((item) => (
             <Badge key={item} variant="secondary">
-              {operationLabels[item]}
+              {tr(operationLabels[item])}
             </Badge>
           ))}
         </div>
       </div>
       <div className="flex gap-2 border-t border-border bg-muted/40 px-5 py-3">
-        <Link href={`/companies/${company.slug}`} className={cn(buttonVariants({ size: "sm" }), "flex-1")}>
-          Open file
-        </Link>
+        <Link href={`/companies/${company.slug}`} className={cn(buttonVariants({ size: "sm" }), "flex-1")}>{tr("Open file")}</Link>
         <Button size="sm" variant={selected ? "secondary" : "outline"} onClick={() => toggleCompare(company.slug)}>
-          {selected ? "In compare" : "Compare"}
+          {selected ? tr("In compare") : tr("Compare")}
         </Button>
       </div>
     </article>

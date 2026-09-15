@@ -1,8 +1,11 @@
+"use client";
+import { useUiCopy } from "@/components/language-provider";
 import { Badge } from "@/components/ui/badge";
 import { equipmentLabels, formatMoney, formatNumber, operationLabels, payTypeLabels } from "@/lib/metrics";
 import type { DriverReport } from "@/lib/types";
 
 export function ReviewCard({ review }: { review: DriverReport }) {
+  const tr = useUiCopy();
   return (
     <article className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -18,15 +21,15 @@ export function ReviewCard({ review }: { review: DriverReport }) {
         </div>
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <Badge variant="outline">{payTypeLabels[review.payType]}</Badge>
-        <Badge variant="secondary">{equipmentLabels[review.equipment]}</Badge>
-        <Badge variant="outline">{operationLabels[review.operation]}</Badge>
+        <Badge variant="outline">{tr(payTypeLabels[review.payType])}</Badge>
+        <Badge variant="secondary">{tr(equipmentLabels[review.equipment])}</Badge>
+        <Badge variant="outline">{tr(operationLabels[review.operation])}</Badge>
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         <div>
           <dt className="text-xs text-muted-foreground">Quoted weekly</dt>
           <dd className="font-medium">
-            {review.quotedWeekly != null ? formatMoney(review.quotedWeekly) : "Not given"}
+            {review.quotedWeekly != null ? formatMoney(review.quotedWeekly) : tr("Not given")}
           </dd>
         </div>
         <div>
@@ -42,7 +45,7 @@ export function ReviewCard({ review }: { review: DriverReport }) {
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Hours / week</dt>
+          <dt className="text-xs text-muted-foreground">{tr("Hours / week")}</dt>
           <dd className="font-medium">{review.hoursPerWeek}</dd>
         </div>
       </dl>

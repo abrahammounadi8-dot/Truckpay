@@ -32,6 +32,10 @@ export async function PUT(request: Request) {
   }
   const userId = await getOrCreateUserId();
   const asOf = new Date().toISOString().slice(0, 10);
-  const profile = await saveProfile(toStoredProfile(userId, parsed.input, asOf));
-  return Response.json({ profile: stripUser(profile) });
+  try {
+    const profile = await saveProfile(toStoredProfile(userId, parsed.input, asOf));
+    return Response.json({ profile: stripUser(profile) });
+  } catch {
+    return Response.json({ error: "Could not save" }, { status: 503 });
+  }
 }

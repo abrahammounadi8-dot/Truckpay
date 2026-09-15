@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start --port 43217 --hostname 0.0.0.0",
     "lint": "eslint",
-    "test": "tsx --test src/lib/payroll/*.test.ts src/lib/i18n/*.test.ts"
+    "test": "tsx --test src/lib/payroll/*.test.ts src/lib/i18n/*.test.ts src/lib/persistence/*.test.ts",
+    "db:migrate": "node scripts/migrate-db.mjs",
+    "db:import": "tsx scripts/import-payroll.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -15,6 +17,7 @@
     "cn": "^0.3.0",
     "lucide-react": "^1.45.0",
     "next": "16.3.5",
+    "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "shadcn": "^4.21.0",
@@ -22,8 +25,10 @@
     "unpdf": "^1.8.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
