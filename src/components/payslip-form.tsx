@@ -193,6 +193,20 @@ export function PayslipForm() {
     }
   }
 
+  const onPickFileRef = useRef(onPickFile);
+  onPickFileRef.current = onPickFile;
+
+  useEffect(() => {
+    const el = fileInputRef.current;
+    if (!el) return;
+    const onChange = () => {
+      const file = el.files?.[0];
+      if (file) void onPickFileRef.current(file);
+    };
+    el.addEventListener("change", onChange);
+    return () => el.removeEventListener("change", onChange);
+  }, []);
+
   function applyExtracted(
     fields: Record<string, string | number | null>,
     extractedDeductions: { rawLabel: string; amount: number }[],
@@ -303,10 +317,6 @@ export function PayslipForm() {
             accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp"
             disabled={readingFile}
             className="max-w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void onPickFile(file);
-            }}
           />
         </label>
         {fileLabel ? (
