@@ -4,14 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { MenuIcon, XIcon } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useT } from "@/components/language-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/payslips", label: "My TruckPay", match: ["/payslips", "/profile"] },
-  { href: "/companies", label: "Companies", match: ["/companies", "/rankings"] },
-  { href: "/analysis", label: "Analysis", match: ["/analysis"] },
-  { href: "/compare", label: "Compare", match: ["/compare"] },
+  { href: "/payslips", key: "nav.myTruckPay" as const, match: ["/payslips", "/profile"] },
+  { href: "/companies", key: "nav.companies" as const, match: ["/companies", "/rankings"] },
+  { href: "/analysis", key: "nav.analysis" as const, match: ["/analysis"] },
+  { href: "/compare", key: "nav.compare" as const, match: ["/compare"] },
 ];
 
 function isActive(pathname: string, match: string[]) {
@@ -21,10 +23,11 @@ function isActive(pathname: string, match: string[]) {
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { t } = useT();
 
   return (
     <header className="sticky top-0 z-40 bg-primary text-primary-foreground">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4">
         <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
           <span className="flex size-8 items-center justify-center rounded-md bg-accent text-[0.7rem] font-bold tracking-wide text-accent-foreground">
             TP
@@ -45,12 +48,15 @@ export function SiteHeader() {
                     : "text-primary-foreground/70 hover:bg-primary-foreground/8 hover:text-primary-foreground",
                 )}
               >
-                {link.label}
+                {t(link.key)}
               </Link>
             );
           })}
         </nav>
         <div className="flex items-center gap-2">
+          <div className="hidden sm:block">
+            <LanguageSwitcher compact />
+          </div>
           <Link
             href="/payslips/new"
             className={cn(
@@ -58,13 +64,13 @@ export function SiteHeader() {
               "hidden bg-accent text-accent-foreground hover:bg-accent/90 sm:inline-flex",
             )}
           >
-            Add a payslip
+            {t("nav.addPayslip")}
           </Link>
           <Button
             variant="ghost"
             size="icon"
             className="text-primary-foreground hover:bg-primary-foreground/10 md:hidden"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}
             onClick={() => setOpen((value) => !value)}
           >
             {open ? <XIcon /> : <MenuIcon />}
@@ -81,9 +87,19 @@ export function SiteHeader() {
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2 text-sm font-medium text-primary-foreground/85 hover:bg-primary-foreground/10"
               >
-                {link.label}
+                {t(link.key)}
               </Link>
             ))}
+            <Link
+              href="/payslips/new"
+              onClick={() => setOpen(false)}
+              className="rounded-md px-3 py-2 text-sm font-medium text-accent"
+            >
+              {t("nav.addPayslip")}
+            </Link>
+            <div className="px-3 py-2 sm:hidden">
+              <LanguageSwitcher />
+            </div>
           </div>
         </nav>
       ) : null}

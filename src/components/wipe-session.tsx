@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 
 export function WipeSession() {
   const router = useRouter();
+  const { t } = useT();
   const [pending, setPending] = useState(false);
 
   async function onWipe() {
@@ -19,7 +21,7 @@ export function WipeSession() {
 
   return (
     <Button type="button" variant="outline" size="sm" disabled={pending} onClick={onWipe}>
-      {pending ? "Wiping…" : "Delete my payslips on this device"}
+      {pending ? t("wipe.wiping") : t("wipe.label")}
     </Button>
   );
 }

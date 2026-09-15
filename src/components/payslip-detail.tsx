@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/components/language-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { employerLabel } from "@/lib/payroll/employer";
 import { formatEuro, formatEuroMaybe } from "@/lib/payroll/format";
+import { frequencyMessageKey } from "@/lib/i18n";
 import { classifyWorkWeek } from "@/lib/payroll/week";
 import {
   ANOMALY_STATUS_LABELS,
   DEDUCTION_LABELS,
-  FREQUENCY_LABELS,
   WEEK_STATUS_LABELS,
   type Anomaly,
   type Epistemic,
@@ -23,12 +24,6 @@ import { cn } from "@/lib/utils";
 
 type PublicPayslip = Omit<Payslip, "userId">;
 
-const epistemicLabel: Record<Epistemic, string> = {
-  fact: "Fact",
-  inference: "Inference",
-  unknown: "Unknown",
-};
-
 export function PayslipDetail({
   slip,
   findings,
@@ -39,6 +34,7 @@ export function PayslipDetail({
   anomalies?: Anomaly[];
 }) {
   const router = useRouter();
+  const { t } = useT();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,9 +51,9 @@ export function PayslipDetail({
         return;
       }
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
-      setError(data?.error ?? "Could not delete this slip.");
+      setError(data?.error ?? t("detail.deleteError"));
     } catch {
-      setError("Could not delete this slip.");
+      setError(t("detail.deleteError"));
     }
     setPending(false);
   }
@@ -69,20 +65,20 @@ export function PayslipDetail({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[0.72rem] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-            Private · Ireland
+            {t("detail.kicker")}
           </p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight">Paid {slip.paymentDate}</h1>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight">{t("detail.paid", { date: slip.paymentDate })}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {FREQUENCY_LABELS[slip.payFrequency]}
-            {employer ? ` · ${employer}` : " · employer not on the slip"}
+            {t(frequencyMessageKey(slip.payFrequency))}
+            {employer ? ` · ${employer}` : ` · ${t("detail.employerMissing")}`}
             {slip.payPeriodStart && slip.payPeriodEnd
               ? ` · ${slip.payPeriodStart} → ${slip.payPeriodEnd}`
               : ""}
-            {slip.weekNumber != null ? ` · printed week ${slip.weekNumber}` : ""}
+            {slip.weekNumber != null ? ` · ${t("detail.printedWeek", { n: slip.weekNumber })}` : ""}
           </p>
         </div>
         <Button variant="outline" size="sm" disabled={pending} onClick={onDelete}>
-          {pending ? "Deleting…" : "Delete this slip"}
+          {pending ? t("detail.deleting") : t("detail.deleteSlip")}
         </Button>
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -91,35 +87,33 @@ export function PayslipDetail({
 
       <div className="stub-paper rounded-xl p-5 ring-1 ring-foreground/10">
         <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-          Net on this slip
+          {t("detail.netOnSlip")}
         </p>
         <p className="font-heading mt-1 text-5xl font-semibold tabular-nums">
           {formatEuroMaybe(slip.netPay)}
         </p>
         <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-          <Item label="Gross" value={formatEuroMaybe(slip.grossPay)} />
-          <Item label="Basic pay" value={formatEuroMaybe(slip.basicPay)} />
-          <Item label="Overtime pay" value={formatEuroMaybe(slip.overtimePay)} />
+          <Item label={t("detail.gross")} value={formatEuroMaybe(slip.grossPay)} />
+          <Item label={t("detail.basicPay")} value={formatEuroMaybe(slip.basicPay)} />
+          <Item label={t("detail.overtimePay")} value={formatEuroMaybe(slip.overtimePay)} />
           <Item
-            label="Insurable weeks"
+            label={t("detail.insurableWeeks")}
             value={slip.employmentWeeks != null ? String(slip.employmentWeeks) : "—"}
           />
         </dl>
       </div>
 
       <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
-        <h2 className="font-heading text-xl font-semibold">Hours and rates</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Figures below are from the document unless marked derived. Blank fields stay blank — TruckPay does not guess.
-        </p>
+        <h2 className="font-heading text-xl font-semibold">{t("detail.hoursRates")}</h2>
+        <p className="mt-1 text-xs text-muted-foreground">{t("detail.hoursHelp")}</p>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-          <ProvenanceItem label="Basic hours" field={slip.provenance?.basicHours} fallback={n(slip.basicHours)} />
-          <ProvenanceItem label="Basic rate" field={slip.provenance?.hourlyRate} fallback={formatEuroMaybe(slip.basicRate)} money />
-          <Item label="Basic pay" value={formatEuroMaybe(slip.basicPay)} />
-          <ProvenanceItem label="Overtime hours" field={slip.provenance?.overtimeHours} fallback={n(slip.overtimeHours)} />
-          <ProvenanceItem label="Overtime rate" field={slip.provenance?.overtimeRate} fallback={formatEuroMaybe(slip.overtimeRate)} money />
-          <Item label="Overtime pay" value={formatEuroMaybe(slip.overtimePay)} />
-          <ProvenanceItem label="Holiday pay" field={slip.provenance?.holidayPay} fallback={formatEuroMaybe(slip.holidayPay ?? null)} money />
+          <ProvenanceItem label={t("form.basicHours")} field={slip.provenance?.basicHours} fallback={n(slip.basicHours)} />
+          <ProvenanceItem label={t("form.basicRate")} field={slip.provenance?.hourlyRate} fallback={formatEuroMaybe(slip.basicRate)} money />
+          <Item label={t("detail.basicPay")} value={formatEuroMaybe(slip.basicPay)} />
+          <ProvenanceItem label={t("form.overtimeHours")} field={slip.provenance?.overtimeHours} fallback={n(slip.overtimeHours)} />
+          <ProvenanceItem label={t("form.overtimeRate")} field={slip.provenance?.overtimeRate} fallback={formatEuroMaybe(slip.overtimeRate)} money />
+          <Item label={t("detail.overtimePay")} value={formatEuroMaybe(slip.overtimePay)} />
+          <ProvenanceItem label={t("form.holidayPay")} field={slip.provenance?.holidayPay} fallback={formatEuroMaybe(slip.holidayPay ?? null)} money />
           <ProvenanceItem label="Tax (PAYE lines)" field={slip.provenance?.tax} fallback="—" money />
           <ProvenanceItem label="PRSI" field={slip.provenance?.prsi} fallback="—" money />
           <ProvenanceItem label="USC" field={slip.provenance?.usc} fallback="—" money />
@@ -135,16 +129,19 @@ export function PayslipDetail({
 
       <ExpectedPay record={slip.weeklyRecord} />
 
-      <Lines title="Allowances" rows={slip.allowances.map((line) => ({
+      <Lines
+        title={t("detail.allowances")}
+        noneEntered={t("detail.noneEntered")}
+        rows={slip.allowances.map((line) => ({
         label: line.rawLabel,
         amount: line.amount,
-        meta: line.needsReview ? "Needs review" : line.normalizedCategory,
+        meta: line.needsReview ? t("detail.needsReview") : line.normalizedCategory,
       }))} />
 
       <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
-        <h2 className="font-heading text-xl font-semibold">Deductions</h2>
+        <h2 className="font-heading text-xl font-semibold">{t("detail.deductions")}</h2>
         {slip.deductions.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">None entered.</p>
+          <p className="mt-3 text-sm text-muted-foreground">{t("detail.noneEntered")}</p>
         ) : (
           <ul className="mt-3 divide-y divide-border">
             {slip.deductions.map((line) => (
@@ -153,7 +150,7 @@ export function PayslipDetail({
                   <p className="text-sm font-medium">{line.rawLabel}</p>
                   <p className="text-xs text-muted-foreground">
                     {DEDUCTION_LABELS[line.normalizedCategory]} · {line.statutoryClass.replaceAll("_", " ")}
-                    {line.needsReview ? " · needs review" : ""}
+                    {line.needsReview ? ` · ${t("detail.needsReview")}` : ""}
                   </p>
                 </div>
                 <p className="font-mono text-sm tabular-nums">{formatEuro(line.amount)}</p>
@@ -164,14 +161,11 @@ export function PayslipDetail({
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-heading text-2xl font-semibold">Anomaly watch</h2>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Confirmed only with enough evidence. Otherwise TruckPay uses possible anomaly, needs review, or
-          insufficient data. Nothing here is an accusation.
-        </p>
+        <h2 className="font-heading text-2xl font-semibold">{t("detail.anomalyTitle")}</h2>
+        <p className="max-w-2xl text-sm text-muted-foreground">{t("detail.anomalyLead")}</p>
         {anomalies.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border bg-card px-5 py-8 text-sm text-muted-foreground">
-            No anomaly flags on the figures you entered.
+            {t("detail.noAnomalies")}
           </p>
         ) : (
           <ul className="space-y-3">
@@ -191,14 +185,11 @@ export function PayslipDetail({
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-heading text-2xl font-semibold">Checks</h2>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Every note is labelled Fact, Inference, or Unknown, with the figures it used. Truckpay does
-          not accuse an employer of wrongdoing from an anomaly.
-        </p>
+        <h2 className="font-heading text-2xl font-semibold">{t("detail.checks")}</h2>
+        <p className="max-w-2xl text-sm text-muted-foreground">{t("detail.checksLead")}</p>
         {findings.length === 0 ? (
           <p className="rounded-xl border border-dashed border-border bg-card px-5 py-8 text-sm text-muted-foreground">
-            No arithmetic gaps or unknown labels on the figures you entered.
+            {t("detail.noChecks")}
           </p>
         ) : (
           <ul className="space-y-3">
@@ -206,7 +197,7 @@ export function PayslipDetail({
               <li key={finding.id} className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={finding.epistemic === "fact" ? "default" : finding.epistemic === "unknown" ? "destructive" : "secondary"}>
-                    {epistemicLabel[finding.epistemic]}
+                    {t(epistemicKey(finding.epistemic))}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     confidence {Math.round(finding.confidence * 100)}%
@@ -229,13 +220,14 @@ export function PayslipDetail({
       </section>
 
       <Link href="/payslips" className={cn(buttonVariants({ variant: "outline" }))}>
-        Back to my slips
+        {t("detail.back")}
       </Link>
     </div>
   );
 }
 
 function WeekBanner({ slip }: { slip: PublicPayslip }) {
+  const { t } = useT();
   const assignment =
     slip.weekAssignment ??
     classifyWorkWeek({
@@ -249,8 +241,8 @@ function WeekBanner({ slip }: { slip: PublicPayslip }) {
     });
   const title =
     assignment.weekNumber != null && assignment.year != null
-      ? `Week ${assignment.weekNumber} of ${assignment.year}`
-      : "Week not assigned";
+      ? t("detail.weekOf", { n: assignment.weekNumber, year: assignment.year })
+      : t("payslips.weekNotAssigned");
   return (
     <section className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
       <div className="flex flex-wrap items-center gap-2">
@@ -258,7 +250,7 @@ function WeekBanner({ slip }: { slip: PublicPayslip }) {
         <Badge variant={assignment.verification_status === "source" ? "default" : assignment.verification_status === "derived" ? "secondary" : "destructive"}>
           {WEEK_STATUS_LABELS[assignment.verification_status]}
         </Badge>
-        {assignment.derived ? <span className="text-xs text-muted-foreground">Derived — not printed as a week number</span> : null}
+        {assignment.derived ? <span className="text-xs text-muted-foreground">{t("detail.derivedNotPrinted")}</span> : null}
       </div>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{assignment.reason}</p>
     </section>
@@ -266,21 +258,19 @@ function WeekBanner({ slip }: { slip: PublicPayslip }) {
 }
 
 function ExpectedPay({ record }: { record: PublicPayslip["weeklyRecord"] }) {
+  const { t } = useT();
   if (!record) return null;
   return (
     <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
-      <h2 className="font-heading text-xl font-semibold">Expected vs actual (this week)</h2>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Expected pay is derived from hours × rates when those figures are on the document. It is never
-        presented as a printed payslip amount.
-      </p>
+      <h2 className="font-heading text-xl font-semibold">{t("detail.expectedTitle")}</h2>
+      <p className="mt-1 text-xs text-muted-foreground">{t("detail.expectedLead")}</p>
       <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-        <Item label="Actual gross (source)" value={formatEuroMaybe(record.actual.grossPay)} />
+        <Item label={t("detail.actualGross")} value={formatEuroMaybe(record.actual.grossPay)} />
         <Item
-          label="Expected gross (derived)"
-          value={record.expected.grossPay == null ? "Not calculated" : formatEuro(record.expected.grossPay)}
+          label={t("detail.expectedGross")}
+          value={record.expected.grossPay == null ? t("detail.notCalculated") : formatEuro(record.expected.grossPay)}
         />
-        <Item label="Variance" value={record.variance == null ? "—" : formatEuro(record.variance)} />
+        <Item label={t("detail.variance")} value={record.variance == null ? "—" : formatEuro(record.variance)} />
       </dl>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">{record.expected.reason}</p>
     </section>
@@ -328,16 +318,18 @@ function Item({ label, value }: { label: string; value: string }) {
 
 function Lines({
   title,
+  noneEntered,
   rows,
 }: {
   title: string;
+  noneEntered: string;
   rows: { label: string; amount: number; meta: string }[];
 }) {
   return (
     <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
       <h2 className="font-heading text-xl font-semibold">{title}</h2>
       {rows.length === 0 ? (
-        <p className="mt-3 text-sm text-muted-foreground">None entered.</p>
+        <p className="mt-3 text-sm text-muted-foreground">{noneEntered}</p>
       ) : (
         <ul className="mt-3 divide-y divide-border">
           {rows.map((row) => (
@@ -353,6 +345,12 @@ function Lines({
       )}
     </section>
   );
+}
+
+function epistemicKey(value: Epistemic) {
+  if (value === "inference") return "detail.inference" as const;
+  if (value === "unknown") return "detail.unknown" as const;
+  return "detail.fact" as const;
 }
 
 function n(value: number | null): string {

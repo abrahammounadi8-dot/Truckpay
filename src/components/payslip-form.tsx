@@ -3,19 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileUpIcon } from "lucide-react";
+import { useT } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { frequencyMessageKey } from "@/lib/i18n";
 import type { PayFrequency } from "@/lib/payroll/types";
 
 type Line = { key: string; rawLabel: string; amount: string };
-
-const frequencies: { value: PayFrequency; label: string }[] = [
-  { value: "unknown", label: "Not stated on the slip" },
-  { value: "weekly", label: "Weekly" },
-  { value: "fortnightly", label: "Fortnightly" },
-  { value: "lunar", label: "Lunar (4 weeks)" },
-  { value: "monthly", label: "Monthly" },
-];
 
 type FormState = {
   employerName: string;
@@ -108,6 +102,7 @@ function readDraft(): { form: FormState; allowances: Line[]; deductions: Line[] 
 
 export function PayslipForm() {
   const router = useRouter();
+  const { t } = useT();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -182,12 +177,12 @@ export function PayslipForm() {
         deductions?: { rawLabel: string; amount: number }[];
         allowances?: { rawLabel: string; amount: number }[];
       };
-      if (!res.ok) throw new Error(data.error ?? "Could not read that file.");
+      if (!res.ok) throw new Error(data.error ?? t("form.readError"));
       setFileLabel(data.fileLabel ?? file.name);
-      setFileNote(data.message ?? "File read. The original was not stored.");
+      setFileNote(data.message ?? t("form.fileRead"));
       applyExtracted(data.fields ?? {}, data.deductions ?? [], data.allowances ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not read that file.");
+      setError(err instanceof Error ? err.message : t("form.readError"));
     } finally {
       setReadingFile(false);
     }
@@ -252,10 +247,10 @@ export function PayslipForm() {
         duplicateOf?: string;
       };
       if (res.status === 409) {
-        throw new Error(data.error ?? "Duplicate payslip.");
+        throw new Error(data.error ?? t("form.duplicate"));
       }
       if (!res.ok || !data.payslip) {
-        throw new Error(data.error ?? "Could not save the payslip.");
+        throw new Error(data.error ?? t("form.saveError"));
       }
       sessionStorage.removeItem(DRAFT_KEY);
       replacePhotoPreview(undefined);
@@ -263,7 +258,7 @@ export function PayslipForm() {
       router.push(next);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save");
+      setError(err instanceof Error ? err.message : t("form.saveError"));
     } finally {
       setPending(false);
     }
@@ -294,20 +289,19 @@ export function PayslipForm() {
           // eslint-disable-next-line @next/next/no-img-element -- local object URL, never stored
           <img
             src={photoPreview}
-            alt="Payslip photo you attached. Not stored on the server."
+            alt={t("form.photoAlt")}
             className="mx-auto max-h-64 w-full max-w-md rounded-lg object-contain ring-1 ring-foreground/10"
           />
         ) : (
           <FileUpIcon className="mx-auto size-10 text-accent" aria-hidden />
         )}
-        <h2 className="font-heading mt-3 text-2xl font-semibold">Put your payslip here</h2>
+        <h2 className="font-heading mt-3 text-2xl font-semibold">{t("form.putHere")}</h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-          Pon la nómina aquí. Arrastra un PDF o una foto, o elige un archivo. TruckPay lee el archivo y lo
-          descarta — no lo guarda.
+          {t("form.putHereHelp")}
         </p>
         <label className="mt-4 inline-flex cursor-pointer flex-col items-center gap-2">
           <span className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground">
-            {readingFile ? "Reading…" : "Choose PDF or photo"}
+            {readingFile ? t("form.reading") : t("form.chooseFile")}
           </span>
           <input
             ref={fileInputRef}
@@ -321,22 +315,20 @@ export function PayslipForm() {
         </label>
         {fileLabel ? (
           <p className="mt-3 text-sm font-medium">
-            Attached: {fileLabel}
-            <span className="block text-xs font-normal text-muted-foreground">Not stored on the server</span>
+            {t("form.attached", { name: fileLabel })}
+            <span className="block text-xs font-normal text-muted-foreground">{t("form.notStored")}</span>
           </p>
         ) : null}
         {fileNote ? <p className="mt-2 text-sm text-muted-foreground">{fileNote}</p> : null}
       </section>
 
       <p className="rounded-xl bg-card p-4 text-sm leading-6 text-muted-foreground ring-1 ring-foreground/10">
-        After the file, check the boxes below. Leave a box blank if it is not printed — TruckPay will
-        store null and will not guess. TruckPay Verified Analysis needs your latest three unique
-        payslips. A payslip is not assumed to be one week.
+        {t("form.afterFile")}
       </p>
 
-      <Section title="Who and when">
+      <Section title={t("form.whoWhen")}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Payment date">
+          <Field label={t("form.paymentDate")}>
             <Input
               id="paymentDate"
               name="paymentDate"
@@ -346,17 +338,17 @@ export function PayslipForm() {
               onChange={(event) => set("paymentDate", event.target.value)}
             />
           </Field>
-          <Field label="Employer as printed">
+          <Field label={t("form.employer")}>
             <Input
               id="employerName"
               name="employerName"
               value={form.employerName}
               onChange={(event) => set("employerName", event.target.value)}
-              placeholder="Leave blank if not on the slip"
+              placeholder={t("form.employerPlaceholder")}
               autoComplete="organization"
             />
           </Field>
-          <Field label="Period start">
+          <Field label={t("form.periodStart")}>
             <Input
               id="payPeriodStart"
               name="payPeriodStart"
@@ -365,7 +357,7 @@ export function PayslipForm() {
               onChange={(event) => set("payPeriodStart", event.target.value)}
             />
           </Field>
-          <Field label="Period end">
+          <Field label={t("form.periodEnd")}>
             <Input
               id="payPeriodEnd"
               name="payPeriodEnd"
@@ -374,7 +366,7 @@ export function PayslipForm() {
               onChange={(event) => set("payPeriodEnd", event.target.value)}
             />
           </Field>
-          <Field label="Pay frequency as printed">
+          <Field label={t("form.frequency")}>
             <select
               id="payFrequency"
               name="payFrequency"
@@ -382,130 +374,129 @@ export function PayslipForm() {
               value={form.payFrequency}
               onChange={(event) => set("payFrequency", event.target.value as PayFrequency)}
             >
-              {frequencies.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
+              {(["unknown", "weekly", "fortnightly", "lunar", "monthly"] as PayFrequency[]).map((value) => (
+                <option key={value} value={value}>
+                  {t(frequencyMessageKey(value))}
                 </option>
               ))}
             </select>
           </Field>
-          <Field label="Employment / insurable weeks on this slip">
+          <Field label={t("form.employmentWeeks")}>
             <Input
               id="employmentWeeks"
               name="employmentWeeks"
               inputMode="decimal"
               value={form.employmentWeeks}
               onChange={(event) => set("employmentWeeks", event.target.value)}
-              placeholder="May be more than 1"
+              placeholder={t("form.employmentWeeksPlaceholder")}
             />
           </Field>
-          <Field label="Week number as printed">
+          <Field label={t("form.weekNumber")}>
             <Input
               id="weekNumber"
               name="weekNumber"
               inputMode="numeric"
               value={form.weekNumber}
               onChange={(event) => set("weekNumber", event.target.value)}
-              placeholder="Leave blank if not shown"
+              placeholder={t("form.weekPlaceholder")}
             />
           </Field>
         </div>
       </Section>
 
-      <Section title="Basic and overtime">
+      <Section title={t("form.basicOt")}>
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Basic hours">
+          <Field label={t("form.basicHours")}>
             <Input id="basicHours" name="basicHours" inputMode="decimal" value={form.basicHours} onChange={(event) => set("basicHours", event.target.value)} />
           </Field>
-          <Field label="Basic rate (€)">
+          <Field label={t("form.basicRate")}>
             <Input id="basicRate" name="basicRate" inputMode="decimal" value={form.basicRate} onChange={(event) => set("basicRate", event.target.value)} />
           </Field>
-          <Field label="Basic pay (€)">
+          <Field label={t("form.basicPay")}>
             <Input id="basicPay" name="basicPay" inputMode="decimal" value={form.basicPay} onChange={(event) => set("basicPay", event.target.value)} />
           </Field>
-          <Field label="Overtime hours">
+          <Field label={t("form.overtimeHours")}>
             <Input inputMode="decimal" value={form.overtimeHours} onChange={(event) => set("overtimeHours", event.target.value)} />
           </Field>
-          <Field label="Overtime rate (€)">
+          <Field label={t("form.overtimeRate")}>
             <Input inputMode="decimal" value={form.overtimeRate} onChange={(event) => set("overtimeRate", event.target.value)} />
           </Field>
-          <Field label="Overtime pay (€)">
+          <Field label={t("form.overtimePay")}>
             <Input inputMode="decimal" value={form.overtimePay} onChange={(event) => set("overtimePay", event.target.value)} />
           </Field>
-          <Field label="Holiday pay (€)">
+          <Field label={t("form.holidayPay")}>
             <Input id="holidayPay" name="holidayPay" inputMode="decimal" value={form.holidayPay} onChange={(event) => set("holidayPay", event.target.value)} />
           </Field>
         </div>
       </Section>
 
-      <Section title="Gross, net, year to date">
+      <Section title={t("form.totals")}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Gross pay (€)">
+          <Field label={t("form.gross")}>
             <Input id="grossPay" name="grossPay" inputMode="decimal" value={form.grossPay} onChange={(event) => set("grossPay", event.target.value)} />
           </Field>
-          <Field label="Net pay (€)">
+          <Field label={t("form.net")}>
             <Input id="netPay" name="netPay" inputMode="decimal" value={form.netPay} onChange={(event) => set("netPay", event.target.value)} />
           </Field>
-          <Field label="Cumulative gross (€)">
+          <Field label={t("form.cumulativeGross")}>
             <Input inputMode="decimal" value={form.cumulativeGross} onChange={(event) => set("cumulativeGross", event.target.value)} />
           </Field>
-          <Field label="Cumulative tax (€)">
+          <Field label={t("form.cumulativeTax")}>
             <Input inputMode="decimal" value={form.cumulativeTax} onChange={(event) => set("cumulativeTax", event.target.value)} />
           </Field>
-          <Field label="Cumulative PRSI (€)">
+          <Field label={t("form.cumulativePrsi")}>
             <Input inputMode="decimal" value={form.cumulativePrsi} onChange={(event) => set("cumulativePrsi", event.target.value)} />
           </Field>
-          <Field label="Cumulative USC (€)">
+          <Field label={t("form.cumulativeUsc")}>
             <Input inputMode="decimal" value={form.cumulativeUsc} onChange={(event) => set("cumulativeUsc", event.target.value)} />
           </Field>
-          <Field label="Cumulative pension (€)">
+          <Field label={t("form.cumulativePension")}>
             <Input inputMode="decimal" value={form.cumulativePension} onChange={(event) => set("cumulativePension", event.target.value)} />
           </Field>
-          <Field label="Total insurable weeks (YTD)">
+          <Field label={t("form.ytdWeeks")}>
             <Input inputMode="decimal" value={form.totalInsurableWeeks} onChange={(event) => set("totalInsurableWeeks", event.target.value)} />
           </Field>
         </div>
       </Section>
 
       <Section
-        title="Allowances"
+        title={t("form.allowances")}
         action={
           <Button type="button" id="add-allowance" size="sm" variant="outline" onClick={() => setAllowances((rows) => [...rows, emptyLine()])}>
-            Add line
+            {t("form.addLine")}
           </Button>
         }
       >
         <LineTable
           rows={allowances}
           onChange={setAllowances}
-          labelPlaceholder="e.g. Night out, subsistence"
+          labelPlaceholder={t("form.allowancePlaceholder")}
           namePrefix="allowance"
+          removeLabel={t("form.remove")}
         />
       </Section>
 
       <Section
-        title="Deductions"
+        title={t("form.deductions")}
         action={
           <Button type="button" id="add-deduction" size="sm" variant="outline" onClick={() => setDeductions((rows) => [...rows, emptyLine()])}>
-            Add line
+            {t("form.addLine")}
           </Button>
         }
       >
-        <p className="mb-3 text-sm text-muted-foreground">
-          Copy the label exactly as printed. Unknown labels stay unknown and are flagged for review.
-          Truckpay will not mark a deduction as illegal.
-        </p>
+        <p className="mb-3 text-sm text-muted-foreground">{t("form.deductionHelp")}</p>
         <LineTable
           rows={deductions}
           onChange={setDeductions}
-          labelPlaceholder="e.g. PAYE, PRSI, uniform"
+          labelPlaceholder={t("form.deductionPlaceholder")}
           namePrefix="deduction"
+          removeLabel={t("form.remove")}
         />
       </Section>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Button type="submit" disabled={pending} className="bg-accent text-accent-foreground hover:bg-accent/90">
-        {pending ? "Checking…" : "Check this payslip"}
+        {pending ? t("form.checking") : t("form.check")}
       </Button>
     </form>
   );
@@ -551,11 +542,13 @@ function LineTable({
   onChange,
   labelPlaceholder,
   namePrefix,
+  removeLabel,
 }: {
   rows: Line[];
   onChange: (rows: Line[]) => void;
   labelPlaceholder: string;
   namePrefix: string;
+  removeLabel: string;
 }) {
   return (
     <div className="space-y-2">
@@ -588,7 +581,7 @@ function LineTable({
             variant="ghost"
             onClick={() => onChange(rows.filter((item) => item.key !== row.key).length ? rows.filter((item) => item.key !== row.key) : [emptyLine()])}
           >
-            Remove
+            {removeLabel}
           </Button>
         </div>
       ))}

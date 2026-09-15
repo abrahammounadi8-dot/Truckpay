@@ -56,6 +56,12 @@ npm run build
 npm start
 ```
 
+## Languages
+
+The site ships in **English (Ireland)**, **Spanish**, **Polish** and **Portuguese** — the languages most used on Irish haulage sites. English is the default. A language control sits in the header. The choice is stored in the `tp_lang` cookie (and local storage) so it survives reloads. On a first visit, TruckPay follows the browser `Accept-Language` header.
+
+Payroll figures, statutory labels (PAYE, PRSI, USC), employer names and printed deduction text are **not** translated.
+
 ## Stack
 
 Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui.

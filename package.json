@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start --port 43217 --hostname 0.0.0.0",
     "lint": "eslint",
-    "test": "tsx --test src/lib/payroll/*.test.ts"
+    "test": "tsx --test src/lib/payroll/*.test.ts src/lib/i18n/*.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

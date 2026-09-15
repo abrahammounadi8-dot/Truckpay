@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageIntro } from "@/components/page-intro";
 import { CompareTable } from "@/components/compare-table";
 
 export const metadata: Metadata = {
@@ -16,14 +17,7 @@ export default async function ComparePage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <p className="text-[0.72rem] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-        Side by side
-      </p>
-      <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Compare</h1>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-        HQ, equipment and lanes sit on one line. Driver-reported take-home appears only if drivers have
-        filed public stubs. That is not payroll-verified company pay.
-      </p>
+      <PageIntro kicker="compare.kicker" title="compare.title" lead="compare.lead" />
       <div className="mt-8">
         <CompareTable ids={list} />
       </div>

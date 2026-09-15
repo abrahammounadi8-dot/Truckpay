@@ -3,16 +3,17 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/components/language-provider";
 import { buttonVariants } from "@/components/ui/button";
 import type { SetAnalysis } from "@/lib/payroll/analysis";
 import type { PayChangeReport } from "@/lib/payroll/change";
 import type { CompanyPayStats } from "@/lib/payroll/company-stats";
 import type { PayFactor } from "@/lib/payroll/explain";
+import { frequencyMessageKey } from "@/lib/i18n";
 import { formatEuroMaybe, payslipTitle } from "@/lib/payroll/format";
 import {
   ANOMALY_STATUS_LABELS,
   EVIDENCE_LEVEL_LABELS,
-  FREQUENCY_LABELS,
   PAY_CONFIDENCE_LABELS,
   REQUIRED_PAYSLIPS,
   TENURE_BAND_LABELS,
@@ -31,6 +32,7 @@ type Payload = {
 };
 
 export function AnalysisBoard() {
+  const { t } = useT();
   const [data, setData] = useState<Payload | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -144,10 +146,10 @@ export function AnalysisBoard() {
               <li key={slip.id}>
                 <Link href={`/payslips/${slip.id}`} className="flex justify-between rounded-xl bg-card px-4 py-3 text-sm ring-1 ring-foreground/10">
                   <span>
-                    {payslipTitle(slip)} · {FREQUENCY_LABELS[slip.payFrequency]}
+                    {payslipTitle(slip)} · {t(frequencyMessageKey(slip.payFrequency))}
                     {slip.weekAssignment?.weekNumber != null
-                      ? ` · week ${slip.weekAssignment.weekNumber}${slip.weekAssignment.derived ? " (derived)" : ""}`
-                      : " · week not assigned"}
+                      ? ` · ${t("payslips.week", { n: slip.weekAssignment.weekNumber })}${slip.weekAssignment.derived ? ` ${t("payslips.derived")}` : ""}`
+                      : ` · ${t("payslips.weekNotAssigned")}`}
                     {slip.payPeriodStart && slip.payPeriodEnd
                       ? ` · ${slip.payPeriodStart} → ${slip.payPeriodEnd}`
                       : " · period missing"}

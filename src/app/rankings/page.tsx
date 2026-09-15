@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageIntro } from "@/components/page-intro";
 import { RankingsBoard } from "@/components/rankings-board";
 
 export const metadata: Metadata = {
@@ -10,14 +11,7 @@ export const metadata: Metadata = {
 export default function RankingsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <p className="text-[0.72rem] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-        Driver reported · Ireland
-      </p>
-      <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">Pay gap rankings</h1>
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-        Ranked only when a driver filed both take-home and the weekly figure they were quoted. This is
-        driver-reported evidence, not payroll-verified medians. TruckPay does not invent either number.
-      </p>
+      <PageIntro kicker="rankings.kicker" title="rankings.title" lead="rankings.lead" />
       <div className="mt-10">
         <RankingsBoard />
       </div>

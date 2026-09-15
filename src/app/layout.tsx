@@ -1,26 +1,29 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { cookies, headers } from "next/headers";
 import { CompareDock } from "@/components/compare-dock";
+import { LanguageProvider } from "@/components/language-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { LOCALE_COOKIE, localeFromRequest, localeMeta } from "@/lib/i18n";
 import { AppStoreProvider } from "@/lib/store";
 import "./globals.css";
 
 const sans = IBM_Plex_Sans({
   variable: "--font-sans-family",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600"],
 });
 
 const heading = Barlow_Condensed({
   variable: "--font-heading-family",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["500", "600", "700"],
 });
 
 const mono = IBM_Plex_Mono({
   variable: "--font-mono-family",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "500"],
 });
 
@@ -34,19 +37,29 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.svg" },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const cookieStore = await cookies();
+  const headerStore = await headers();
+  const locale = localeFromRequest(
+    cookieStore.get(LOCALE_COOKIE)?.value,
+    headerStore.get("accept-language"),
+  );
+
   return (
     <html
-      lang="en-IE"
+      lang={localeMeta[locale].htmlLang}
+      suppressHydrationWarning
       className={`${sans.variable} ${heading.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <AppStoreProvider>
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-          <CompareDock />
-        </AppStoreProvider>
+        <LanguageProvider initialLocale={locale}>
+          <AppStoreProvider>
+            <SiteHeader />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+            <CompareDock />
+          </AppStoreProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
