@@ -1,4 +1,4 @@
-import { fleet } from "@/lib/data";
+import { resolveEmployer } from "@/lib/payroll/employer";
 import { classifyAllowance, classifyDeduction } from "@/lib/payroll/classify";
 import { hashFromInput } from "@/lib/payroll/fingerprint";
 import { attachProcessing } from "@/lib/payroll/process";
@@ -20,10 +20,8 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
     return { error: "Payment date is required (YYYY-MM-DD)." };
   }
 
-  const employerSlug = asString(body.employerSlug);
-  if (employerSlug && !fleet.some((company) => company.slug === employerSlug)) {
-    return { error: "Pick a listed haulier, or leave employer blank." };
-  }
+  const named = asString(body.employerName) || asString(body.employerSlug);
+  const employer = resolveEmployer(named);
 
   const payFrequency = FREQUENCIES.includes(body.payFrequency as PayFrequency)
     ? (body.payFrequency as PayFrequency)
@@ -87,7 +85,8 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
 
   return {
     input: {
-      employerSlug: employerSlug || null,
+      employerSlug: employer.employerSlug,
+      employerName: employer.employerName,
       paymentDate,
       payPeriodStart: asDate(body.payPeriodStart),
       payPeriodEnd: asDate(body.payPeriodEnd),
@@ -130,6 +129,7 @@ export function toStoredPayslip(userId: string, input: PayslipInput): Payslip {
     countryCode: "IE",
     currency: "EUR",
     employerSlug: input.employerSlug ?? null,
+    employerName: input.employerName ?? null,
     paymentDate: input.paymentDate,
     payPeriodStart: input.payPeriodStart ?? null,
     payPeriodEnd: input.payPeriodEnd ?? null,

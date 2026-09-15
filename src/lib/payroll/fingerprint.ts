@@ -3,6 +3,7 @@ import type { Payslip, PayslipInput } from "@/lib/payroll/types";
 
 export function payslipContentHash(input: {
   employerSlug: string | null;
+  employerName?: string | null;
   paymentDate: string;
   payPeriodStart: string | null;
   payPeriodEnd: string | null;
@@ -15,6 +16,7 @@ export function payslipContentHash(input: {
 }): string {
   const payload = [
     input.employerSlug ?? "",
+    input.employerName ?? "",
     input.paymentDate,
     input.payPeriodStart ?? "",
     input.payPeriodEnd ?? "",
@@ -31,6 +33,7 @@ export function payslipContentHash(input: {
 export function hashFromInput(input: PayslipInput): string {
   return payslipContentHash({
     employerSlug: input.employerSlug ?? null,
+    employerName: input.employerName ?? null,
     paymentDate: input.paymentDate,
     payPeriodStart: input.payPeriodStart ?? null,
     payPeriodEnd: input.payPeriodEnd ?? null,

@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { FileUpIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fleet } from "@/lib/data";
 import type { PayFrequency } from "@/lib/payroll/types";
 
 type Line = { key: string; rawLabel: string; amount: string };
@@ -19,7 +18,7 @@ const frequencies: { value: PayFrequency; label: string }[] = [
 ];
 
 type FormState = {
-  employerSlug: string;
+  employerName: string;
   paymentDate: string;
   payPeriodStart: string;
   payPeriodEnd: string;
@@ -46,7 +45,7 @@ type FormState = {
 const DRAFT_KEY = "truckpay.payslip-draft";
 
 const emptyForm: FormState = {
-  employerSlug: "",
+  employerName: "",
   paymentDate: "",
   payPeriodStart: "",
   payPeriodEnd: "",
@@ -85,8 +84,14 @@ function readDraft(): { form: FormState; allowances: Line[]; deductions: Line[] 
       deductions?: Line[];
     };
     if (!parsed.form) return null;
+    const legacy = parsed.form as Partial<FormState> & { employerSlug?: string };
+    const form: FormState = {
+      ...emptyForm,
+      ...legacy,
+      employerName: legacy.employerName || legacy.employerSlug || "",
+    };
     return {
-      form: { ...emptyForm, ...parsed.form },
+      form,
       allowances:
         Array.isArray(parsed.allowances) && parsed.allowances.length
           ? parsed.allowances
@@ -201,7 +206,7 @@ export function PayslipForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          employerSlug: form.employerSlug || null,
+          employerName: form.employerName || null,
           allowances: packed(allowances),
           deductions: packed(deductions),
         }),
@@ -303,21 +308,15 @@ export function PayslipForm() {
               onChange={(event) => set("paymentDate", event.target.value)}
             />
           </Field>
-          <Field label="Employer (needed for verified analysis)">
-            <select
-              id="employerSlug"
-              name="employerSlug"
-              className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
-              value={form.employerSlug}
-              onChange={(event) => set("employerSlug", event.target.value)}
-            >
-              <option value="">Not linked</option>
-              {fleet.map((company) => (
-                <option key={company.slug} value={company.slug}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
+          <Field label="Employer as printed">
+            <Input
+              id="employerName"
+              name="employerName"
+              value={form.employerName}
+              onChange={(event) => set("employerName", event.target.value)}
+              placeholder="Leave blank if not on the slip"
+              autoComplete="organization"
+            />
           </Field>
           <Field label="Period start">
             <Input

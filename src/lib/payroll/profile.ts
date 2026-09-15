@@ -1,4 +1,4 @@
-import { fleet } from "@/lib/data";
+import { resolveEmployer } from "@/lib/payroll/employer";
 import {
   isDocumentVerifiedTenure,
   tenureBandFromMonths,
@@ -39,6 +39,7 @@ const SOURCES: TenureSource[] = [
 
 export type ProfileInput = {
   employerSlug?: string | null;
+  employerName?: string | null;
   employmentStartDate?: string | null;
   tenureSource?: TenureSource | null;
   jobType?: JobType;
@@ -52,10 +53,8 @@ export type ProfileInput = {
 export function parseProfileInput(raw: unknown): { input?: ProfileInput; error?: string } {
   if (!raw || typeof raw !== "object") return { error: "Send a JSON profile." };
   const body = raw as Record<string, unknown>;
-  const employerSlug = asString(body.employerSlug);
-  if (employerSlug && !fleet.some((company) => company.slug === employerSlug)) {
-    return { error: "Pick a listed haulier, or leave employer blank." };
-  }
+  const named = asString(body.employerName) || asString(body.employerSlug);
+  const employer = resolveEmployer(named);
   const employmentStartDate = asDate(body.employmentStartDate);
   const tenureSource = SOURCES.includes(body.tenureSource as TenureSource)
     ? (body.tenureSource as TenureSource)
@@ -71,7 +70,8 @@ export function parseProfileInput(raw: unknown): { input?: ProfileInput; error?:
 
   return {
     input: {
-      employerSlug: employerSlug || null,
+      employerSlug: employer.employerSlug,
+      employerName: employer.employerName,
       employmentStartDate,
       tenureSource,
       jobType: JOBS.includes(body.jobType as JobType) ? (body.jobType as JobType) : "other",
@@ -95,6 +95,7 @@ export function toStoredProfile(userId: string, input: ProfileInput, asOf: strin
   return {
     userId,
     employerSlug: input.employerSlug ?? null,
+    employerName: input.employerName ?? null,
     employmentStartDate: start,
     tenureMonths: months,
     tenureBand: months != null ? tenureBandFromMonths(months) : null,

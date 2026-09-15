@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { fleet } from "@/lib/data";
+import { employerLabel } from "@/lib/payroll/employer";
 import { formatEuro, formatEuroMaybe } from "@/lib/payroll/format";
 import { classifyWorkWeek } from "@/lib/payroll/week";
 import {
@@ -62,9 +62,7 @@ export function PayslipDetail({
     setPending(false);
   }
 
-  const employer = slip.employerSlug
-    ? fleet.find((company) => company.slug === slip.employerSlug)
-    : null;
+  const employer = employerLabel(slip);
 
   return (
     <div className="space-y-8">
@@ -76,7 +74,7 @@ export function PayslipDetail({
           <h1 className="mt-2 text-4xl font-semibold tracking-tight">Paid {slip.paymentDate}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {FREQUENCY_LABELS[slip.payFrequency]}
-            {employer ? ` · ${employer.name}` : " · employer not linked"}
+            {employer ? ` · ${employer}` : " · employer not on the slip"}
             {slip.payPeriodStart && slip.payPeriodEnd
               ? ` · ${slip.payPeriodStart} → ${slip.payPeriodEnd}`
               : ""}

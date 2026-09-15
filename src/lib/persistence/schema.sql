@@ -30,6 +30,7 @@ CREATE TABLE payslips (
   country_code TEXT NOT NULL,
   currency TEXT NOT NULL,
   employer_slug TEXT,
+  employer_name TEXT,
   payment_date DATE NOT NULL,
   pay_period_start DATE,
   pay_period_end DATE,
@@ -126,6 +127,7 @@ CREATE TABLE payslip_lines (
 CREATE TABLE employment_profiles (
   user_id UUID PRIMARY KEY REFERENCES users (id),
   employer_slug TEXT,
+  employer_name TEXT,
   employment_start_date DATE,
   tenure_source TEXT,
   job_type TEXT NOT NULL,

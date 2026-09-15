@@ -18,6 +18,7 @@ function slip(overrides: Partial<Payslip> & Pick<Payslip, "id" | "paymentDate">)
     countryCode: "IE",
     currency: "EUR",
     employerSlug: "nolan",
+    employerName: null,
     payPeriodStart: null,
     payPeriodEnd: null,
     payFrequency: "unknown",
@@ -53,6 +54,7 @@ function profile(overrides: Partial<EmploymentProfile> = {}): EmploymentProfile 
   return {
     userId: "user-a",
     employerSlug: "nolan",
+    employerName: null,
     employmentStartDate: "2024-01-01",
     tenureMonths: 20,
     tenureBand: "1_3",
@@ -95,6 +97,7 @@ describe("duplicates", () => {
   it("detects the same dates and totals", () => {
     const input: PayslipInput = {
       employerSlug: "nolan",
+    employerName: null,
       paymentDate: "2026-03-22",
       payPeriodStart: "2026-02-23",
       payPeriodEnd: "2026-03-22",

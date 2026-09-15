@@ -40,6 +40,7 @@ describe("extract from labelled payslip text", () => {
     assert.equal(draft.fields.basicRate, 20);
     assert.equal(draft.fields.grossPay, 1040);
     assert.equal(draft.fields.netPay, 850);
+    assert.equal(draft.fields.employerName, "Nolan Transport");
     assert.equal(draft.fields.employerSlug, "nolan");
     assert.equal(draft.deductions.some((line) => line.rawLabel === "PAYE" && line.amount === 120), true);
     assert.equal(JSON.stringify(draft).includes("1234567T"), false);
@@ -50,5 +51,12 @@ describe("extract from labelled payslip text", () => {
     assert.equal(draft.fields.grossPay, undefined);
     assert.equal(draft.fields.weekNumber, undefined);
     assert.equal(draft.filledKeys.length, 0);
+  });
+
+  it("reads an unlisted employer from the Employer line", () => {
+    const draft = extractFromPayslipText("TEST DATA ONLY\nEmployer: TEST Haulage Co\nGross Pay: 900.00");
+    assert.equal(draft.fields.employerName, "TEST Haulage Co");
+    assert.equal(draft.fields.employerSlug, "test-haulage-co");
+    assert.equal(draft.fields.grossPay, 900);
   });
 });

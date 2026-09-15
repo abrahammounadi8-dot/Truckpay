@@ -229,6 +229,7 @@ export type Payslip = {
   countryCode: CountryCode;
   currency: CurrencyCode;
   employerSlug: string | null;
+  employerName: string | null;
   paymentDate: string;
   payPeriodStart: string | null;
   payPeriodEnd: string | null;
@@ -265,6 +266,7 @@ export type Payslip = {
 export type EmploymentProfile = {
   userId: string;
   employerSlug: string | null;
+  employerName: string | null;
   employmentStartDate: string | null;
   tenureMonths: number | null;
   tenureBand: TenureBand | null;
@@ -299,6 +301,7 @@ export type Finding = {
 
 export type PayslipInput = {
   employerSlug?: string | null;
+  employerName?: string | null;
   paymentDate: string;
   payPeriodStart?: string | null;
   payPeriodEnd?: string | null;

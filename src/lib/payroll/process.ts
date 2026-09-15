@@ -17,6 +17,7 @@ export function attachProcessing(slip: Payslip): Payslip {
   });
   const withWeek: Payslip = {
     ...slip,
+    employerName: slip.employerName ?? null,
     weekNumber: slip.weekNumber ?? null,
     holidayPay: slip.holidayPay ?? null,
     cumulativePrsi: slip.cumulativePrsi ?? null,
@@ -40,6 +41,7 @@ export function attachProcessing(slip: Payslip): Payslip {
 export function hydratePayslip(slip: Payslip): Payslip {
   return attachProcessing({
     ...slip,
+    employerName: slip.employerName ?? null,
     weekNumber: slip.weekNumber ?? null,
     holidayPay: slip.holidayPay ?? null,
     cumulativePrsi: slip.cumulativePrsi ?? null,

@@ -249,6 +249,7 @@ function emptyProfile(userId: string, employerSlug: string): Profile {
   return {
     userId,
     employerSlug,
+    employerName: null,
     employmentStartDate: null,
     tenureMonths: null,
     tenureBand: null,

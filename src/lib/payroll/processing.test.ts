@@ -21,6 +21,7 @@ function testSlip(overrides: Partial<Payslip> & Pick<Payslip, "id" | "paymentDat
     countryCode: "IE",
     currency: "EUR",
     employerSlug: "nolan",
+    employerName: null,
     payPeriodStart: null,
     payPeriodEnd: null,
     payFrequency: "unknown",
@@ -222,6 +223,7 @@ describe("duplicate detection", () => {
   it("confirms a duplicate when dates and totals match", () => {
     const input: PayslipInput = {
       employerSlug: "nolan",
+    employerName: null,
       paymentDate: "2024-03-28",
       payPeriodStart: "2024-03-18",
       payPeriodEnd: "2024-03-24",
@@ -320,6 +322,7 @@ describe("anomaly detection foundation", () => {
     const anomalies = detectPayslipAnomalies(slip, [], {
       userId: TEST_USER,
       employerSlug: "nolan",
+    employerName: null,
       employmentStartDate: "2024-01-01",
       tenureMonths: 8,
       tenureBand: "0_1",
@@ -347,6 +350,7 @@ describe("hydrate legacy slips", () => {
       countryCode: "IE",
       currency: "EUR",
       employerSlug: "nolan",
+    employerName: null,
       paymentDate: "2026-09-04",
       payPeriodStart: "2026-08-01",
       payPeriodEnd: "2026-08-31",

@@ -1,4 +1,4 @@
-import { fleet } from "@/lib/data";
+import { resolveEmployer } from "@/lib/payroll/employer";
 import type { PayFrequency, PayslipInput } from "@/lib/payroll/types";
 
 export type ExtractedPayslipDraft = {
@@ -61,8 +61,12 @@ export function extractFromPayslipText(raw: string): ExtractedPayslipDraft {
   set("cumulativePension", labeledMoney(text, /(?:ytd|year[\s-]*to[\s-]*date|cumulative)\s*pension\s*[:.]?\s*€?\s*([\d,]+(?:\.\d{1,2})?)/i));
   set("totalInsurableWeeks", labeledNumber(text, /(?:ytd|year[\s-]*to[\s-]*date|total)\s*insurable\s*weeks\s*[:.]?\s*([\d.,]+)/i, 400));
 
-  const employer = fleet.find((company) => text.toLowerCase().includes(company.name.toLowerCase()) || text.toLowerCase().includes(company.slug));
-  if (employer) set("employerSlug", employer.slug);
+  const employerLine = text.match(/\bemployer\s*[:.]?\s*([^\n]+)/i);
+  if (employerLine) {
+    const employer = resolveEmployer(employerLine[1]);
+    set("employerName", employer.employerName);
+    set("employerSlug", employer.employerSlug);
+  }
 
   const deductions = collectLines(text, [
     { label: "PAYE", pattern: /\bpaye\b[^0-9€]{0,20}€?\s*([\d,]+(?:\.\d{1,2})?)/i },

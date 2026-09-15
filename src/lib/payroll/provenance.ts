@@ -35,7 +35,7 @@ export function buildProvenance(slip: Payslip): PayslipProvenance {
   const ytd = yearToDate(slip);
 
   return {
-    employer: sourceField(slip.employerSlug),
+    employer: sourceField(slip.employerName ?? slip.employerSlug),
     grossPay: sourceField(slip.grossPay),
     netPay: sourceField(slip.netPay),
     basicHours: sourceField(slip.basicHours),

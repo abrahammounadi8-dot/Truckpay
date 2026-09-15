@@ -60,6 +60,7 @@ function ensureHash(slip: Payslip): Payslip {
     ...slip,
     contentHash: payslipContentHash({
       employerSlug: slip.employerSlug,
+      employerName: slip.employerName,
       paymentDate: slip.paymentDate,
       payPeriodStart: slip.payPeriodStart,
       payPeriodEnd: slip.payPeriodEnd,

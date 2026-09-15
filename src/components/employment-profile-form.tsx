@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fleet } from "@/lib/data";
 import {
   JOB_TYPE_LABELS,
   SHIFT_TYPE_LABELS,
@@ -28,7 +27,7 @@ export function EmploymentProfileForm() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
-    employerSlug: "",
+    employerName: "",
     employmentStartDate: "",
     tenureSource: "user_declared" as TenureSource,
     jobType: "distribution" as JobType,
@@ -46,7 +45,7 @@ export function EmploymentProfileForm() {
         if (!data.profile) return;
         setProfile(data.profile);
         setForm({
-          employerSlug: data.profile.employerSlug ?? "",
+          employerName: data.profile.employerName ?? data.profile.employerSlug ?? "",
           employmentStartDate: data.profile.employmentStartDate ?? "",
           tenureSource: data.profile.tenureSource ?? "user_declared",
           jobType: data.profile.jobType,
@@ -79,7 +78,7 @@ export function EmploymentProfileForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          employerSlug: form.employerSlug || null,
+          employerName: form.employerName || null,
           employmentStartDate: form.employmentStartDate || null,
           agreedBaseRate: form.agreedBaseRate ? Number(form.agreedBaseRate.replace(",", ".")) : null,
         }),
@@ -104,18 +103,12 @@ export function EmploymentProfileForm() {
       </p>
       <label className="block space-y-1.5">
         <span className="text-sm font-medium">Current employer</span>
-        <select
-          className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
-          value={form.employerSlug}
-          onChange={(event) => setForm({ ...form, employerSlug: event.target.value })}
-        >
-          <option value="">Not linked</option>
-          {fleet.map((company) => (
-            <option key={company.slug} value={company.slug}>
-              {company.name}
-            </option>
-          ))}
-        </select>
+        <Input
+          value={form.employerName}
+          onChange={(event) => setForm({ ...form, employerName: event.target.value })}
+          placeholder="Leave blank if you do not want to name the firm"
+          autoComplete="organization"
+        />
       </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block space-y-1.5">
