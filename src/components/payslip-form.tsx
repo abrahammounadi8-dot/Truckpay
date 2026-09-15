@@ -237,9 +237,12 @@ export function PayslipForm() {
   return (
     <form onSubmit={onSubmit} autoComplete="off" className="space-y-8">
       <section
-        className={`rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+        className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
           dragging ? "border-accent bg-accent/10" : "border-foreground/20 bg-card"
         }`}
+        onClick={() => {
+          if (!readingFile) fileInputRef.current?.click();
+        }}
         onDragEnter={(event) => {
           event.preventDefault();
           setDragging(true);
@@ -277,7 +280,10 @@ export function PayslipForm() {
           type="button"
           className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90"
           disabled={readingFile}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={(event) => {
+            event.stopPropagation();
+            fileInputRef.current?.click();
+          }}
         >
           {readingFile ? "Reading…" : "Choose PDF or photo"}
         </Button>
