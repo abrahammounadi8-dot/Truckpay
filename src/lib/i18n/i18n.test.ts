@@ -34,6 +34,9 @@ describe("i18n dictionaries", () => {
     assert.equal(localeFromRequest("es", "pl,en"), "es");
     assert.equal(localeFromRequest(undefined, "pt-PT,en;q=0.8"), "pt");
     assert.equal(localeFromRequest(undefined, "pl-PL"), "pl");
+    assert.equal(localeFromRequest(undefined, "lt-LT,en"), "lt");
+    assert.equal(localeFromRequest(undefined, "ro-RO"), "ro");
+    assert.equal(localeFromRequest(undefined, "ru-RU,en;q=0.8"), "ru");
     assert.equal(localeFromRequest(undefined, "fr-FR,en-IE"), "en");
     assert.equal(localeFromRequest("nope", null), "en");
   });

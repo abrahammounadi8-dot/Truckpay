@@ -17,7 +17,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
         onChange={(event) => setLocale(event.target.value as Locale)}
         className={
           compact
-            ? "h-8 max-w-[8.5rem] rounded-md border border-primary-foreground/25 bg-primary-foreground/10 px-2 text-xs font-medium text-primary-foreground"
+            ? "h-8 max-w-[11rem] rounded-md border border-primary-foreground/25 bg-primary-foreground/10 px-2 text-xs font-medium text-primary-foreground"
             : "h-9 w-full rounded-md border border-primary-foreground/25 bg-primary-foreground/10 px-2 text-sm font-medium text-primary-foreground"
         }
       >

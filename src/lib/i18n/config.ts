@@ -1,4 +1,4 @@
-export const locales = ["en", "es", "pl", "pt"] as const;
+export const locales = ["en", "es", "pl", "pt", "lt", "ro", "ru"] as const;
 export type Locale = (typeof locales)[number];
 
 export const DEFAULT_LOCALE: Locale = "en";
@@ -9,6 +9,9 @@ export const localeMeta: Record<Locale, { nativeName: string; htmlLang: string }
   es: { nativeName: "Español", htmlLang: "es" },
   pl: { nativeName: "Polski", htmlLang: "pl" },
   pt: { nativeName: "Português", htmlLang: "pt" },
+  lt: { nativeName: "Lietuvių", htmlLang: "lt" },
+  ro: { nativeName: "Română", htmlLang: "ro" },
+  ru: { nativeName: "Русский", htmlLang: "ru" },
 };
 
 export function isLocale(value: string | null | undefined): value is Locale {
@@ -19,9 +22,6 @@ export function localeFromBrowser(language: string | undefined): Locale {
   const tag = (language ?? "").toLowerCase();
   const code = tag.split("-")[0];
   if (isLocale(code)) return code;
-  if (tag.startsWith("es")) return "es";
-  if (tag.startsWith("pl")) return "pl";
-  if (tag.startsWith("pt")) return "pt";
   return DEFAULT_LOCALE;
 }
 
@@ -33,9 +33,8 @@ export function localeFromRequest(
   if (!acceptLanguage) return DEFAULT_LOCALE;
   const tags = acceptLanguage.split(",").map((part) => part.trim().split(";")[0]);
   for (const tag of tags) {
-    const found = localeFromBrowser(tag);
     const code = tag.toLowerCase().split("-")[0];
-    if (isLocale(code)) return found;
+    if (isLocale(code)) return code;
   }
   return DEFAULT_LOCALE;
 }

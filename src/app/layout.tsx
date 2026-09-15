@@ -11,7 +11,7 @@ import "./globals.css";
 
 const sans = IBM_Plex_Sans({
   variable: "--font-sans-family",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin", "latin-ext", "cyrillic"],
   weight: ["400", "500", "600"],
 });
 
@@ -23,7 +23,7 @@ const heading = Barlow_Condensed({
 
 const mono = IBM_Plex_Mono({
   variable: "--font-mono-family",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin", "latin-ext", "cyrillic"],
   weight: ["400", "500"],
 });
 
