@@ -1,5 +1,11 @@
+import { mkdtemp, writeFile, unlink, rmdir } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { extractFromPayslipText, type ExtractedPayslipDraft } from "@/lib/payroll/extract-text";
 
+const execFileAsync = promisify(execFile);
 const MAX_BYTES = 8 * 1024 * 1024;
 const PDF = "application/pdf";
 const IMAGES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -36,22 +42,23 @@ export async function extractPayslipDocument(input: {
       kind: "pdf",
       stored: false,
       fileLabel,
-      message:
-        draft.filledKeys.length > 0
-          ? `Read ${draft.filledKeys.length} labelled field(s) from the PDF. Check them — TruckPay does not guess missing figures. The file was discarded.`
-          : "The PDF was read but no labelled pay figures were found. Type the printed figures below. The file was discarded.",
+      message: draftMessage("PDF", draft),
       draft,
     };
   }
 
   if (IMAGES.has(mime) || /\.(jpe?g|png|webp|gif)$/i.test(input.filename)) {
+    const text = await readImageText(input.bytes, input.filename);
+    const draft = extractFromPayslipText(text);
     return {
       kind: "image",
       stored: false,
       fileLabel,
       message:
-        "Photo attached. TruckPay cannot read photos yet — type the printed figures below. The photo was not stored.",
-      draft: emptyDraft(),
+        text.length === 0 && draft.filledKeys.length === 0
+          ? "Photo attached. No labelled figures could be read — type what is printed. The photo was not stored."
+          : draftMessage("photo", draft),
+      draft,
     };
   }
 
@@ -62,6 +69,13 @@ export async function extractPayslipDocument(input: {
     message: "Use a PDF or a photo (JPG/PNG). The file was not stored.",
     draft: emptyDraft(),
   };
+}
+
+function draftMessage(kind: "PDF" | "photo", draft: ExtractedPayslipDraft): string {
+  if (draft.filledKeys.length > 0) {
+    return `Read ${draft.filledKeys.length} labelled field(s) from the ${kind}. Check them — TruckPay does not guess missing figures. The file was discarded.`;
+  }
+  return `The ${kind} was read but no labelled pay figures were found. Type the printed figures below. The file was discarded.`;
 }
 
 function emptyDraft(): ExtractedPayslipDraft {
@@ -90,4 +104,31 @@ async function readPdfText(bytes: Uint8Array): Promise<string> {
   } catch {
     return "";
   }
+}
+
+async function readImageText(bytes: Uint8Array, filename: string): Promise<string> {
+  const dir = await mkdtemp(join(tmpdir(), "truckpay-ocr-"));
+  const ext = imageExt(filename);
+  const file = join(dir, `slip.${ext}`);
+  try {
+    await writeFile(file, bytes);
+    const { stdout } = await execFileAsync(
+      "tesseract",
+      [file, "stdout", "-l", "eng", "--psm", "6"],
+      { timeout: 25000, maxBuffer: 2_000_000 },
+    );
+    return stdout ?? "";
+  } catch {
+    return "";
+  } finally {
+    await unlink(file).catch(() => undefined);
+    await rmdir(dir).catch(() => undefined);
+  }
+}
+
+function imageExt(filename: string): string {
+  const match = filename.toLowerCase().match(/\.(jpe?g|png|webp|gif)$/);
+  if (!match) return "png";
+  if (match[1] === "jpeg") return "jpg";
+  return match[1]!;
 }

@@ -12,7 +12,7 @@ TruckPay does **not** invent reviews, ratings or pay figures. Missing payroll fi
 
 ## Three layers
 
-1. **My TruckPay** (`/payslips`, `/analysis`, `/profile`) — private workspace. Drop a payslip PDF or photo at **Add a payslip**, then check the figures. The file is read and discarded (not stored). Photos still need typed figures. **TruckPay Verified Analysis** needs **three unique payslips** with pay date and period. Duplicates are rejected. Identity is a random UUID, not a PPSN or licence. Employment start dates you type are labelled “not document-verified”.
+1. **My TruckPay** (`/payslips`, `/analysis`, `/profile`) — private workspace. Drop a payslip PDF or photo at **Add a payslip**, then check the figures. The file is read and discarded (not stored). Photos are shown on the form (in the browser only) and labelled fields are read when Tesseract is installed; otherwise type the printed figures. **TruckPay Verified Analysis** needs **three unique payslips** with pay date and period. Duplicates are rejected. Identity is a random UUID, not a PPSN or licence. Employment start dates you type are labelled “not document-verified”.
 2. **TruckPay Companies** (`/companies`) — public haulier directory plus salary intelligence. **Driver reported** stubs and **payroll verified** medians are labelled separately and are not equivalent evidence. Medians need sample size (3+ drivers in a cell). Confidence is Low / Medium / High from published rules — not an arbitrary score. Never “Company X pays €1,000/week”.
 3. **Companies & recruiters** — not built. Architecture leaves room for company/recruiter accounts later. They must never see an individual driver’s private slips or identity.
 
@@ -35,6 +35,8 @@ The intended schema is in `src/lib/persistence/schema.sql` (users, documents, ex
 ```bash
 npm test
 ```
+
+Photo reading uses `tesseract` when it is on the PATH (`sudo apt-get install tesseract-ocr` on Debian/Ubuntu). Without it, you can still attach a photo, see it on the form, and type the printed figures. The file is never stored.
 
 Covers multi-week equivalents, duplicates, Irish deduction classification, sequence gaps, tenure bands, three-slip verification, personal pay-change remainder, the three-driver median publish rule, **weekly classification** (printed vs derived vs needs review), **no-guess / null storage**, expected-pay gating, and the anomaly-status foundation.
 

@@ -116,9 +116,25 @@ export function PayslipForm() {
   const [draftReady, setDraftReady] = useState(false);
   const [fileLabel, setFileLabel] = useState<string | null>(null);
   const [fileNote, setFileNote] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [readingFile, setReadingFile] = useState(false);
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photoPreviewRef = useRef<string | null>(null);
+
+  function replacePhotoPreview(file: File | undefined) {
+    if (photoPreviewRef.current) {
+      URL.revokeObjectURL(photoPreviewRef.current);
+      photoPreviewRef.current = null;
+    }
+    if (file && file.type.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      photoPreviewRef.current = url;
+      setPhotoPreview(url);
+      return;
+    }
+    setPhotoPreview(null);
+  }
 
   useEffect(() => {
     const draft = readDraft();
@@ -130,6 +146,9 @@ export function PayslipForm() {
       /* eslint-enable react-hooks/set-state-in-effect */
     }
     setDraftReady(true);
+    return () => {
+      if (photoPreviewRef.current) URL.revokeObjectURL(photoPreviewRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -146,6 +165,7 @@ export function PayslipForm() {
     setReadingFile(true);
     setError(null);
     setFileNote(null);
+    replacePhotoPreview(file);
     try {
       const body = new FormData();
       body.append("file", file);
@@ -224,6 +244,7 @@ export function PayslipForm() {
         throw new Error(data.error ?? "Could not save the payslip.");
       }
       sessionStorage.removeItem(DRAFT_KEY);
+      replacePhotoPreview(undefined);
       const next = data.readyForAnalysis ? "/analysis" : `/payslips/${data.payslip.id}`;
       router.push(next);
       router.refresh();
@@ -270,7 +291,17 @@ export function PayslipForm() {
             event.target.value = "";
           }}
         />
-        <FileUpIcon className="mx-auto size-10 text-accent" aria-hidden />
+        {photoPreview ? (
+          // eslint-disable-next-line @next/next/no-img-element -- local object URL, never stored
+          <img
+            src={photoPreview}
+            alt="Payslip photo you attached. Not stored on the server."
+            className="mx-auto max-h-64 w-full max-w-md rounded-lg object-contain ring-1 ring-foreground/10"
+            onClick={(event) => event.stopPropagation()}
+          />
+        ) : (
+          <FileUpIcon className="mx-auto size-10 text-accent" aria-hidden />
+        )}
         <h2 className="font-heading mt-3 text-2xl font-semibold">Put your payslip here</h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
           Pon la nómina aquí. Arrastra un PDF o una foto, o pulsa el botón. TruckPay lee el archivo y lo
