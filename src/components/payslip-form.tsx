@@ -9,63 +9,9 @@ import { Input } from "@/components/ui/input";
 import { frequencyMessageKey } from "@/lib/i18n";
 import type { PayFrequency } from "@/lib/payroll/types";
 
-type Line = { key: string; rawLabel: string; amount: string };
-
-type FormState = {
-  employerName: string;
-  paymentDate: string;
-  payPeriodStart: string;
-  payPeriodEnd: string;
-  payFrequency: PayFrequency;
-  employmentWeeks: string;
-  weekNumber: string;
-  basicHours: string;
-  basicRate: string;
-  basicPay: string;
-  overtimeHours: string;
-  overtimeRate: string;
-  overtimePay: string;
-  holidayPay: string;
-  grossPay: string;
-  netPay: string;
-  cumulativeGross: string;
-  cumulativeTax: string;
-  cumulativePrsi: string;
-  cumulativeUsc: string;
-  cumulativePension: string;
-  totalInsurableWeeks: string;
-};
+import { draftFromExtraction, emptyForm, emptyLine, type FormState, type Line } from "@/lib/payroll/form-draft";
 
 const DRAFT_KEY = "truckpay.payslip-draft";
-
-const emptyForm: FormState = {
-  employerName: "",
-  paymentDate: "",
-  payPeriodStart: "",
-  payPeriodEnd: "",
-  payFrequency: "unknown",
-  employmentWeeks: "",
-  weekNumber: "",
-  basicHours: "",
-  basicRate: "",
-  basicPay: "",
-  overtimeHours: "",
-  overtimeRate: "",
-  overtimePay: "",
-  holidayPay: "",
-  grossPay: "",
-  netPay: "",
-  cumulativeGross: "",
-  cumulativeTax: "",
-  cumulativePrsi: "",
-  cumulativeUsc: "",
-  cumulativePension: "",
-  totalInsurableWeeks: "",
-};
-
-function emptyLine(seed?: string): Line {
-  return { key: seed ?? crypto.randomUUID(), rawLabel: "", amount: "" };
-}
 
 function readDraft(): { form: FormState; allowances: Line[]; deductions: Line[] } | null {
   if (typeof window === "undefined") return null;
@@ -116,6 +62,7 @@ export function PayslipForm() {
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoPreviewRef = useRef<string | null>(null);
+  const fileReadLock = useRef(false);
 
   function replacePhotoPreview(file: File | undefined) {
     if (photoPreviewRef.current) {
@@ -156,11 +103,11 @@ export function PayslipForm() {
   }
 
   async function onPickFile(file: File | undefined) {
-    if (!file) return;
+    if (!file || fileReadLock.current || pending) return;
+    fileReadLock.current = true;
     setReadingFile(true);
     setError(null);
-    setFileNote(null);
-    replacePhotoPreview(file);
+
     try {
       const body = new FormData();
       body.append("file", file);
@@ -171,6 +118,7 @@ export function PayslipForm() {
       });
       const data = (await res.json()) as {
         error?: string;
+        kind?: string;
         fileLabel?: string;
         message?: string;
         fields?: Record<string, string | number | null>;
@@ -178,12 +126,15 @@ export function PayslipForm() {
         allowances?: { rawLabel: string; amount: number }[];
       };
       if (!res.ok) throw new Error(data.error ?? t("form.readError"));
+      if (data.kind === "unsupported") throw new Error(data.message ?? t("form.readError"));
+      replacePhotoPreview(file);
       setFileLabel(data.fileLabel ?? file.name);
       setFileNote(data.message ?? t("form.fileRead"));
       applyExtracted(data.fields ?? {}, data.deductions ?? [], data.allowances ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("form.readError"));
     } finally {
+      fileReadLock.current = false;
       setReadingFile(false);
     }
   }
@@ -207,25 +158,15 @@ export function PayslipForm() {
     extractedDeductions: { rawLabel: string; amount: number }[],
     extractedAllowances: { rawLabel: string; amount: number }[],
   ) {
-    setForm((prev) => {
-      const next = { ...prev };
-      for (const key of Object.keys(emptyForm) as (keyof FormState)[]) {
-        const value = fields[key];
-        if (value == null || value === "") continue;
-        (next as Record<string, string>)[key] = String(value);
-      }
-      return next;
-    });
-    if (extractedDeductions.length) {
-      setDeductions(extractedDeductions.map((line) => ({ key: crypto.randomUUID(), rawLabel: line.rawLabel, amount: String(line.amount) })));
-    }
-    if (extractedAllowances.length) {
-      setAllowances(extractedAllowances.map((line) => ({ key: crypto.randomUUID(), rawLabel: line.rawLabel, amount: String(line.amount) })));
-    }
+    const draft = draftFromExtraction(fields, extractedDeductions, extractedAllowances);
+    setForm(draft.form);
+    setDeductions(draft.deductions);
+    setAllowances(draft.allowances);
   }
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (fileReadLock.current || pending) return;
     setPending(true);
     setError(null);
     try {
@@ -309,7 +250,7 @@ export function PayslipForm() {
             name="payslip-file"
             type="file"
             accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp"
-            disabled={readingFile}
+            disabled={readingFile || pending}
             className="max-w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
           />
         </label>
@@ -326,6 +267,7 @@ export function PayslipForm() {
         {t("form.afterFile")}
       </p>
 
+      <fieldset disabled={readingFile || pending} className="space-y-8 min-w-0">
       <Section title={t("form.whoWhen")}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("form.paymentDate")}>
@@ -494,8 +436,9 @@ export function PayslipForm() {
         />
       </Section>
 
+      </fieldset>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      <Button type="submit" disabled={pending} className="bg-accent text-accent-foreground hover:bg-accent/90">
+      <Button type="submit" disabled={pending || readingFile} className="bg-accent text-accent-foreground hover:bg-accent/90">
         {pending ? t("form.checking") : t("form.check")}
       </Button>
     </form>
