@@ -258,12 +258,9 @@ export function PayslipForm() {
   return (
     <form onSubmit={onSubmit} autoComplete="off" className="space-y-8">
       <section
-        className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+        className={`rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
           dragging ? "border-accent bg-accent/10" : "border-foreground/20 bg-card"
         }`}
-        onClick={() => {
-          if (!readingFile) fileInputRef.current?.click();
-        }}
         onDragEnter={(event) => {
           event.preventDefault();
           setDragging(true);
@@ -279,45 +276,39 @@ export function PayslipForm() {
           void onPickFile(event.dataTransfer.files[0]);
         }}
       >
-        <input
-          ref={fileInputRef}
-          id="payslip-file"
-          name="payslip-file"
-          type="file"
-          accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp"
-          className="sr-only"
-          onChange={(event) => {
-            void onPickFile(event.target.files?.[0]);
-            event.target.value = "";
-          }}
-        />
         {photoPreview ? (
           // eslint-disable-next-line @next/next/no-img-element -- local object URL, never stored
           <img
             src={photoPreview}
             alt="Payslip photo you attached. Not stored on the server."
             className="mx-auto max-h-64 w-full max-w-md rounded-lg object-contain ring-1 ring-foreground/10"
-            onClick={(event) => event.stopPropagation()}
           />
         ) : (
           <FileUpIcon className="mx-auto size-10 text-accent" aria-hidden />
         )}
         <h2 className="font-heading mt-3 text-2xl font-semibold">Put your payslip here</h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-          Pon la nómina aquí. Arrastra un PDF o una foto, o pulsa el botón. TruckPay lee el archivo y lo
+          Pon la nómina aquí. Arrastra un PDF o una foto, o elige un archivo. TruckPay lee el archivo y lo
           descarta — no lo guarda.
         </p>
-        <Button
-          type="button"
-          className="mt-4 bg-accent text-accent-foreground hover:bg-accent/90"
-          disabled={readingFile}
-          onClick={(event) => {
-            event.stopPropagation();
-            fileInputRef.current?.click();
-          }}
-        >
-          {readingFile ? "Reading…" : "Choose PDF or photo"}
-        </Button>
+        <label className="mt-4 inline-flex cursor-pointer flex-col items-center gap-2">
+          <span className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground">
+            {readingFile ? "Reading…" : "Choose PDF or photo"}
+          </span>
+          <input
+            ref={fileInputRef}
+            id="payslip-file"
+            name="payslip-file"
+            type="file"
+            accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp"
+            disabled={readingFile}
+            className="max-w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void onPickFile(file);
+            }}
+          />
+        </label>
         {fileLabel ? (
           <p className="mt-3 text-sm font-medium">
             Attached: {fileLabel}
