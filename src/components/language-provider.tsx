@@ -2,11 +2,12 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
-  LOCALE_COOKIE,
   dictionaries,
   getByPath,
   interpolate,
-  localeMeta,
+  isLocale,
+  persistLocale,
+  readStoredLocale,
   type Locale,
   type MessageKey,
 } from "@/lib/i18n";
@@ -21,16 +22,6 @@ type LanguageContextValue = {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-function persistLocale(locale: Locale) {
-  document.cookie = `${LOCALE_COOKIE}=${locale}; Path=/; Max-Age=31536000; SameSite=Lax`;
-  try {
-    window.localStorage.setItem(LOCALE_COOKIE, locale);
-  } catch {
-    /* private mode */
-  }
-  document.documentElement.lang = localeMeta[locale].htmlLang;
-}
-
 export function LanguageProvider({
   initialLocale,
   children,
@@ -41,13 +32,19 @@ export function LanguageProvider({
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next);
+    if (!isLocale(next)) return;
     persistLocale(next);
+    setLocaleState(next);
   }, []);
 
   useEffect(() => {
-    persistLocale(locale);
-  }, [locale]);
+    const stored = readStoredLocale();
+    const next = stored ?? initialLocale;
+    /* eslint-disable react-hooks/set-state-in-effect -- restore cookie/localStorage after mount */
+    setLocaleState(next);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    persistLocale(next);
+  }, [initialLocale]);
 
   const t = useCallback<Translate>(
     (key, vars) => interpolate(getByPath(dictionaries[locale], key), vars),

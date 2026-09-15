@@ -9,6 +9,7 @@ export {
   type Locale,
 } from "./config";
 export { dictionaries } from "./dictionaries";
+export { persistLocale, readStoredLocale } from "./persist";
 export { en, type Messages } from "./en";
 export {
   flattenKeys,
