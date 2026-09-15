@@ -8,7 +8,8 @@
     "start": "next start --port 43217 --hostname 0.0.0.0",
     "lint": "eslint",
     "test": "tsx --test src/lib/payroll/*.test.ts src/lib/i18n/*.test.ts src/lib/persistence/*.test.ts",
-    "db:migrate": "node scripts/migrate-db.mjs"
+    "db:migrate": "node scripts/migrate-db.mjs",
+    "db:import": "tsx scripts/import-payroll.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

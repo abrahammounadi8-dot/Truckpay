@@ -1,3 +1,5 @@
+import { prepareImport, importRecords } from "./import";
+import { toStoredPayslip } from "@/lib/payroll/parse";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -46,7 +48,23 @@ test("PostgreSQL storage preserves payloads, isolates owners, and enforces dupli
     assert.equal(await repository.wipe(alice), 0);
     assert.equal(await repository.wipe(bob), 1);
     assert.deepEqual(await repository.list("profile", bob), []);
+
     assert.deepEqual(await repository.list("payslip", bob), []);
+    const queryable = { async query(sql: string, params?: unknown[]) {
+      const result = await db.query<Record<string, unknown>>(sql, params);
+      return { rows: result.rows, rowCount: result.affectedRows ?? result.rows.length };
+    }};
+    const original = toStoredPayslip(alice, { paymentDate: "2026-09-01", grossPay: 700 });
+    const records = prepareImport({ payslips: [original] }, { profiles: [] });
+    assert.deepEqual(await importRecords(queryable, records), { inserted: 1, unchanged: 0 });
+    assert.deepEqual(await importRecords(queryable, records), { inserted: 0, unchanged: 1 });
+    const another = toStoredPayslip(alice, { paymentDate: "2026-09-08", grossPay: 800 });
+    const conflict = { ...original, grossPay: 701 };
+    await db.exec("BEGIN");
+    await assert.rejects(importRecords(queryable, prepareImport({ payslips: [another, conflict] }, { profiles: [] })), /conflicts/);
+    await db.exec("ROLLBACK");
+    assert.equal((await repository.list("payslip", alice)).length, 1);
+    assert.throws(() => prepareImport({ payslips: [{ id: "bad", userId: "not-a-uuid" }] }, { profiles: [] }), /Invalid/);
   } finally { await db.close(); }
 });
 

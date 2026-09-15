@@ -1,3 +1,4 @@
+import { translateDiagnosticSpanish } from "./diagnostics-es";
 import type { Locale } from "./config";
 import { interpolate } from "./lookup";
 /** Columns: en, es, pl, pt, lt, ro, ru. */
@@ -2066,5 +2067,6 @@ export function translateUi(locale: Locale, text: string, vars?: Record<string, 
     const match = text.match(pattern);
     if (match) return interpolate(row[localeIndex[locale]], Object.fromEntries(names.map((name, i) => [name, match[i + 1]])));
   }
+  if (locale === "es") return translateDiagnosticSpanish(text, value => catalog.get(value)?.[1] ?? value) ?? text;
   return text;
 }

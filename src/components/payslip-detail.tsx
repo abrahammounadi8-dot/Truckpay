@@ -151,7 +151,7 @@ export function PayslipDetail({
                 <div>
                   <p className="text-sm font-medium">{line.rawLabel}</p>
                   <p className="text-xs text-muted-foreground">
-                    {tr(DEDUCTION_LABELS[line.normalizedCategory])} · {line.statutoryClass.replaceAll("_", " ")}
+                    {tr(DEDUCTION_LABELS[line.normalizedCategory])} · {tr(line.statutoryClass.replaceAll("_", " "))}
                     {line.needsReview ? ` · ${t("detail.needsReview")}` : ""}
                   </p>
                 </div>
@@ -177,7 +177,7 @@ export function PayslipDetail({
                   <Badge variant={item.status === "confirmed" ? "default" : item.status === "insufficient_data" ? "secondary" : "destructive"}>
                     {tr(ANOMALY_STATUS_LABELS[item.status])}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">{item.kind.replaceAll("_", " ")}</span>
+                  <span className="text-xs text-muted-foreground">{tr(item.kind.replaceAll("_", " "))}</span>
                 </div>
                 <p className="mt-2 text-sm leading-6">{tr(item.summary)}</p>
               </li>
