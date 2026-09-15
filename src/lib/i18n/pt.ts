@@ -251,7 +251,7 @@ export const pt: Messages = {
     p1: "A TruckPay separa identidade e folha. Identifica-te um UUID aleatório neste dispositivo — não um PPSN, carta de condução nem número de empregado.",
     p2: "Cinco camadas ficam à parte:",
     l1: "Conta / identidade — só o UUID aleatório.",
-    l2: "Documentos originais — não são carregados; a retenção por defeito é processar e apagar.",
+    l2: "Os documentos são enviados para extração. Os ficheiros temporários de leitura são eliminados após o processamento; os originais não são guardados.",
     l3: "Folha extraída — valores que escreves, privados no Meu TruckPay.",
     l4: "Folha normalizada — categorias e equivalentes semanais para a tua análise.",
     l5: "Dados analíticos agregados — medianas e tamanhos de amostra para TruckPay Empresas, sem identidade do motorista. É agregação pseudonimizada, não uma afirmação de anonimato.",

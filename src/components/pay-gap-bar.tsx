@@ -1,13 +1,14 @@
+"use client";
+import { useUiCopy } from "@/components/language-provider";
 import type { CompanyStats } from "@/lib/metrics";
 import { formatMoney } from "@/lib/metrics";
 import { cn } from "@/lib/utils";
 
 export function PayGapBar({ stats, compact = false }: { stats: CompanyStats; compact?: boolean }) {
+  const tr = useUiCopy();
   if (stats.count === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        No driver settlements on file yet. The first wage slip sets the board.
-      </p>
+      <p className="text-sm text-muted-foreground">{tr("No driver settlements on file yet. The first wage slip sets the board.")}</p>
     );
   }
 
@@ -26,7 +27,7 @@ export function PayGapBar({ stats, compact = false }: { stats: CompanyStats; com
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              {hasQuote ? "Missing vs the quote" : "Average take-home"}
+              {hasQuote ? tr("Missing vs the quote") : tr("Average take-home")}
             </p>
             <p
               className={cn(
@@ -41,17 +42,17 @@ export function PayGapBar({ stats, compact = false }: { stats: CompanyStats; com
                     ? `+${formatMoney(Math.abs(euros))}`
                     : formatMoney(0)
                 : formatMoney(reported)}
-              <span className="ml-1.5 text-base font-medium text-muted-foreground">/wk</span>
+              <span className="ml-1.5 text-base font-medium text-muted-foreground">{tr("/wk")}</span>
             </p>
           </div>
           <p className="rounded-full bg-muted px-2 py-0.5 font-mono text-xs tabular-nums">
-            {stats.count} {stats.count === 1 ? "slip" : "slips"}
+            {tr("Saved slips: {n}", { n: stats.count })}
             {gap != null ? ` · ${gap}%` : ""}
           </p>
         </div>
       ) : null}
-      {hasQuote ? <Bar label="Quoted" value={advertised} max={max} tone="ad" /> : null}
-      <Bar label="Cleared" value={reported} max={max} tone={hasQuote && worse ? "down" : "up"} />
+      {hasQuote ? <Bar label={tr("Quoted")} value={advertised} max={max} tone="ad" /> : null}
+      <Bar label={tr("Cleared")} value={reported} max={max} tone={hasQuote && worse ? "down" : "up"} />
     </div>
   );
 }
@@ -67,12 +68,13 @@ function Bar({
   max: number;
   tone: "ad" | "up" | "down";
 }) {
+  const tr = useUiCopy();
   const width = Math.max(10, Math.round((value / max) * 100));
   return (
     <div>
       <div className="mb-1 flex items-center justify-between text-xs">
         <span className="text-muted-foreground">{label}</span>
-        <span className="font-mono tabular-nums">{formatMoney(value)}/wk</span>
+        <span className="font-mono tabular-nums">{formatMoney(value)}{tr("/wk")}</span>
       </div>
       <div className="h-2.5 overflow-hidden rounded-full bg-muted">
         <div

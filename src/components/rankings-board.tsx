@@ -1,4 +1,5 @@
 "use client";
+import { useUiCopy } from "@/components/language-provider";
 
 import Link from "next/link";
 import { useMemo } from "react";
@@ -12,6 +13,7 @@ import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function RankingsBoard() {
+  const tr = useUiCopy();
   const { reports } = useAppStore();
   const ranked = useMemo(() => {
     return [...fleet]
@@ -23,13 +25,9 @@ export function RankingsBoard() {
   if (ranked.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card px-6 py-16 text-center">
-        <p className="font-heading text-xl font-semibold">No quote gaps to rank yet</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          A ranking needs a wage slip that includes both take-home and what the firm quoted. That is driver-reported evidence. TruckPay will not invent either number.
-        </p>
-        <Link href="/report" className={cn(buttonVariants(), "mt-5 inline-flex")}>
-          File a wage slip
-        </Link>
+        <p className="font-heading text-xl font-semibold">{tr("No quote gaps to rank yet")}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{tr("A ranking needs a wage slip that includes both take-home and what the firm quoted. That is driver-reported evidence. TruckPay will not invent either number.")}</p>
+        <Link href="/report" className={cn(buttonVariants(), "mt-5 inline-flex")}>{tr("File a wage slip")}</Link>
       </div>
     );
   }
@@ -54,14 +52,13 @@ export function RankingsBoard() {
                   <p className="text-xs text-muted-foreground">{company.headquarters}</p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <Badge variant={gap >= 20 ? "destructive" : gap <= 8 ? "secondary" : "outline"}>
-                      {gap}% short
+                      {tr("{n}% short", { n: gap })}
                     </Badge>
                     <span className="font-heading text-lg font-semibold tabular-nums text-pay-down">
-                      −{formatMoney(missing)}/wk
-                    </span>
+                      −{formatMoney(missing)}{tr("/wk")}</span>
                     <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                      {stats.avgQuoted != null ? formatMoney(stats.avgQuoted) : "—"} quoted →{" "}
-                      {stats.avgWeekly != null ? formatMoney(stats.avgWeekly) : "—"} take-home
+                      {stats.avgQuoted != null ? formatMoney(stats.avgQuoted) : "—"} {tr("Quoted")} →{" "}
+                      {stats.avgWeekly != null ? formatMoney(stats.avgWeekly) : "—"} {tr("Cleared")}
                     </span>
                   </div>
                 </div>

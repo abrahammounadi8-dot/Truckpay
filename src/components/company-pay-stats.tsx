@@ -1,4 +1,5 @@
 "use client";
+import { useUiCopy } from "@/components/language-provider";
 
 import { Badge } from "@/components/ui/badge";
 import { formatEuroMaybe } from "@/lib/payroll/format";
@@ -15,92 +16,89 @@ import {
 } from "@/lib/payroll/types";
 
 export function CompanyPayStatsPanel({ stats }: { stats: CompanyPayStats }) {
+  const tr = useUiCopy();
   const publishedSlices = stats.slices.filter((slice) => slice.published);
 
   return (
     <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="font-heading text-xl font-semibold">Payroll-verified pay</h2>
-        <Badge>{EVIDENCE_LEVEL_LABELS[stats.evidenceLevel]}</Badge>
-        <Badge variant="secondary">Confidence {PAY_CONFIDENCE_LABELS[stats.confidence]}</Badge>
+        <h2 className="font-heading text-xl font-semibold">{tr("Payroll-verified pay")}</h2>
+        <Badge>{tr(EVIDENCE_LEVEL_LABELS[stats.evidenceLevel])}</Badge>
+        <Badge variant="secondary">{tr("Confidence")}{" "}{tr(PAY_CONFIDENCE_LABELS[stats.confidence])}</Badge>
       </div>
-      <p className="mt-2 text-sm text-muted-foreground">{stats.headline}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{stats.disclaimer}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{confidenceRuleText(stats.confidence)}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{tr("Sample: {drivers} drivers; {slips} payslips.", { drivers: stats.bands.reduce((n, b) => n + b.driverCount, 0), slips: stats.bands.reduce((n, b) => n + b.verifiedPayslipCount, 0) })}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{tr(stats.disclaimer)}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{tr(confidenceRuleText(stats.confidence))}</p>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         {stats.bands.map((band) => (
           <article key={band.band} className="rounded-lg border border-border p-4">
-            <p className="font-heading text-lg font-semibold">{band.label}</p>
+            <p className="font-heading text-lg font-semibold">{tr(band.label)}</p>
             <p className="text-xs text-muted-foreground">
-              {EVIDENCE_LEVEL_LABELS[band.evidenceLevel]} · {PAY_CONFIDENCE_LABELS[band.confidence]}
+              {tr(EVIDENCE_LEVEL_LABELS[band.evidenceLevel])} · {tr(PAY_CONFIDENCE_LABELS[band.confidence])}
             </p>
             {band.published ? (
               <dl className="mt-3 space-y-1 text-sm">
                 <div className="flex justify-between gap-3">
-                  <dt>Median base hourly rate</dt>
+                  <dt>{tr("Median base hourly rate")}</dt>
                   <dd className="font-mono">{formatEuroMaybe(band.medianBaseHourlyRate)}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt>Median gross / week equiv.</dt>
+                  <dt>{tr("Median gross / week equiv.")}</dt>
                   <dd className="font-mono">{formatEuroMaybe(band.medianObservedGrossWeekly)}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt>Median paid hours / week equiv.</dt>
+                  <dt>{tr("Median paid hours / week equiv.")}</dt>
                   <dd className="font-mono">
                     {band.medianPaidHoursWeekly != null ? band.medianPaidHoursWeekly : "—"}
                   </dd>
                 </div>
               </dl>
             ) : (
-              <p className="mt-3 text-sm text-muted-foreground">Median not published.</p>
+              <p className="mt-3 text-sm text-muted-foreground">{tr("Median not published.")}</p>
             )}
-            <p className="mt-3 text-xs text-muted-foreground">{band.sampleNote}</p>
+            <p className="mt-3 text-xs text-muted-foreground">{tr("Sample: {drivers} drivers; {slips} payslips.", { drivers: band.driverCount, slips: band.verifiedPayslipCount })}{" "}{tr(band.published ? "Small samples are not statistically representative. Medians do not establish a company-wide salary." : "At least three drivers are needed to publish a median.")}</p>
           </article>
         ))}
       </div>
       {publishedSlices.length ? (
         <div className="mt-6 space-y-3">
-          <h3 className="font-heading text-lg font-semibold">By job, vehicle and shift</h3>
-          <p className="text-sm text-muted-foreground">
-            Only slices with at least three drivers. Not “the company salary”.
-          </p>
+          <h3 className="font-heading text-lg font-semibold">{tr("By job, vehicle and shift")}</h3>
+          <p className="text-sm text-muted-foreground">{tr("Only slices with at least three drivers. Not “the company salary”.")}</p>
           {publishedSlices.map((slice) => (
             <article
               key={`${slice.jobType}-${slice.vehicleType}-${slice.shiftType}-${slice.timeFraction}-${slice.tenureBand}`}
               className="rounded-lg border border-border p-4 text-sm"
             >
               <p className="font-medium">
-                {VEHICLE_TYPE_LABELS[slice.vehicleType]} · {SHIFT_TYPE_LABELS[slice.shiftType]} ·{" "}
-                {TENURE_BAND_LABELS[slice.tenureBand]}
+                {tr(VEHICLE_TYPE_LABELS[slice.vehicleType])} · {tr(SHIFT_TYPE_LABELS[slice.shiftType])} ·{" "}
+                {tr(TENURE_BAND_LABELS[slice.tenureBand])}
               </p>
               <p className="text-xs text-muted-foreground">
-                {JOB_TYPE_LABELS[slice.jobType]} · {TIME_FRACTION_LABELS[slice.timeFraction]} ·{" "}
-                {EVIDENCE_LEVEL_LABELS[slice.evidenceLevel]} · {PAY_CONFIDENCE_LABELS[slice.confidence]}
+                {tr(JOB_TYPE_LABELS[slice.jobType])} · {tr(TIME_FRACTION_LABELS[slice.timeFraction])} ·{" "}
+                {tr(EVIDENCE_LEVEL_LABELS[slice.evidenceLevel])} · {tr(PAY_CONFIDENCE_LABELS[slice.confidence])}
               </p>
               <dl className="mt-2 grid gap-1 sm:grid-cols-3">
                 <div>
-                  <dt className="text-xs text-muted-foreground">Median rate</dt>
+                  <dt className="text-xs text-muted-foreground">{tr("Median rate")}</dt>
                   <dd className="font-mono">{formatEuroMaybe(slice.medianBaseHourlyRate)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted-foreground">Median gross / week equiv.</dt>
+                  <dt className="text-xs text-muted-foreground">{tr("Median gross / week equiv.")}</dt>
                   <dd className="font-mono">{formatEuroMaybe(slice.medianGrossWeekly)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted-foreground">Median hours / week equiv.</dt>
+                  <dt className="text-xs text-muted-foreground">{tr("Median hours / week equiv.")}</dt>
                   <dd className="font-mono">
                     {slice.medianPaidHoursWeekly != null ? slice.medianPaidHoursWeekly : "—"}
                   </dd>
                 </div>
               </dl>
-              <p className="mt-2 text-xs text-muted-foreground">{slice.sampleNote}</p>
+              <p className="mt-2 text-xs text-muted-foreground">{tr("Sample: {drivers} drivers; {slips} payslips.", { drivers: slice.driverCount, slips: slice.verifiedPayslipCount })}</p>
             </article>
           ))}
         </div>
       ) : (
-        <p className="mt-5 text-sm text-muted-foreground">
-          No job/vehicle/shift slice has three payroll-verified drivers yet, so those medians stay unpublished.
-        </p>
+        <p className="mt-5 text-sm text-muted-foreground">{tr("No job/vehicle/shift slice has three payroll-verified drivers yet, so those medians stay unpublished.")}</p>
       )}
     </section>
   );

@@ -251,7 +251,7 @@ export const pl: Messages = {
     p1: "TruckPay oddziela tożsamość od listy płac. Identyfikuje Cię losowy UUID na tym urządzeniu — nie PPSN, prawo jazdy ani numer pracownika.",
     p2: "Pięć warstw zostaje osobno:",
     l1: "Konto / tożsamość — tylko losowy UUID.",
-    l2: "Oryginalne dokumenty — nie wysyłane; domyślnie przetwórz i usuń.",
+    l2: "Dokumenty są przesyłane do odczytu. Tymczasowe pliki OCR są usuwane po przetworzeniu; oryginały nie są przechowywane.",
     l3: "Wyciągnięta lista płac — kwoty, które wpisujesz, prywatne w Mój TruckPay.",
     l4: "Znormalizowana lista płac — kategorie i ekwiwalenty tygodniowe do Twojej analizy.",
     l5: "Zagregowane dane analityczne — mediany i wielkości prób dla TruckPay Firmy, bez tożsamości kierowcy. To pseudonimizowana agregacja, nie twierdzenie o anonimowości.",

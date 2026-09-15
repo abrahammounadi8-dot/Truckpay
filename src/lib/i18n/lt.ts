@@ -251,7 +251,7 @@ export const lt: Messages = {
     p1: "TruckPay atskiria tapatybę nuo algos. Jus identifikuoja atsitiktinis UUID šiame įrenginyje — ne PPSN, vairuotojo pažymėjimas ar darbuotojo numeris.",
     p2: "Penki sluoksniai lieka atskiri:",
     l1: "Paskyra / tapatybė — tik atsitiktinis UUID.",
-    l2: "Originalūs dokumentai — neįkeliami; numatytoji saugojimo taisyklė yra apdoroti ir ištrinti.",
+    l2: "Dokumentai įkeliami duomenims išgauti. Laikini OCR failai po apdorojimo pašalinami; originalai nesaugomi.",
     l3: "Ištraukti algos duomenys — skaičiai, kuriuos įvedate, privatūs Mano TruckPay.",
     l4: "Normalizuota alga — kategorijos ir savaitiniai ekvivalentai jūsų analizei.",
     l5: "Sukaupti analitiniai duomenys — medianos ir imčių dydžiai TruckPay įmonėms, be vairuotojo tapatybės. Tai pseudonimizuota agregacija, ne teiginys, kad duomenys anoniminiai.",

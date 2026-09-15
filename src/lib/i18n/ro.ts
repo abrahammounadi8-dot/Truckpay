@@ -251,7 +251,7 @@ export const ro: Messages = {
     p1: "TruckPay separă identitatea de salariu. Ești identificat printr-un UUID aleatoriu pe acest dispozitiv — nu PPSN, permis de conducere sau număr de angajat.",
     p2: "Cinci straturi rămân separate:",
     l1: "Cont / identitate — doar UUID-ul aleatoriu.",
-    l2: "Documente originale — nu se încarcă; reținerea implicită e procesare și ștergere.",
+    l2: "Documentele sunt încărcate pentru extragerea datelor. Fișierele OCR temporare sunt șterse după procesare; originalele nu sunt păstrate.",
     l3: "Salariu extras — cifrele pe care le scrii, private în TruckPay-ul meu.",
     l4: "Salariu normalizat — categorii și echivalente săptămânale pentru analiza ta.",
     l5: "Date analitice agregate — mediane și mărimi de eșantion pentru TruckPay Companii, fără identitatea șoferului. Este agregare pseudonimizată, nu o afirmație de anonimitate.",

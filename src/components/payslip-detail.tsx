@@ -1,4 +1,5 @@
 "use client";
+import { useUiCopy } from "@/components/language-provider";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -33,6 +34,7 @@ export function PayslipDetail({
   findings: Finding[];
   anomalies?: Anomaly[];
 }) {
+  const tr = useUiCopy();
   const router = useRouter();
   const { t } = useT();
   const [pending, setPending] = useState(false);
@@ -114,16 +116,16 @@ export function PayslipDetail({
           <ProvenanceItem label={t("form.overtimeRate")} field={slip.provenance?.overtimeRate} fallback={formatEuroMaybe(slip.overtimeRate)} money />
           <Item label={t("detail.overtimePay")} value={formatEuroMaybe(slip.overtimePay)} />
           <ProvenanceItem label={t("form.holidayPay")} field={slip.provenance?.holidayPay} fallback={formatEuroMaybe(slip.holidayPay ?? null)} money />
-          <ProvenanceItem label="Tax (PAYE lines)" field={slip.provenance?.tax} fallback="—" money />
+          <ProvenanceItem label={tr("Tax (PAYE lines)")} field={slip.provenance?.tax} fallback="—" money />
           <ProvenanceItem label="PRSI" field={slip.provenance?.prsi} fallback="—" money />
           <ProvenanceItem label="USC" field={slip.provenance?.usc} fallback="—" money />
-          <ProvenanceItem label="Pension" field={slip.provenance?.pension} fallback="—" money />
-          <Item label="Cumulative gross" value={formatEuroMaybe(slip.cumulativeGross)} />
-          <Item label="Cumulative tax" value={formatEuroMaybe(slip.cumulativeTax)} />
-          <Item label="Cumulative PRSI" value={formatEuroMaybe(slip.cumulativePrsi ?? null)} />
-          <Item label="Cumulative USC" value={formatEuroMaybe(slip.cumulativeUsc ?? null)} />
-          <Item label="Cumulative pension" value={formatEuroMaybe(slip.cumulativePension ?? null)} />
-          <Item label="YTD insurable weeks" value={n(slip.totalInsurableWeeks)} />
+          <ProvenanceItem label={tr("Pension")} field={slip.provenance?.pension} fallback="—" money />
+          <Item label={tr("Cumulative gross")} value={formatEuroMaybe(slip.cumulativeGross)} />
+          <Item label={tr("Cumulative tax")} value={formatEuroMaybe(slip.cumulativeTax)} />
+          <Item label={tr("Cumulative PRSI")} value={formatEuroMaybe(slip.cumulativePrsi ?? null)} />
+          <Item label={tr("Cumulative USC")} value={formatEuroMaybe(slip.cumulativeUsc ?? null)} />
+          <Item label={tr("Cumulative pension")} value={formatEuroMaybe(slip.cumulativePension ?? null)} />
+          <Item label={tr("YTD insurable weeks")} value={n(slip.totalInsurableWeeks)} />
         </dl>
       </section>
 
@@ -149,7 +151,7 @@ export function PayslipDetail({
                 <div>
                   <p className="text-sm font-medium">{line.rawLabel}</p>
                   <p className="text-xs text-muted-foreground">
-                    {DEDUCTION_LABELS[line.normalizedCategory]} · {line.statutoryClass.replaceAll("_", " ")}
+                    {tr(DEDUCTION_LABELS[line.normalizedCategory])} · {line.statutoryClass.replaceAll("_", " ")}
                     {line.needsReview ? ` · ${t("detail.needsReview")}` : ""}
                   </p>
                 </div>
@@ -173,11 +175,11 @@ export function PayslipDetail({
               <li key={item.id} className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={item.status === "confirmed" ? "default" : item.status === "insufficient_data" ? "secondary" : "destructive"}>
-                    {ANOMALY_STATUS_LABELS[item.status]}
+                    {tr(ANOMALY_STATUS_LABELS[item.status])}
                   </Badge>
                   <span className="text-xs text-muted-foreground">{item.kind.replaceAll("_", " ")}</span>
                 </div>
-                <p className="mt-2 text-sm leading-6">{item.summary}</p>
+                <p className="mt-2 text-sm leading-6">{tr(item.summary)}</p>
               </li>
             ))}
           </ul>
@@ -200,17 +202,17 @@ export function PayslipDetail({
                     {t(epistemicKey(finding.epistemic))}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    confidence {Math.round(finding.confidence * 100)}%
+                    {tr("Confidence")} {Math.round(finding.confidence * 100)}%
                   </span>
                 </div>
-                <p className="mt-2 text-sm leading-6">{finding.summary}</p>
+                <p className="mt-2 text-sm leading-6">{tr(finding.summary)}</p>
                 <p className="mt-2 font-mono text-xs text-muted-foreground">
                   {finding.evidence.fields.join(" · ")}
                   {finding.evidence.expected != null
-                    ? ` · expected ${evidenceValue(finding, finding.evidence.expected)}`
+                    ? ` · ${tr("Expected")} ${evidenceValue(finding, finding.evidence.expected)}`
                     : ""}
                   {finding.evidence.actual != null
-                    ? ` · on slip ${evidenceValue(finding, finding.evidence.actual)}`
+                    ? ` · ${tr("On slip")} ${evidenceValue(finding, finding.evidence.actual)}`
                     : ""}
                 </p>
               </li>
@@ -227,6 +229,7 @@ export function PayslipDetail({
 }
 
 function WeekBanner({ slip }: { slip: PublicPayslip }) {
+  const tr = useUiCopy();
   const { t } = useT();
   const assignment =
     slip.weekAssignment ??
@@ -248,16 +251,17 @@ function WeekBanner({ slip }: { slip: PublicPayslip }) {
       <div className="flex flex-wrap items-center gap-2">
         <p className="font-heading text-lg font-semibold">{title}</p>
         <Badge variant={assignment.verification_status === "source" ? "default" : assignment.verification_status === "derived" ? "secondary" : "destructive"}>
-          {WEEK_STATUS_LABELS[assignment.verification_status]}
+          {tr(WEEK_STATUS_LABELS[assignment.verification_status])}
         </Badge>
         {assignment.derived ? <span className="text-xs text-muted-foreground">{t("detail.derivedNotPrinted")}</span> : null}
       </div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{assignment.reason}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{tr(assignment.reason)}</p>
     </section>
   );
 }
 
 function ExpectedPay({ record }: { record: PublicPayslip["weeklyRecord"] }) {
+  const tr = useUiCopy();
   const { t } = useT();
   if (!record) return null;
   return (
@@ -272,7 +276,7 @@ function ExpectedPay({ record }: { record: PublicPayslip["weeklyRecord"] }) {
         />
         <Item label={t("detail.variance")} value={record.variance == null ? "—" : formatEuro(record.variance)} />
       </dl>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">{record.expected.reason}</p>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">{tr(record.expected.reason)}</p>
     </section>
   );
 }
@@ -288,6 +292,7 @@ function ProvenanceItem({
   fallback: string;
   money?: boolean;
 }) {
+  const tr = useUiCopy();
   const display =
     field == null || field.value == null
       ? fallback
@@ -300,7 +305,7 @@ function ProvenanceItem({
       <dd className="font-mono tabular-nums">{display}</dd>
       {field ? (
         <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
-          {WEEK_STATUS_LABELS[field.verification_status]}
+          {tr(WEEK_STATUS_LABELS[field.verification_status])}
         </p>
       ) : null}
     </div>
