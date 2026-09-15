@@ -38,6 +38,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local JSON stand-in (private payslips)
+/data/payslips.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
