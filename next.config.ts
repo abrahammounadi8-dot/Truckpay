@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["unpdf"],
+  allowedDevOrigins: ["127.0.0.1", "*.trycloudflare.com"],
 };
+
+export default nextConfig;
 
 export default nextConfig;
