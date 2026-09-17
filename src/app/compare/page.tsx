@@ -1,4 +1,3 @@
-import { requireComparisonAccess } from "@/lib/payroll/access";
 import type { Metadata } from "next";
 import { PageIntro } from "@/components/page-intro";
 import { CompareTable } from "@/components/compare-table";
@@ -13,7 +12,6 @@ export default async function ComparePage({
 }: {
   searchParams: Promise<{ ids?: string }>;
 }) {
-  await requireComparisonAccess();
   const { ids } = await searchParams;
   const list = ids ? ids.split(",").map((id) => id.trim()).filter(Boolean) : [];
 

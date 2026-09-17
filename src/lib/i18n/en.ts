@@ -63,6 +63,13 @@ export type Messages = {
     step3Body: string;
     checkPayslip: string;
   };
+  access: {
+    locked: string;
+    unlocked: string;
+    howItWorks: string;
+    openAnalysis: string;
+    addPayslip: string;
+  };
   stub: {
     irelandWeekly: string;
     noSlips: string;
@@ -334,6 +341,13 @@ export const en: Messages = {
     step3Title: "Later: firms and recruiters",
     step3Body: "Company accounts are not built yet. When they are, they will never see a driver’s private payslips, history or identity.",
     checkPayslip: "Check a payslip",
+  },
+  access: {
+    locked: "{have} of {need} distinct payslips toward verified analysis. The haulier directory stays public.",
+    unlocked: "Verified payroll analysis is unlocked in this browser.",
+    howItWorks: "How My TruckPay works",
+    openAnalysis: "Open analysis",
+    addPayslip: "Add a payslip",
   },
   stub: {
     irelandWeekly: "Ireland · weekly settlement",

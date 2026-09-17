@@ -1,4 +1,3 @@
-import { requireComparisonAccess } from "@/lib/payroll/access";
 import type { Metadata } from "next";
 import { PageIntro } from "@/components/page-intro";
 import { CompanyDirectory } from "@/components/company-directory";
@@ -14,7 +13,6 @@ export default async function CompaniesPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
-  await requireComparisonAccess();
   const { q } = await searchParams;
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">

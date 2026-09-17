@@ -5,7 +5,6 @@ import { publicError } from "@/lib/payroll/privacy";
 import { getOrCreateUserId } from "@/lib/payroll/session";
 import { listPayslipsForUser, savePayslip } from "@/lib/payroll/store";
 import { toPublicPayslip } from "@/lib/payroll/format";
-import { REQUIRED_PAYSLIPS } from "@/lib/payroll/types";
 import { comparisonAccess } from "@/lib/payroll/access-state";
 import { getProfile } from "@/lib/payroll/profile-store";
 
@@ -13,11 +12,13 @@ export const runtime = "nodejs";
 
 export async function GET() {
   const userId = await getOrCreateUserId();
-  const payslips = await listPayslipsForUser(userId);
+  const [payslips, profile] = await Promise.all([listPayslipsForUser(userId), getProfile(userId)]);
+  const access = comparisonAccess(payslips, profile);
   return Response.json({
     payslips: payslips.map(toPublicPayslip),
-    required: REQUIRED_PAYSLIPS,
-    have: Math.min(payslips.length, REQUIRED_PAYSLIPS),
+    required: access.required,
+    have: access.have,
+    readyForAnalysis: access.unlocked,
   });
 }
 
@@ -62,12 +63,11 @@ export async function POST(request: Request) {
     return Response.json(publicError("Could not save"), { status: 503 });
   }
   const access = comparisonAccess([payslip, ...existing], profile);
-  const have = existing.length + 1;
   return Response.json(
     {
       payslip: toPublicPayslip(payslip),
-      have,
-      required: REQUIRED_PAYSLIPS,
+      have: access.have,
+      required: access.required,
       readyForAnalysis: access.unlocked,
     },
     { status: 201 },

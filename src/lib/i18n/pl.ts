@@ -66,6 +66,13 @@ export const pl: Messages = {
     step3Body: "Konta firm jeszcze nie istnieją. Gdy powstaną, nigdy nie zobaczą prywatnych pasków, historii ani tożsamości kierowcy.",
     checkPayslip: "Sprawdź pasek",
   },
+  access: {
+    locked: "{have} z {need} unikalnych pasków do zweryfikowanej analizy. Katalog przewoźników pozostaje publiczny.",
+    unlocked: "Zweryfikowana analiza listy płac jest odblokowana w tej przeglądarce.",
+    howItWorks: "Jak działa Mój TruckPay",
+    openAnalysis: "Otwórz analizę",
+    addPayslip: "Dodaj pasek",
+  },
   stub: {
     irelandWeekly: "Irlandia · rozliczenie tygodniowe",
     noSlips: "Na tablicy nie ma jeszcze pasków",

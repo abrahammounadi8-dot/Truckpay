@@ -66,6 +66,13 @@ export const ro: Messages = {
     step3Body: "Conturile de firmă nu sunt construite încă. Când vor fi, nu vor vedea niciodată fluturașii privați, istoricul sau identitatea unui șofer.",
     checkPayslip: "Verifică un fluturaș",
   },
+  access: {
+    locked: "{have} din {need} fluturași distincți spre analiza verificată. Directorul de transportatori rămâne public.",
+    unlocked: "Analiza salarială verificată este deblocată în acest browser.",
+    howItWorks: "Cum funcționează TruckPay-ul meu",
+    openAnalysis: "Deschide analiza",
+    addPayslip: "Adaugă un fluturaș",
+  },
   stub: {
     irelandWeekly: "Irlanda · decont săptămânal",
     noSlips: "Niciun fluturaș pe tablou încă",

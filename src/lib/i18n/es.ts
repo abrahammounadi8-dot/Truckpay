@@ -66,6 +66,13 @@ export const es: Messages = {
     step3Body: "Las cuentas de empresa aún no existen. Cuando existan, nunca verán las nóminas privadas, el historial ni la identidad de un conductor.",
     checkPayslip: "Revisar una nómina",
   },
+  access: {
+    locked: "{have} de {need} nóminas distintas para el análisis verificado. El directorio de empresas sigue siendo público.",
+    unlocked: "El análisis de nómina verificado está desbloqueado en este navegador.",
+    howItWorks: "Cómo funciona Mi TruckPay",
+    openAnalysis: "Abrir análisis",
+    addPayslip: "Añadir nómina",
+  },
   stub: {
     irelandWeekly: "Irlanda · liquidación semanal",
     noSlips: "Aún no hay nóminas en el tablero",

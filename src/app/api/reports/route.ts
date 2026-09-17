@@ -1,12 +1,9 @@
-import { comparisonDenied } from "@/lib/payroll/access";
 import { parseReportInput, toStoredReport } from "@/lib/report-input";
 import { listReports, saveReport } from "@/lib/report-store";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  const denied = await comparisonDenied();
-  if (denied) return denied;
   const company = new URL(request.url).searchParams.get("company") ?? undefined;
   const reports = await listReports(company || undefined);
   return Response.json({ reports });

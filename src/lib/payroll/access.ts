@@ -1,3 +1,4 @@
+/** Verified analysis needs three distinct slips. Public directory, compare and rankings stay open. */
 import { redirect } from "next/navigation";
 import { readUserId } from "./session";
 import { listPayslipsForUser } from "./store";
@@ -15,5 +16,15 @@ export async function requireComparisonAccess() {
 }
 export async function comparisonDenied() {
   const access = await getComparisonAccess();
-  return access.unlocked ? null : Response.json({ error: "Add three distinct payslips with their employer and pay periods to unlock comparisons.", code: "PAYSLIPS_REQUIRED", ...access }, { status: 403, headers: { "Cache-Control": "private, no-store" } });
+  return access.unlocked
+    ? null
+    : Response.json(
+        {
+          error:
+            "Add three distinct payslips with their employer and pay periods to unlock verified payroll analysis.",
+          code: "PAYSLIPS_REQUIRED",
+          ...access,
+        },
+        { status: 403, headers: { "Cache-Control": "private, no-store" } },
+      );
 }

@@ -1,6 +1,12 @@
-import { WelcomeBoard } from "@/components/welcome-board";
+import { HomeAccessBanner } from "@/components/home-access-banner";
+import { HomeBoard } from "@/components/home-board";
 import { getComparisonAccess } from "@/lib/payroll/access";
 
 export default async function HomePage() {
-  return <WelcomeBoard access={await getComparisonAccess()} />;
+  return (
+    <>
+      <HomeAccessBanner access={await getComparisonAccess()} />
+      <HomeBoard />
+    </>
+  );
 }

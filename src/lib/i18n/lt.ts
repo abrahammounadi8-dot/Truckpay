@@ -66,6 +66,13 @@ export const lt: Messages = {
     step3Body: "Įmonių paskyros dar nesukurtos. Kai bus, jos niekada nematys vairuotojo privačių algos lapelių, istorijos ar tapatybės.",
     checkPayslip: "Patikrinti algos lapelį",
   },
+  access: {
+    locked: "{have} iš {need} skirtingų algos lapelių patvirtintai analizei. Vežėjų katalogas lieka viešas.",
+    unlocked: "Patvirtinta algos analizė atrakinta šioje naršyklėje.",
+    howItWorks: "Kaip veikia Mano TruckPay",
+    openAnalysis: "Atidaryti analizę",
+    addPayslip: "Pridėti algos lapelį",
+  },
   stub: {
     irelandWeekly: "Airija · savaitinis atsiskaitymas",
     noSlips: "Lentoje dar nėra lapelių",

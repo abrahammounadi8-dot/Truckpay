@@ -4,7 +4,12 @@
 
 ## Correcciones aplicadas en la vista local
 
-- Registro personal: menú, título y estado vacío en español explican que se puede empezar con una nómina. La comparación exige tres y datos de empresa/periodo.
+- El directorio de empresas, fichas, rankings, compare y reportes públicos vuelven a ser públicos.
+- El análisis verificado (`/analysis` y su API) sigue exigiendo tres nóminas distintas de la misma empresa, con periodo completo.
+- La portada pública (HomeBoard) se restaura; `/welcome` explica el camino personal; un aviso en portada muestra 0–3 nóminas.
+- El progreso `have` usa hashes únicos, no el recuento bruto de filas.
+
+- Registro personal: menú, título y estado vacío en español explican que se puede empezar con una nómina. El análisis verificado exige tres y datos de empresa/periodo.
 - Borrado: confirmación explícita y opción de cancelar. Solo informa de éxito cuando el servidor devuelve confirmación; captura errores de red/servidor y permite reintentar. Se aclara que elimina nóminas y perfil de la sesión.
 - Guardado: la decisión de abrir el análisis usa la misma regla de acceso que las páginas protegidas; contar tres registros ya no basta.
 - Fechas: rechaza días inexistentes y periodos invertidos. Conserva como ausentes los campos opcionales sin inventar fechas.
@@ -17,7 +22,7 @@
 - TypeScript y ESLint correctos para los archivos cambiados.
 - 54 pruebas: 53 pasan y una OCR omitida por falta de Tesseract. Se utiliza el comprobador TypeScript en proceso ya existente en el proyecto.
 - Casos nuevos: borrado confirmado, respuesta fallida, respuesta sin confirmación, fallo de red, días imposibles, periodos invertidos y fecha bisiesta válida.
-- Navegador: portada, registro vacío y carga accesibles; Empresas sin nóminas redirige a bienvenida; el borrado abre confirmación y Cancelar vuelve al estado inicial. No se ejecutó un borrado real.
+- Navegador: portada pública y directorio accesibles sin nóminas; `/analysis` redirige a bienvenida; el borrado abre confirmación y Cancelar vuelve al estado inicial. No se ejecutó un borrado real.
 - Comprobación previa de comparación: menos de tres y duplicados no desbloquean; tres completas desbloquean; retirar una vuelve a bloquear; datos incompletos y mezcla de empresas bloquean.
 - No se subieron nóminas reales ni se añadieron documentos ficticios al almacén de la aplicación en esta auditoría. Las pruebas de dominio usan datos sintéticos aislados.
 
@@ -28,8 +33,8 @@
 | Acceso | Cookie anónima, sin cuenta recuperable ni acceso entre dispositivos | Autenticación, recuperación y cierre de sesión probados; no basta con tener tres nóminas |
 | Persistencia | Adaptador PostgreSQL preparado; esta revisión no verifica proveedor, migración ni restauración de producción | Base configurada, migración y restauración desde copia probadas |
 | Privacidad | Se describe agregación seudonimizada; faltan decisiones de publicación, retención, contacto y borrado verificable tras perder acceso | Flujo y textos acordes al tratamiento real; revisión especializada antes del lanzamiento |
-| Comparación | El cotejo lado a lado usa reportes públicos declarados; las medianas de nóminas aparecen por otra vía | Unificar o diferenciar claramente ambos tipos de evidencia y mostrar tamaño de muestra |
-| Navegación | Conviven registro privado, publicación pública y alta de empresas | Decidir qué ve un conductor y separar los flujos de empresa/publicación |
+| Comparación | El cotejo lado a lado usa reportes públicos declarados; las medianas de nóminas aparecen en la ficha. El análisis privado exige tres nóminas | Mantener ambas evidencias etiquetadas y mostrar tamaño de muestra |
+| Navegación | Directorio, compare y rankings públicos; análisis verificado gated; conviven publicación pública y alta de empresas | Separar con claridad los flujos de empresa/publicación del registro privado |
 | Idiomas | Nueva bienvenida y confirmación de borrado usan español/inglés; otras pantallas conservan textos anteriores | Completar traducciones y revisión contextual de los siete idiomas |
 | Móvil y accesibilidad | Estructura responsive en código; no se ha completado una prueba en móvil ni lector de pantalla | Verificar 320/375 px, zoom, teclado, foco, etiquetas y lectura de errores |
 | Lectura documental | Falta OCR local, no hay prueba end-to-end nueva con tres archivos | Probar PDF y foto con datos sintéticos, errores, duplicados y desbloqueo completo |

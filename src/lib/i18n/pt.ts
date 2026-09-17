@@ -66,6 +66,13 @@ export const pt: Messages = {
     step3Body: "As contas de empresa ainda não existem. Quando existirem, nunca verão os recibos privados, o histórico nem a identidade de um motorista.",
     checkPayslip: "Verificar um recibo",
   },
+  access: {
+    locked: "{have} de {need} recibos distintos para a análise verificada. O diretório de transportadoras continua público.",
+    unlocked: "A análise salarial verificada está desbloqueada neste browser.",
+    howItWorks: "Como funciona O meu TruckPay",
+    openAnalysis: "Abrir análise",
+    addPayslip: "Adicionar recibo",
+  },
   stub: {
     irelandWeekly: "Irlanda · acerto semanal",
     noSlips: "Ainda não há recibos no quadro",
