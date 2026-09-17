@@ -32,7 +32,10 @@ export function SiteHeader() {
           <span className="flex size-8 items-center justify-center rounded-md bg-accent text-[0.7rem] font-bold tracking-wide text-accent-foreground">
             TP
           </span>
-          <span className="font-heading text-xl font-semibold tracking-wide">TruckPay</span>
+          <span className="font-heading text-xl font-semibold tracking-wide">My TruckPay</span>
+          <span className="hidden text-[0.65rem] font-semibold tracking-[0.16em] text-accent uppercase sm:inline">
+            Ireland
+          </span>
         </Link>
         <nav className="hidden items-center gap-0.5 md:flex">
           {links.map((link) => {
