@@ -39,7 +39,9 @@ export function LanguageProvider({
     if (!isLocale(next)) return;
     persistLocale(next);
     setLocaleState(next);
-    router.refresh();
+    // Client copy updates immediately. Refresh server components after the
+    // picker has closed so the overlay is not torn down mid-click.
+    window.setTimeout(() => router.refresh(), 0);
   }, [router]);
 
   useEffect(() => {
