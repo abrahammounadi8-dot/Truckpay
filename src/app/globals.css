@@ -109,6 +109,10 @@
   }
 }
 
+[data-language-menu]::backdrop {
+  background: rgb(15 23 42 / 0.45);
+}
+
 .stub-paper {
   background:
     repeating-linear-gradient(
