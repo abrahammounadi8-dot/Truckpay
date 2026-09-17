@@ -29,6 +29,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://mytruckpay.com"),
   title: {
     default: "TruckPay — understands your Irish haulage payslip",
     template: "%s · TruckPay",
