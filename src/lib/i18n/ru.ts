@@ -19,6 +19,7 @@ export const ru: Messages = {
     payrollAnalysis: "Анализ зарплаты",
     employmentProfile: "Профиль работы",
     privacy: "Конфиденциальность",
+    faq: "Вопросы",
     companies: "TruckPay Компании",
     directory: "Каталог перевозчиков",
     gaps: "Разрывы по данным водителей",

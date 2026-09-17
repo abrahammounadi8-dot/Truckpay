@@ -16,6 +16,7 @@ export type Messages = {
     payrollAnalysis: string;
     employmentProfile: string;
     privacy: string;
+    faq: string;
     companies: string;
     directory: string;
     gaps: string;
@@ -295,6 +296,7 @@ export const en: Messages = {
     payrollAnalysis: "Payroll analysis",
     employmentProfile: "Employment profile",
     privacy: "Privacy",
+    faq: "FAQ",
     companies: "TruckPay Companies",
     directory: "Haulier directory",
     gaps: "Driver-reported gaps",

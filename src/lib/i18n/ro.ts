@@ -19,6 +19,7 @@ export const ro: Messages = {
     payrollAnalysis: "Analiză salarială",
     employmentProfile: "Profil de angajare",
     privacy: "Confidențialitate",
+    faq: "Întrebări",
     companies: "TruckPay Companii",
     directory: "Director de transportatori",
     gaps: "Diferențe raportate de șoferi",

@@ -19,6 +19,7 @@ export const pt: Messages = {
     payrollAnalysis: "Análise da folha",
     employmentProfile: "Perfil de emprego",
     privacy: "Privacidade",
+    faq: "Perguntas",
     companies: "TruckPay Empresas",
     directory: "Diretório de transportadoras",
     gaps: "Lacunas reportadas por motoristas",
