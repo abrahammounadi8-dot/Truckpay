@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "List your firm",
   description:
-    "Irish haulage operators can request a Truckpay directory listing. Public facts only — no invented pay or reviews.",
+    "Irish haulage operators can request a MyTruckPay directory listing. Public facts only — no invented pay or reviews.",
 };
 
 export default function ListPage() {
@@ -17,7 +17,7 @@ export default function ListPage() {
         List your firm
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-        Truckpay is a public ledger of Irish haulage. Drivers file wage slips. Operators can request a directory entry so the file shows real HQ, lanes and equipment — not invented pay or fake reviews.
+        MyTruckPay is a public ledger of Irish haulage. Drivers file wage slips. Operators can request a directory entry so the file shows real HQ, lanes and equipment — not invented pay or fake reviews.
       </p>
       <div className="mt-8">
         <ListingForm />

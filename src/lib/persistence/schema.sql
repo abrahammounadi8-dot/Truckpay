@@ -1,4 +1,4 @@
--- TruckPay target schema (not wired yet).
+-- MyTruckPay target schema (not wired yet).
 -- Current runtime: JSON files in data/ (Vercel: /tmp).
 -- Ireland-first; country_code / currency keep this extensible.
 -- Never store PPSN, driving licence, or employee number as user id.
@@ -141,7 +141,7 @@ CREATE TABLE employment_profiles (
 );
 
 -- 5. Aggregated analytical data (no user_id, no raw labels, no documents)
--- Populated only from TruckPay Verified Analysis. Companies/recruiters may
+-- Populated only from MyTruckPay Verified Analysis. Companies/recruiters may
 -- later read this layer only — never payslips or users.
 CREATE TABLE company_pay_aggregates (
   employer_slug TEXT NOT NULL,

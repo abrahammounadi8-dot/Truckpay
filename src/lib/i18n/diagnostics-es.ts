@@ -70,8 +70,8 @@ export const diagnosticSpanish: readonly DiagnosticTranslation[] = [
     "«{label}» no figuraba en la nómina anterior. Se marca como nueva para que la revises; una línea nueva no se considera ilegal."
   ],
   [
-    "{kind} hours × rate does not equal the {payKind} pay figure on this slip. That can be rounding, a blended rate, holiday pay, or a line that sits elsewhere. Truckpay does not treat this as employer wrongdoing.",
-    "Las horas de {kind} multiplicadas por la tarifa no coinciden con el importe de {payKind}. Puede deberse al redondeo, una tarifa conjunta, vacaciones u otra línea. Truckpay no lo considera prueba de una actuación indebida.",
+    "{kind} hours × rate does not equal the {payKind} pay figure on this slip. That can be rounding, a blended rate, holiday pay, or a line that sits elsewhere. MyTruckPay does not treat this as employer wrongdoing.",
+    "Las horas de {kind} multiplicadas por la tarifa no coinciden con el importe de {payKind}. Puede deberse al redondeo, una tarifa conjunta, vacaciones u otra línea. MyTruckPay no lo considera prueba de una actuación indebida.",
     [
       "kind",
       "payKind"
@@ -90,8 +90,8 @@ export const diagnosticSpanish: readonly DiagnosticTranslation[] = [
     ]
   ],
   [
-    "Not enough gross figures on this slip and earlier slips to compare weekly equivalents. TruckPay will not invent the missing numbers.",
-    "Faltan importes brutos en esta nómina o en las anteriores para comparar equivalentes semanales. TruckPay no inventará los datos que faltan."
+    "Not enough gross figures on this slip and earlier slips to compare weekly equivalents. MyTruckPay will not invent the missing numbers.",
+    "Faltan importes brutos en esta nómina o en las anteriores para comparar equivalentes semanales. MyTruckPay no inventará los datos que faltan."
   ],
   [
     "{amount} is explained by {direction} paid basic hours on a weekly-equivalent basis ({hours} vs {prior} hours × {rate} on this slip). Hours are taken from the slip; a longer period is not treated as one week.",
@@ -105,8 +105,8 @@ export const diagnosticSpanish: readonly DiagnosticTranslation[] = [
     "Las horas no permiten explicar el cambio: faltan horas base o su tarifa, o no se puede calcular el equivalente semanal sin asumir que una nómina es una semana."
   ],
   [
-    "{amount} cannot currently be explained from hours and the basic rate. TruckPay does not invent a cause, and does not treat an unexplained remainder as employer wrongdoing.",
-    "{amount} no se pueden explicar con las horas y la tarifa base. TruckPay no inventa una causa ni considera el resto sin explicar como prueba de una actuación indebida."
+    "{amount} cannot currently be explained from hours and the basic rate. MyTruckPay does not invent a cause, and does not treat an unexplained remainder as employer wrongdoing.",
+    "{amount} no se pueden explicar con las horas y la tarifa base. MyTruckPay no inventa una causa ni considera el resto sin explicar como prueba de una actuación indebida."
   ],
   [
     "After hours × basic rate, nothing material remains unexplained on a weekly-equivalent basis. Other lines (overtime, allowances, deductions) were not used as invented causes.",
@@ -166,8 +166,8 @@ export const diagnosticSpanish: readonly DiagnosticTranslation[] = [
     "Se calcula la semana fiscal irlandesa {week} de {year} porque el período está dentro de ella. Este número no estaba impreso en la nómina."
   ],
   [
-    "The pay period spans more than one Irish tax week. TruckPay does not pick a week. Enter the week number as printed if it appears on the slip.",
-    "El período abarca varias semanas fiscales irlandesas. TruckPay no elige una. Si la nómina indica un número de semana, cópialo tal como aparece."
+    "The pay period spans more than one Irish tax week. MyTruckPay does not pick a week. Enter the week number as printed if it appears on the slip.",
+    "El período abarca varias semanas fiscales irlandesas. MyTruckPay no elige una. Si la nómina indica un número de semana, cópialo tal como aparece."
   ],
   [
     "Derived Irish tax week {week} of {year} from the pay period start only. Period end was not on the document.",

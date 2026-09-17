@@ -206,7 +206,7 @@ describe("verified analysis", () => {
     ];
     const ready = analyseLatestSet(three, profile());
     assert.equal(ready.status, "verified");
-    assert.equal(ready.verifiedLabel, "TruckPay Verified Analysis");
+    assert.equal(ready.verifiedLabel, "MyTruckPay Verified Analysis");
   });
 });
 

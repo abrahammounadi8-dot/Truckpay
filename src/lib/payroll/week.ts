@@ -80,7 +80,7 @@ function classifyIrishWorkWeek(input: WeekClassifyInput): WeekAssignment {
     return {
       ...UNASSIGNED,
       reason:
-        "The pay period spans more than one Irish tax week. TruckPay does not pick a week. Enter the week number as printed if it appears on the slip.",
+        "The pay period spans more than one Irish tax week. MyTruckPay does not pick a week. Enter the week number as printed if it appears on the slip.",
     };
   }
 

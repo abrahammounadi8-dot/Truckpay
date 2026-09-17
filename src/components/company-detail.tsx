@@ -70,7 +70,7 @@ export function CompanyDetail({
                 </p>
               </div>
             ) : (
-              <div className="max-w-xs rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-4 text-sm text-primary-foreground/75 lg:text-right">{tr("No take-home figures yet. TruckPay will not invent them. Driver-reported stubs and payroll-verified medians are kept separate.")}</div>
+              <div className="max-w-xs rounded-lg border border-primary-foreground/15 bg-primary-foreground/8 p-4 text-sm text-primary-foreground/75 lg:text-right">{tr("No take-home figures yet. MyTruckPay will not invent them. Driver-reported stubs and payroll-verified medians are kept separate.")}</div>
             )}
           </div>
           <div className="mt-6 flex flex-wrap gap-2">
@@ -109,7 +109,7 @@ export function CompanyDetail({
               <h2 className="font-heading text-2xl font-semibold">{tr("Driver-reported stubs")}</h2>
               <span className="rounded-md bg-muted px-2 py-0.5 text-[0.68rem] font-semibold tracking-[0.14em] text-muted-foreground uppercase">{tr("Driver reported")}</span>
             </div>
-            <p className="max-w-2xl text-sm text-muted-foreground">{tr("Voluntary community slips. Not the same evidence as payroll-verified medians from My TruckPay. Averages here are not “the company salary”.")}</p>
+            <p className="max-w-2xl text-sm text-muted-foreground">{tr("Voluntary community slips. Not the same evidence as payroll-verified medians from MyTruckPay. Averages here are not “the company salary”.")}</p>
             <SettlementStub company={company} stats={stats} />
           </section>
         ) : (
@@ -118,7 +118,7 @@ export function CompanyDetail({
 
         <section className="space-y-3">
           <h2 className="font-heading text-2xl font-semibold">{tr("Quoted vs take-home")}</h2>
-          <p className="max-w-2xl text-sm text-muted-foreground">{tr("The quoted column is only filled when a driver also reported what the firm told them they would earn. Truckpay does not invent that number.")}</p>
+          <p className="max-w-2xl text-sm text-muted-foreground">{tr("The quoted column is only filled when a driver also reported what the firm told them they would earn. MyTruckPay does not invent that number.")}</p>
           <PayGapBar stats={stats} />
         </section>
 
@@ -148,7 +148,7 @@ export function CompanyDetail({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="font-heading text-2xl font-semibold">{tr("Driver-reported wage slips")}</h2>
-              <p className="text-sm text-muted-foreground">{tr("Public stubs only. Private My TruckPay payslips never appear here.")}</p>
+              <p className="text-sm text-muted-foreground">{tr("Public stubs only. Private MyTruckPay payslips never appear here.")}</p>
             </div>
             <Link href={`/report?company=${company.slug}`} className={cn(buttonVariants())}>{tr("File a wage slip")}</Link>
           </div>

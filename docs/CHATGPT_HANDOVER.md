@@ -10,7 +10,7 @@ ChatGPT acts as technical/product coordinator: inspect the real repository state
 
 Preferred loop: decide -> inspect GitHub -> implement -> test -> review -> deploy -> measure -> next task.
 
-## TruckPay
+## MyTruckPay
 
 Repository: `abrahammounadi8-dot/Truckpay`
 
@@ -72,7 +72,7 @@ No accessible GoNow repository was found during the handover check.
 2. Read this handover, then inspect the repositories. Repositories are the source of truth for implementation state.
 3. Do not assume remembered workflow status is current. Check Actions, branches, PRs, deployments and endpoints.
 4. Keep Crypto Threat Signals focused on quality, verification, source independence and machine-consumable speed.
-5. Keep TruckPay focused on verified real compensation, privacy, fair aggregation and Ireland-first launch.
+5. Keep MyTruckPay focused on verified real compensation, privacy, fair aggregation and Ireland-first launch.
 6. Do not invent data, customers, deployment success or completed features.
 7. Prefer one clearly defined next task at a time, with acceptance criteria and a test.
 

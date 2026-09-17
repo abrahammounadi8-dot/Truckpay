@@ -225,7 +225,7 @@ export function companyPayStats(
         ? "No payroll-verified analysis for this firm yet."
         : `Payroll verified · ${drivers} driver${drivers === 1 ? "" : "s"} · ${slips} verified payslips · confidence ${overallConfidence}.`,
     disclaimer:
-      "Payroll-verified figures are medians from TruckPay Verified Analysis (three unique slips). They are not driver-reported weekly stubs, and not a single company salary. Two drivers at the same firm may not do equivalent work.",
+      "Payroll-verified figures are medians from MyTruckPay Verified Analysis (three unique slips). They are not driver-reported weekly stubs, and not a single company salary. Two drivers at the same firm may not do equivalent work.",
   };
 }
 

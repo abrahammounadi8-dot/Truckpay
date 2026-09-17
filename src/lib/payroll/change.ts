@@ -80,7 +80,7 @@ export function compareLatestToRecent(slips: Payslip[]): PayChangeReport | null 
       confidence: 0.2,
       amount: null,
       summary:
-        "Not enough gross figures on this slip and earlier slips to compare weekly equivalents. TruckPay will not invent the missing numbers.",
+        "Not enough gross figures on this slip and earlier slips to compare weekly equivalents. MyTruckPay will not invent the missing numbers.",
     });
   }
 
@@ -110,7 +110,7 @@ export function compareLatestToRecent(slips: Payslip[]): PayChangeReport | null 
       epistemic: "unknown",
       confidence: 0.4,
       amount: unexplained,
-      summary: `${euro(Math.abs(unexplained))} cannot currently be explained from hours and the basic rate. TruckPay does not invent a cause, and does not treat an unexplained remainder as employer wrongdoing.`,
+      summary: `${euro(Math.abs(unexplained))} cannot currently be explained from hours and the basic rate. MyTruckPay does not invent a cause, and does not treat an unexplained remainder as employer wrongdoing.`,
     });
   } else if (delta != null && hoursContribution != null) {
     lines.push({

@@ -26,7 +26,7 @@ export function RankingsBoard() {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card px-6 py-16 text-center">
         <p className="font-heading text-xl font-semibold">{tr("No quote gaps to rank yet")}</p>
-        <p className="mt-2 text-sm text-muted-foreground">{tr("A ranking needs a wage slip that includes both take-home and what the firm quoted. That is driver-reported evidence. TruckPay will not invent either number.")}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{tr("A ranking needs a wage slip that includes both take-home and what the firm quoted. That is driver-reported evidence. MyTruckPay will not invent either number.")}</p>
         <Link href="/report" className={cn(buttonVariants(), "mt-5 inline-flex")}>{tr("File a wage slip")}</Link>
       </div>
     );

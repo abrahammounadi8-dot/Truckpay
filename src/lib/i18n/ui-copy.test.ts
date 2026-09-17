@@ -12,6 +12,6 @@ test("UI translations have seven populated columns, unique keys, and matching pl
     }
   }
   assert.equal(translateUi("es", "Tenure: {n} months", { n: 14 }), "Antigüedad: 14 meses");
-  assert.equal(translateUi("es", "TruckPay Verified Analysis needs your latest 3 payslips. You have 1."), "El análisis necesita tus últimas 3 nóminas. Tienes 1.");
+  assert.equal(translateUi("es", "MyTruckPay Verified Analysis needs your latest 3 payslips. You have 1."), "El análisis necesita tus últimas 3 nóminas. Tienes 1.");
   assert.equal(translateUi("pl", "Employer's original label"), "Employer's original label");
 });
