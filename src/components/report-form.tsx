@@ -1,4 +1,5 @@
 "use client";
+import { useUiCopy } from "@/components/language-provider";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -14,6 +15,7 @@ const equipment: Equipment[] = ["curtain", "reefer", "flatbed", "tanker", "speci
 const operations: Operation[] = ["domestic", "uk", "europe"];
 
 export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
+  const tr = useUiCopy();
   const router = useRouter();
   const { submitReport } = useAppStore();
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
       });
       router.push(`/companies/${form.companySlug}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save");
+      setError(err instanceof Error ? err.message : tr("Could not save"));
     } finally {
       setPending(false);
     }
@@ -70,7 +72,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5 rounded-xl bg-card p-5 ring-1 ring-foreground/10">
-      <Field label="Haulage firm">
+      <Field label={tr("Haulage firm")}>
         <select
           className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
           value={form.companySlug}
@@ -84,15 +86,15 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
         </select>
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Job title">
+        <Field label={tr("Job title")}>
           <Input value={form.role} onChange={(event) => set("role", event.target.value)} />
         </Field>
-        <Field label="How long there">
+        <Field label={tr("How long there")}>
           <Input value={form.tenure} onChange={(event) => set("tenure", event.target.value)} />
         </Field>
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
-        <Field label="How you are paid">
+        <Field label={tr("How you are paid")}>
           <select
             className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
             value={form.payType}
@@ -100,12 +102,12 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
           >
             {payTypes.map((payType) => (
               <option key={payType} value={payType}>
-                {payTypeLabels[payType]}
+                {tr(payTypeLabels[payType])}
               </option>
             ))}
           </select>
         </Field>
-        <Field label="Trailer / work">
+        <Field label={tr("Trailer / work")}>
           <select
             className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
             value={form.equipment}
@@ -113,12 +115,12 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
           >
             {equipment.map((item) => (
               <option key={item} value={item}>
-                {equipmentLabels[item]}
+                {tr(equipmentLabels[item])}
               </option>
             ))}
           </select>
         </Field>
-        <Field label="Usual lanes">
+        <Field label={tr("Usual lanes")}>
           <select
             className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
             value={form.operation}
@@ -126,38 +128,38 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
           >
             {operations.map((item) => (
               <option key={item} value={item}>
-                {operationLabels[item]}
+                {tr(operationLabels[item])}
               </option>
             ))}
           </select>
         </Field>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Weekly take-home (€) — required">
+        <Field label={tr("Weekly take-home (€) — required")}>
           <Input
             inputMode="decimal"
             value={form.weeklyPay}
             onChange={(event) => set("weeklyPay", event.target.value)}
-            placeholder="What actually landed"
+            placeholder={tr("What actually landed")}
             required
           />
         </Field>
-        <Field label="What they quoted weekly (€) — optional">
+        <Field label={tr("What they quoted weekly (€) — optional")}>
           <Input
             inputMode="decimal"
             value={form.quotedWeekly}
             onChange={(event) => set("quotedWeekly", event.target.value)}
-            placeholder="Only if they named a figure"
+            placeholder={tr("Only if they named a figure")}
           />
         </Field>
-        <Field label="Hourly rate (€) — optional">
+        <Field label={tr("Hourly rate (€) — optional")}>
           <Input
             inputMode="decimal"
             value={form.hourlyRate}
             onChange={(event) => set("hourlyRate", event.target.value)}
           />
         </Field>
-        <Field label="Hours / week">
+        <Field label={tr("Hours / week")}>
           <Input
             inputMode="numeric"
             value={form.hoursPerWeek}
@@ -165,7 +167,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
             required
           />
         </Field>
-        <Field label="Km / week — optional">
+        <Field label={tr("Km / week — optional")}>
           <Input
             inputMode="numeric"
             value={form.kmPerWeek}
@@ -173,17 +175,17 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
           />
         </Field>
       </div>
-      <Field label="Notes — optional. Facts from your slip only.">
+      <Field label={tr("Notes — optional. Facts from your slip only.")}>
         <textarea
           className="min-h-28 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm"
           value={form.body}
           onChange={(event) => set("body", event.target.value)}
-          placeholder="Hours, wait time, what was deducted — only what you saw."
+          placeholder={tr("Hours, wait time, what was deducted — only what you saw.")}
         />
       </Field>
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p className="text-sm text-destructive">{tr(error)}</p> : null}
       <Button type="submit" disabled={pending} className="w-full sm:w-auto">
-        {pending ? "Filing…" : "File wage slip"}
+        {pending ? tr("Filing…") : tr("File wage slip")}
       </Button>
     </form>
   );

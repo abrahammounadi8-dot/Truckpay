@@ -3,7 +3,7 @@ import type { Messages } from "./en";
 export const es: Messages = {
   language: { label: "Idioma" },
   nav: {
-    myTruckPay: "Mi TruckPay",
+    myTruckPay: "Mis nóminas",
     companies: "Empresas",
     analysis: "Análisis",
     compare: "Comparar",
@@ -14,7 +14,7 @@ export const es: Messages = {
   footer: {
     tagline:
       "TruckPay entiende tu nómina, para que tú no tengas que hacerlo. Irlanda primero. La nómina privada y la inteligencia de empresas crecen juntas — nunca reseñas inventadas.",
-    myTruckPay: "Mi TruckPay",
+    myTruckPay: "Mis nóminas",
     privatePayslips: "Nóminas privadas",
     payrollAnalysis: "Análisis de nómina",
     employmentProfile: "Perfil de empleo",
@@ -66,6 +66,13 @@ export const es: Messages = {
     step3Body: "Las cuentas de empresa aún no existen. Cuando existan, nunca verán las nóminas privadas, el historial ni la identidad de un conductor.",
     checkPayslip: "Revisar una nómina",
   },
+  access: {
+    locked: "{have} de {need} nóminas distintas para el análisis verificado. El directorio de empresas sigue siendo público.",
+    unlocked: "El análisis de nómina verificado está desbloqueado en este navegador.",
+    howItWorks: "Cómo funciona Mi TruckPay",
+    openAnalysis: "Abrir análisis",
+    addPayslip: "Añadir nómina",
+  },
   stub: {
     irelandWeekly: "Irlanda · liquidación semanal",
     noSlips: "Aún no hay nóminas en el tablero",
@@ -86,14 +93,14 @@ export const es: Messages = {
   },
   payslips: {
     kicker: "Mi TruckPay · privado",
-    title: "Mi TruckPay",
-    lead: "Tu espacio de nómina. Revisa cada nueva. El análisis verificado necesita tres nóminas únicas. Aquí no se publica «el sueldo de la empresa». Bórralo cuando quieras.",
+    title: "Mis nóminas",
+    lead: "Tu registro personal está disponible desde la primera nómina. Consulta cada pago y sus deducciones. Tres nóminas distintas con empresa y periodos completos desbloquean la comparación.",
     openAnalysis: "Abrir análisis",
     profile: "Perfil de empleo",
     loading: "Cargando tus nóminas…",
-    emptyTitle: "Aún no hay nóminas en este dispositivo",
-    emptyBody: "Revisa la primera de tres nóminas únicas. No se publica en el tablero.",
-    towardVerified: "{have} de {need} nóminas únicas hacia el análisis verificado. Se rechazan duplicados. Una nómina no es una semana.",
+    emptyTitle: "Aún no tienes nóminas guardadas",
+    emptyBody: "Añade tu primera nómina para empezar el registro. No necesitas tres para consultar tus propios datos.",
+    towardVerified: "{have} de {need} nóminas distintas guardadas. Para desbloquear la comparación, comprueba también empresa y fechas de cada periodo.",
     insurableWeeks: "{count} semana(s) cotizable(s)",
     week: "semana {n}",
     derived: "(derivada)",
@@ -106,7 +113,7 @@ export const es: Messages = {
     title: "Añadir nómina",
     lead: "Suelta el PDF o la foto arriba. Luego comprueba las cifras. No escribas PPSN, permiso ni número de empleado. TruckPay no asume que una nómina sea una semana de trabajo.",
     putHere: "Pon tu nómina aquí",
-    putHereHelp: "Arrastra un PDF o una foto, o elige un archivo. TruckPay lo lee y lo descarta — no lo guarda.",
+    putHereHelp: "Arrastra un PDF o una foto, o elige un archivo. El documento se envía al servidor para leerlo; el original no se conserva. Los datos que revises y guardes sí se conservan.",
     chooseFile: "Elegir PDF o foto",
     reading: "Leyendo…",
     attached: "Adjunto: {name}",
@@ -251,7 +258,7 @@ export const es: Messages = {
     p1: "TruckPay separa identidad y nómina. Te identifica un UUID aleatorio en este dispositivo — no un PPSN, permiso de conducir ni número de empleado.",
     p2: "Cinco capas se mantienen aparte:",
     l1: "Cuenta / identidad — solo el UUID aleatorio.",
-    l2: "Documentos originales — no se suben; la retención por defecto es procesar y borrar.",
+    l2: "Los documentos se suben para extraer los datos. Los archivos temporales de lectura se eliminan tras procesarlos; no se conservan los originales.",
     l3: "Nómina extraída — cifras que escribes, privadas en Mi TruckPay.",
     l4: "Nómina normalizada — categorías y equivalentes semanales para tu análisis.",
     l5: "Datos analíticos agregados — medianas y tamaños de muestra para TruckPay Empresas, sin identidad del conductor. Es agregación seudonimizada, no una afirmación de anonimato.",
@@ -262,7 +269,7 @@ export const es: Messages = {
     openWorkspace: "Abrir Mi TruckPay",
   },
   wipe: {
-    label: "Borrar mis nóminas en este dispositivo",
+    label: "Borrar mis nóminas y perfil de esta sesión",
     wiping: "Borrando…",
   },
   notFound: {

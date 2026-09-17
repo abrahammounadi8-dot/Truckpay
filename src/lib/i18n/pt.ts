@@ -66,6 +66,13 @@ export const pt: Messages = {
     step3Body: "As contas de empresa ainda não existem. Quando existirem, nunca verão os recibos privados, o histórico nem a identidade de um motorista.",
     checkPayslip: "Verificar um recibo",
   },
+  access: {
+    locked: "{have} de {need} recibos distintos para a análise verificada. O diretório de transportadoras continua público.",
+    unlocked: "A análise salarial verificada está desbloqueada neste browser.",
+    howItWorks: "Como funciona O meu TruckPay",
+    openAnalysis: "Abrir análise",
+    addPayslip: "Adicionar recibo",
+  },
   stub: {
     irelandWeekly: "Irlanda · acerto semanal",
     noSlips: "Ainda não há recibos no quadro",
@@ -251,7 +258,7 @@ export const pt: Messages = {
     p1: "A TruckPay separa identidade e folha. Identifica-te um UUID aleatório neste dispositivo — não um PPSN, carta de condução nem número de empregado.",
     p2: "Cinco camadas ficam à parte:",
     l1: "Conta / identidade — só o UUID aleatório.",
-    l2: "Documentos originais — não são carregados; a retenção por defeito é processar e apagar.",
+    l2: "Os documentos são enviados para extração. Os ficheiros temporários de leitura são eliminados após o processamento; os originais não são guardados.",
     l3: "Folha extraída — valores que escreves, privados no Meu TruckPay.",
     l4: "Folha normalizada — categorias e equivalentes semanais para a tua análise.",
     l5: "Dados analíticos agregados — medianas e tamanhos de amostra para TruckPay Empresas, sem identidade do motorista. É agregação pseudonimizada, não uma afirmação de anonimato.",

@@ -66,6 +66,13 @@ export const ro: Messages = {
     step3Body: "Conturile de firmă nu sunt construite încă. Când vor fi, nu vor vedea niciodată fluturașii privați, istoricul sau identitatea unui șofer.",
     checkPayslip: "Verifică un fluturaș",
   },
+  access: {
+    locked: "{have} din {need} fluturași distincți spre analiza verificată. Directorul de transportatori rămâne public.",
+    unlocked: "Analiza salarială verificată este deblocată în acest browser.",
+    howItWorks: "Cum funcționează TruckPay-ul meu",
+    openAnalysis: "Deschide analiza",
+    addPayslip: "Adaugă un fluturaș",
+  },
   stub: {
     irelandWeekly: "Irlanda · decont săptămânal",
     noSlips: "Niciun fluturaș pe tablou încă",
@@ -251,7 +258,7 @@ export const ro: Messages = {
     p1: "TruckPay separă identitatea de salariu. Ești identificat printr-un UUID aleatoriu pe acest dispozitiv — nu PPSN, permis de conducere sau număr de angajat.",
     p2: "Cinci straturi rămân separate:",
     l1: "Cont / identitate — doar UUID-ul aleatoriu.",
-    l2: "Documente originale — nu se încarcă; reținerea implicită e procesare și ștergere.",
+    l2: "Documentele sunt încărcate pentru extragerea datelor. Fișierele OCR temporare sunt șterse după procesare; originalele nu sunt păstrate.",
     l3: "Salariu extras — cifrele pe care le scrii, private în TruckPay-ul meu.",
     l4: "Salariu normalizat — categorii și echivalente săptămânale pentru analiza ta.",
     l5: "Date analitice agregate — mediane și mărimi de eșantion pentru TruckPay Companii, fără identitatea șoferului. Este agregare pseudonimizată, nu o afirmație de anonimitate.",

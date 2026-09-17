@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Irish hauliers ranked by quoted weekly versus driver-filed take-home. Empty until real slips land.",
 };
 
-export default function RankingsPage() {
+export default async function RankingsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <PageIntro kicker="rankings.kicker" title="rankings.title" lead="rankings.lead" />

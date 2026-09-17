@@ -1,3 +1,4 @@
+import { comparisonDenied } from "@/lib/payroll/access";
 import { analyseLatestSet } from "@/lib/payroll/analysis";
 import { compareLatestToRecent } from "@/lib/payroll/change";
 import { companyPayStats } from "@/lib/payroll/company-stats";
@@ -12,6 +13,8 @@ import { JOB_TYPE_LABELS, VEHICLE_TYPE_LABELS, SHIFT_TYPE_LABELS } from "@/lib/p
 export const runtime = "nodejs";
 
 export async function GET() {
+  const denied = await comparisonDenied();
+  if (denied) return denied;
   const userId = await getOrCreateUserId();
   const asOf = new Date().toISOString().slice(0, 10);
   const slips = await listPayslipsForUser(userId);

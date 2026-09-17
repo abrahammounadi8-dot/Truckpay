@@ -66,6 +66,13 @@ export const lt: Messages = {
     step3Body: "Įmonių paskyros dar nesukurtos. Kai bus, jos niekada nematys vairuotojo privačių algos lapelių, istorijos ar tapatybės.",
     checkPayslip: "Patikrinti algos lapelį",
   },
+  access: {
+    locked: "{have} iš {need} skirtingų algos lapelių patvirtintai analizei. Vežėjų katalogas lieka viešas.",
+    unlocked: "Patvirtinta algos analizė atrakinta šioje naršyklėje.",
+    howItWorks: "Kaip veikia Mano TruckPay",
+    openAnalysis: "Atidaryti analizę",
+    addPayslip: "Pridėti algos lapelį",
+  },
   stub: {
     irelandWeekly: "Airija · savaitinis atsiskaitymas",
     noSlips: "Lentoje dar nėra lapelių",
@@ -251,7 +258,7 @@ export const lt: Messages = {
     p1: "TruckPay atskiria tapatybę nuo algos. Jus identifikuoja atsitiktinis UUID šiame įrenginyje — ne PPSN, vairuotojo pažymėjimas ar darbuotojo numeris.",
     p2: "Penki sluoksniai lieka atskiri:",
     l1: "Paskyra / tapatybė — tik atsitiktinis UUID.",
-    l2: "Originalūs dokumentai — neįkeliami; numatytoji saugojimo taisyklė yra apdoroti ir ištrinti.",
+    l2: "Dokumentai įkeliami duomenims išgauti. Laikini OCR failai po apdorojimo pašalinami; originalai nesaugomi.",
     l3: "Ištraukti algos duomenys — skaičiai, kuriuos įvedate, privatūs Mano TruckPay.",
     l4: "Normalizuota alga — kategorijos ir savaitiniai ekvivalentai jūsų analizei.",
     l5: "Sukaupti analitiniai duomenys — medianos ir imčių dydžiai TruckPay įmonėms, be vairuotojo tapatybės. Tai pseudonimizuota agregacija, ne teiginys, kad duomenys anoniminiai.",

@@ -83,12 +83,15 @@ function getCompare() {
   return compareCache;
 }
 
+const emptyReports: DriverReport[] = [];
+const emptyCompare: string[] = [];
+
 function getServerEmptyReports(): DriverReport[] {
-  return [];
+  return emptyReports;
 }
 
 function getServerEmptyCompare(): string[] {
-  return [];
+  return emptyCompare;
 }
 
 function mergeReports(server: DriverReport[], local: DriverReport[]): DriverReport[] {

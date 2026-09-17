@@ -1,4 +1,5 @@
 "use client";
+import { useUiCopy } from "@/components/language-provider";
 
 import Link from "next/link";
 import { useMemo } from "react";
@@ -12,6 +13,7 @@ import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function CompareTable({ ids }: { ids: string[] }) {
+  const tr = useUiCopy();
   const { compareSlugs, toggleCompare, reports } = useAppStore();
   const slugs = useMemo(() => {
     const fromQuery = ids.filter((id) => fleet.some((company) => company.slug === id));
@@ -26,69 +28,65 @@ export function CompareTable({ ids }: { ids: string[] }) {
   if (selected.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border bg-card px-6 py-16 text-center">
-        <p className="font-heading text-xl font-semibold">Nothing on the board yet</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Open a company file and tap Compare — up to three Irish hauliers.
-        </p>
-        <Link href="/companies" className={cn(buttonVariants(), "mt-5 inline-flex")}>
-          Browse hauliers
-        </Link>
+        <p className="font-heading text-xl font-semibold">{tr("Nothing on the board yet")}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{tr("Open a company file and tap Compare — up to three Irish hauliers.")}</p>
+        <Link href="/companies" className={cn(buttonVariants(), "mt-5 inline-flex")}>{tr("Browse hauliers")}</Link>
       </div>
     );
   }
 
   const rows: { label: string; render: (slug: string) => React.ReactNode }[] = [
     {
-      label: "Headquarters",
+      label: tr("Headquarters"),
       render: (slug) => fleet.find((item) => item.slug === slug)!.headquarters,
     },
     {
-      label: "County",
+      label: tr("County"),
       render: (slug) => fleet.find((item) => item.slug === slug)!.county,
     },
     {
-      label: "Equipment",
+      label: tr("Equipment"),
       render: (slug) =>
         fleet
           .find((item) => item.slug === slug)!
-          .equipment.map((item) => equipmentLabels[item])
+          .equipment.map((item) => tr(equipmentLabels[item]))
           .join(", "),
     },
     {
-      label: "Lanes",
+      label: tr("Lanes"),
       render: (slug) =>
         fleet
           .find((item) => item.slug === slug)!
-          .operations.map((item) => operationLabels[item])
+          .operations.map((item) => tr(operationLabels[item]))
           .join(", "),
     },
     {
-      label: "Fleet notes",
-      render: (slug) => fleet.find((item) => item.slug === slug)!.fleetNote ?? "Not stated publicly",
+      label: tr("Fleet notes"),
+      render: (slug) => fleet.find((item) => item.slug === slug)!.fleetNote ?? tr("Not stated publicly"),
     },
     {
-      label: "Wage slips",
+      label: tr("Wage slips"),
       render: (slug) => {
         const stats = companyStats(slug, reports);
-        return stats.count ? String(stats.count) : "None yet";
+        return stats.count ? String(stats.count) : tr("None yet");
       },
     },
     {
-      label: "Take-home / week",
+      label: tr("Take-home / week"),
       render: (slug) => {
         const stats = companyStats(slug, reports);
-        return stats.avgWeekly != null ? formatMoney(stats.avgWeekly) : "No slips";
+        return stats.avgWeekly != null ? formatMoney(stats.avgWeekly) : tr("No slips");
       },
     },
     {
-      label: "Quoted / week",
+      label: tr("Quoted / week"),
       render: (slug) => {
         const stats = companyStats(slug, reports);
-        return stats.avgQuoted != null ? formatMoney(stats.avgQuoted) : "Not given";
+        return stats.avgQuoted != null ? formatMoney(stats.avgQuoted) : tr("Not given");
       },
     },
     {
-      label: "Quote gap",
+      label: tr("Quote gap"),
       render: (slug) => {
         const stats = companyStats(slug, reports);
         return stats.gapPercent != null ? `${stats.gapPercent}%` : "—";
@@ -118,7 +116,7 @@ export function CompareTable({ ids }: { ids: string[] }) {
               <div className="mt-3 flex flex-wrap gap-1">
                 {company.equipment.map((item) => (
                   <Badge key={item} variant="outline">
-                    {equipmentLabels[item]}
+                    {tr(equipmentLabels[item])}
                   </Badge>
                 ))}
               </div>
@@ -126,9 +124,7 @@ export function CompareTable({ ids }: { ids: string[] }) {
                 type="button"
                 className="mt-3 text-xs text-muted-foreground underline"
                 onClick={() => toggleCompare(company.slug)}
-              >
-                Remove
-              </button>
+              >{tr("Remove")}</button>
             </div>
           );
         })}
@@ -138,7 +134,7 @@ export function CompareTable({ ids }: { ids: string[] }) {
         <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-border text-left">
-              <th className="px-4 py-3 font-medium text-muted-foreground">Line</th>
+              <th className="px-4 py-3 font-medium text-muted-foreground">{tr("Line")}</th>
               {selected.map((company) => (
                 <th key={company.slug} className="px-4 py-3 font-heading">
                   {company.shortName}

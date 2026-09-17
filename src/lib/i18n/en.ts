@@ -63,6 +63,13 @@ export type Messages = {
     step3Body: string;
     checkPayslip: string;
   };
+  access: {
+    locked: string;
+    unlocked: string;
+    howItWorks: string;
+    openAnalysis: string;
+    addPayslip: string;
+  };
   stub: {
     irelandWeekly: string;
     noSlips: string;
@@ -335,6 +342,13 @@ export const en: Messages = {
     step3Body: "Company accounts are not built yet. When they are, they will never see a driver’s private payslips, history or identity.",
     checkPayslip: "Check a payslip",
   },
+  access: {
+    locked: "{have} of {need} distinct payslips toward verified analysis. The haulier directory stays public.",
+    unlocked: "Verified payroll analysis is unlocked in this browser.",
+    howItWorks: "How My TruckPay works",
+    openAnalysis: "Open analysis",
+    addPayslip: "Add a payslip",
+  },
   stub: {
     irelandWeekly: "Ireland · weekly settlement",
     noSlips: "No slips on the board yet",
@@ -520,7 +534,7 @@ export const en: Messages = {
     p1: "TruckPay splits identity from payroll. You are identified by a random UUID on this device — not a PPSN, driving licence, or employee number.",
     p2: "Five layers stay separate:",
     l1: "Account / identity — the random UUID only.",
-    l2: "Original documents — not uploaded; default retention is process-and-delete.",
+    l2: "Original documents are uploaded for extraction. Temporary OCR files are deleted after processing; originals are not retained.",
     l3: "Extracted payroll — figures you type, private to My TruckPay.",
     l4: "Normalized payroll — categories and weekly equivalents for your analysis.",
     l5: "Aggregated analytical data — medians and sample sizes for TruckPay Companies, with no driver identity. This is pseudonymised aggregation, not a claim that the dataset is anonymous.",

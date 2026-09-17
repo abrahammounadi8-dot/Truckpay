@@ -19,6 +19,14 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
   if (!paymentDate) {
     return { error: "Payment date is required (YYYY-MM-DD)." };
   }
+  const payPeriodStart = asDate(body.payPeriodStart);
+  const payPeriodEnd = asDate(body.payPeriodEnd);
+  if ((asString(body.payPeriodStart) && !payPeriodStart) || (asString(body.payPeriodEnd) && !payPeriodEnd)) {
+    return { error: "Enter valid pay-period dates." };
+  }
+  if (payPeriodStart && payPeriodEnd && payPeriodStart > payPeriodEnd) {
+    return { error: "Pay-period end cannot be before its start." };
+  }
 
   const named = asString(body.employerName) || asString(body.employerSlug);
   const employer = resolveEmployer(named);
@@ -88,8 +96,8 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
       employerSlug: employer.employerSlug,
       employerName: employer.employerName,
       paymentDate,
-      payPeriodStart: asDate(body.payPeriodStart),
-      payPeriodEnd: asDate(body.payPeriodEnd),
+      payPeriodStart,
+      payPeriodEnd,
       payFrequency,
       employmentWeeks: parsed.employmentWeeks,
       basicHours: parsed.basicHours,
@@ -171,6 +179,7 @@ function asDate(value: unknown): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return null;
   const time = Date.parse(text);
   if (!Number.isFinite(time)) return null;
+  if (new Date(time).toISOString().slice(0, 10) !== text) return null;
   return text;
 }
 

@@ -1,3 +1,5 @@
+import { database, usesDatabase } from "@/lib/persistence/database";
+import { DocumentRepository } from "@/lib/persistence/documents";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { payslipContentHash } from "@/lib/payroll/fingerprint";
@@ -75,28 +77,38 @@ function ensureHash(slip: Payslip): Payslip {
 }
 
 export async function listAllPayslips(): Promise<Payslip[]> {
+  if (usesDatabase()) return (await new DocumentRepository(database()).list<Payslip>("payslip")).map(hydratePayslip);
   return readAll();
 }
 
 export async function listPayslipsForUser(userId: string): Promise<Payslip[]> {
-  const all = await readAll();
+  const all = usesDatabase() ? (await new DocumentRepository(database()).list<Payslip>("payslip", userId)).map(hydratePayslip) : await readAll();
   return all
     .filter((slip) => slip.userId === userId)
     .sort((a, b) => b.paymentDate.localeCompare(a.paymentDate) || b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function getPayslipForUser(userId: string, id: string): Promise<Payslip | null> {
+  if (usesDatabase()) {
+    const slip = await new DocumentRepository(database()).get<Payslip>("payslip", userId, id);
+    return slip ? hydratePayslip(slip) : null;
+  }
   const list = await listPayslipsForUser(userId);
   return list.find((slip) => slip.id === id) ?? null;
 }
 
 export async function savePayslip(slip: Payslip): Promise<Payslip> {
+  if (usesDatabase()) {
+    const prepared = ensureHash(slip);
+    return new DocumentRepository(database()).save("payslip", slip.userId, slip.id, prepared, prepared.contentHash);
+  }
   const all = await readAll();
   await writeAll([slip, ...all.filter((item) => item.id !== slip.id)]);
   return slip;
 }
 
 export async function deletePayslip(userId: string, id: string): Promise<boolean> {
+  if (usesDatabase()) return (await new DocumentRepository(database()).remove("payslip", userId, id)) > 0;
   const all = await readAll();
   const next = all.filter((slip) => !(slip.userId === userId && slip.id === id));
   if (next.length === all.length) return false;
@@ -105,6 +117,7 @@ export async function deletePayslip(userId: string, id: string): Promise<boolean
 }
 
 export async function deleteAllForUser(userId: string): Promise<number> {
+  if (usesDatabase()) return new DocumentRepository(database()).remove("payslip", userId);
   const all = await readAll();
   const next = all.filter((slip) => slip.userId !== userId);
   const removed = all.length - next.length;
