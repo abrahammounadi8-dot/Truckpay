@@ -34,7 +34,7 @@ function redirectWithLocale(request: Request, locale: string | null, nextPath: s
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  return redirectWithLocale(request, url.searchParams.get("lang"), url.searchParams.get("next"));
+  return redirectWithLocale(request, url.searchParams.get("lang"), url.searchParams.get("next") ?? "/");
 }
 
 export async function POST(request: Request) {

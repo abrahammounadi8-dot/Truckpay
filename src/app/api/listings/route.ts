@@ -24,7 +24,7 @@ function storePath() {
 
 async function readListings(): Promise<Listing[]> {
   try {
-    const raw = await readFile(storePath().file, "utf8");
+    const raw = await readFile(/* turbopackIgnore: true */ storePath().file, "utf8");
     const parsed = JSON.parse(raw) as { listings?: Listing[] };
     return parsed.listings ?? [];
   } catch {
