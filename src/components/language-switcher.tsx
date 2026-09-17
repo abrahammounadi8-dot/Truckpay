@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
-import { ChevronDownIcon } from "lucide-react";
+import { useEffect, useId, useState } from "react";
+import { createPortal } from "react-dom";
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { useT } from "@/components/language-provider";
 import { localeMeta, locales, type Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -9,24 +10,24 @@ import { cn } from "@/lib/utils";
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   const { locale, setLocale, t } = useT();
   const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const listId = useId();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
-    function onPointerDown(event: PointerEvent) {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-    function onKeyDown(event: KeyboardEvent) {
+    function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") setOpen(false);
     }
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
     };
   }, [open]);
 
@@ -36,50 +37,65 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div ref={rootRef} className={cn("relative", !compact && "w-full")}>
+    <div className={cn("relative", !compact && "w-full")}>
       <button
         type="button"
         id="language-switcher"
-        aria-label={t("language.label")}
-        aria-haspopup="listbox"
+        aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={listId}
+        aria-label={t("language.label")}
         onClick={() => setOpen((value) => !value)}
-        className={
-          compact
-            ? "inline-flex h-8 max-w-[11rem] items-center gap-1 rounded-md border border-primary-foreground/25 bg-primary-foreground/10 px-2 text-xs font-medium text-primary-foreground"
-            : "inline-flex h-9 w-full items-center justify-between gap-2 rounded-md border border-primary-foreground/25 bg-primary-foreground/10 px-2 text-sm font-medium text-primary-foreground"
-        }
+        className={cn(
+          "inline-flex items-center justify-between gap-1.5 rounded-md border border-primary-foreground/40 bg-primary-foreground text-primary shadow-sm",
+          "font-medium hover:bg-white",
+          compact ? "h-8 max-w-[12rem] px-2 text-xs" : "h-10 w-full px-3 text-sm",
+        )}
       >
         <span>{localeMeta[locale].nativeName}</span>
         <ChevronDownIcon className="size-3.5 opacity-80" aria-hidden />
       </button>
-      {open ? (
-        <ul
-          id={listId}
-          role="listbox"
-          aria-label={t("language.label")}
-          className="absolute right-0 z-50 mt-1 min-w-[11rem] rounded-md border border-border bg-card py-1 text-foreground shadow-lg"
-        >
-          {locales.map((code) => (
-            <li key={code} role="none">
+      {mounted && open
+        ? createPortal(
+            <div className="fixed inset-0 z-[2147483646]" data-language-menu="">
               <button
                 type="button"
-                role="option"
-                aria-selected={code === locale}
-                data-locale={code}
-                onClick={() => pick(code)}
-                className={cn(
-                  "flex w-full px-3 py-1.5 text-left text-sm hover:bg-muted",
-                  code === locale && "bg-muted font-medium",
-                )}
+                className="absolute inset-0 bg-black/45"
+                aria-label={t("nav.closeMenu")}
+                onClick={() => setOpen(false)}
+              />
+              <div
+                id={listId}
+                role="dialog"
+                aria-label={t("language.label")}
+                className="absolute top-16 right-3 left-3 z-[2147483647] mx-auto w-auto max-w-xs rounded-xl border border-border bg-white p-2 text-foreground shadow-2xl sm:right-4 sm:left-auto sm:w-64"
               >
-                {localeMeta[code].nativeName}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+                <p className="px-3 py-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  {t("language.label")}
+                </p>
+                <div role="listbox" aria-label={t("language.label")} className="flex flex-col">
+                  {locales.map((code) => (
+                    <button
+                      key={code}
+                      type="button"
+                      role="option"
+                      aria-selected={code === locale}
+                      onClick={() => pick(code)}
+                      className={cn(
+                        "flex min-h-11 w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-muted",
+                        code === locale && "bg-muted font-semibold",
+                      )}
+                    >
+                      <span>{localeMeta[code].nativeName}</span>
+                      {code === locale ? <CheckIcon className="size-3.5" aria-hidden /> : null}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

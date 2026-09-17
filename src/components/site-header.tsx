@@ -26,7 +26,7 @@ export function SiteHeader() {
   const { t } = useT();
 
   return (
-    <header className="sticky top-0 z-40 bg-primary text-primary-foreground">
+    <header className="sticky top-0 z-50 overflow-visible bg-primary text-primary-foreground">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4">
         <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
           <span className="flex size-8 items-center justify-center rounded-md bg-accent text-[0.7rem] font-bold tracking-wide text-accent-foreground">
@@ -54,9 +54,7 @@ export function SiteHeader() {
           })}
         </nav>
         <div className="flex items-center gap-2">
-          <div className="hidden sm:block">
-            <LanguageSwitcher compact />
-          </div>
+          <LanguageSwitcher compact />
           <Link
             href="/payslips/new"
             className={cn(
@@ -97,7 +95,7 @@ export function SiteHeader() {
             >
               {t("nav.addPayslip")}
             </Link>
-            <div className="px-3 py-2 sm:hidden">
+            <div className="px-3 py-2">
               <LanguageSwitcher />
             </div>
           </div>
