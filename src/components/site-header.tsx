@@ -54,7 +54,6 @@ export function SiteHeader() {
           })}
         </nav>
         <div className="flex items-center gap-2">
-          <LanguageSwitcher compact />
           <Link
             href="/payslips/new"
             className={cn(
@@ -95,12 +94,10 @@ export function SiteHeader() {
             >
               {t("nav.addPayslip")}
             </Link>
-            <div className="px-3 py-2">
-              <LanguageSwitcher />
-            </div>
           </div>
         </nav>
       ) : null}
+      <LanguageSwitcher />
     </header>
   );
 }
