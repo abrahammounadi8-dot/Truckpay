@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/components/language-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { PreviewNotice } from "@/components/preview-notice";
+import { SiteJsonLd } from "@/components/site-json-ld";
 import { LOCALE_COOKIE, localeFromRequest, localeMeta } from "@/lib/i18n";
 import { AppStoreProvider } from "@/lib/store";
 import "./globals.css";
@@ -70,6 +71,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${sans.variable} ${heading.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <SiteJsonLd />
         <LanguageProvider initialLocale={locale}>
           <AppStoreProvider>
             <SiteHeader />

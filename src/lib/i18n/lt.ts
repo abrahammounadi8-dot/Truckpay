@@ -19,6 +19,7 @@ export const lt: Messages = {
     payrollAnalysis: "Algos analizė",
     employmentProfile: "Darbo profilis",
     privacy: "Privatumas",
+    faq: "Klausimai",
     companies: "TruckPay įmonės",
     directory: "Vežėjų katalogas",
     gaps: "Vairuotojų deklaruoti skirtumai",

@@ -10,7 +10,8 @@ export function SiteFooter() {
     <footer className="mt-auto bg-primary text-primary-foreground">
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-12 sm:grid-cols-3">
         <div>
-          <p className="font-heading text-2xl font-semibold tracking-wide">TruckPay</p>
+          <p className="font-heading text-2xl font-semibold tracking-wide">My TruckPay</p>
+          <p className="mt-1 text-[0.65rem] font-semibold tracking-[0.16em] text-accent uppercase">Ireland</p>
           <p className="mt-3 max-w-xs text-sm leading-6 text-primary-foreground/70">{t("footer.tagline")}</p>
         </div>
         <div className="text-sm">
@@ -29,6 +30,9 @@ export function SiteFooter() {
             </Link>
             <Link href="/privacy" className="hover:text-primary-foreground">
               {t("footer.privacy")}
+            </Link>
+            <Link href="/faq" className="hover:text-primary-foreground">
+              {t("footer.faq")}
             </Link>
           </div>
         </div>
