@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   dictionaries,
   getByPath,
@@ -31,13 +32,15 @@ export function LanguageProvider({
   initialLocale: Locale;
   children: React.ReactNode;
 }) {
+  const router = useRouter();
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   const setLocale = useCallback((next: Locale) => {
     if (!isLocale(next)) return;
     persistLocale(next);
     setLocaleState(next);
-  }, []);
+    router.refresh();
+  }, [router]);
 
   useEffect(() => {
     const stored = readStoredLocale();
