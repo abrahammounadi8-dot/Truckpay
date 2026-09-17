@@ -1,5 +1,6 @@
-import { HomeBoard } from "@/components/home-board";
+import { WelcomeBoard } from "@/components/welcome-board";
+import { getComparisonAccess } from "@/lib/payroll/access";
 
-export default function HomePage() {
-  return <HomeBoard />;
+export default async function HomePage() {
+  return <WelcomeBoard access={await getComparisonAccess()} />;
 }

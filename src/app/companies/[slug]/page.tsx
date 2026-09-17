@@ -1,3 +1,4 @@
+import { requireComparisonAccess } from "@/lib/payroll/access";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CompanyDetail } from "@/components/company-detail";
@@ -31,6 +32,7 @@ export default async function CompanyPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await requireComparisonAccess();
   const { slug } = await params;
   const company = getCompany(slug);
   if (!company) notFound();

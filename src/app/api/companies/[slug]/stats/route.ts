@@ -1,3 +1,4 @@
+import { comparisonDenied } from "@/lib/payroll/access";
 import { companyPayStats } from "@/lib/payroll/company-stats";
 import { getCompany } from "@/lib/data";
 import { listProfiles } from "@/lib/payroll/profile-store";
@@ -9,6 +10,8 @@ export async function GET(
   _request: Request,
   context: { params: Promise<{ slug: string }> },
 ) {
+  const denied = await comparisonDenied();
+  if (denied) return denied;
   const { slug } = await context.params;
   if (!getCompany(slug)) {
     return Response.json({ error: "Unknown haulier." }, { status: 404 });
