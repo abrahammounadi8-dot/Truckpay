@@ -2,9 +2,7 @@ import { Pool } from "pg";
 type DatabaseGlobal = typeof globalThis & { truckpayDatabase?: Pool };
 /** Configured databases never fall back to disk when unavailable. */
 export function usesDatabase(): boolean {
-  if (process.env.DATABASE_URL) return true;
-  if (process.env.VERCEL || process.env.NODE_ENV === "production") throw new Error("Truckpay requires DATABASE_URL in production.");
-  return false;
+  return Boolean(process.env.DATABASE_URL);
 }
 export function database(): Pool {
   if (!usesDatabase()) throw new Error("DATABASE_URL is not configured.");
