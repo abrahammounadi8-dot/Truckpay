@@ -185,7 +185,7 @@ function pushArithmetic(
       kind,
       "fact",
       0.9,
-      `${which === "basic" ? "Basic" : "Overtime"} hours × rate does not equal the ${which} pay figure on this slip. That can be rounding, a blended rate, holiday pay, or a line that sits elsewhere. Truckpay does not treat this as employer wrongdoing.`,
+      `${which === "basic" ? "Basic" : "Overtime"} hours × rate does not equal the ${which} pay figure on this slip. That can be rounding, a blended rate, holiday pay, or a line that sits elsewhere. MyTruckPay does not treat this as employer wrongdoing.`,
       {
         fields:
           which === "basic"

@@ -29,10 +29,10 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 overflow-visible bg-primary text-primary-foreground">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4">
         <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-          <span className="flex size-8 items-center justify-center rounded-md bg-accent text-[0.7rem] font-bold tracking-wide text-accent-foreground">
-            TP
+          <span className="flex size-8 items-center justify-center rounded-md bg-accent text-[0.55rem] font-bold tracking-tight text-accent-foreground">
+            MTP
           </span>
-          <span className="font-heading text-xl font-semibold tracking-wide">My TruckPay</span>
+          <span className="font-heading text-lg font-semibold tracking-tight sm:text-xl">MyTruckPay</span>
           <span className="hidden text-[0.65rem] font-semibold tracking-[0.16em] text-accent uppercase sm:inline">
             Ireland
           </span>

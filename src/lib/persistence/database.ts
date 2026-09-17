@@ -9,7 +9,7 @@ export function database(): Pool {
   const state = globalThis as DatabaseGlobal;
   if (!state.truckpayDatabase) {
     state.truckpayDatabase = new Pool({ connectionString: process.env.DATABASE_URL, max: 5, connectionTimeoutMillis: 10000, idleTimeoutMillis: 30000 });
-    state.truckpayDatabase.on("error", () => console.error("Truckpay database connection interrupted."));
+    state.truckpayDatabase.on("error", () => console.error("MyTruckPay database connection interrupted."));
   }
   return state.truckpayDatabase;
 }

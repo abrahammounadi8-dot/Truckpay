@@ -73,7 +73,7 @@ export async function extractPayslipDocument(input: {
 
 function draftMessage(kind: "PDF" | "photo", draft: ExtractedPayslipDraft): string {
   if (draft.filledKeys.length > 0) {
-    return `Read ${draft.filledKeys.length} labelled field(s) from the ${kind}. Check them — TruckPay does not guess missing figures. The file was discarded.`;
+    return `Read ${draft.filledKeys.length} labelled field(s) from the ${kind}. Check them — MyTruckPay does not guess missing figures. The file was discarded.`;
   }
   return `The ${kind} was read but no labelled pay figures were found. Type the printed figures below. The file was discarded.`;
 }

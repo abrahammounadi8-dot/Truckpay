@@ -3,9 +3,9 @@ import { FaqBoard } from "@/components/faq-board";
 import { faqCopy } from "@/lib/seo/faq-copy";
 
 export const metadata: Metadata = {
-  title: "How to find My TruckPay",
+  title: "How to find MyTruckPay",
   description:
-    "My TruckPay is the Irish haulage payslip site at mytruckpay.com. It is not the US truckpay.com job-board app. Search mytruckpay or My TruckPay Ireland.",
+    "MyTruckPay is the Irish haulage payslip site at mytruckpay.com. It is not the US truckpay.com job-board app. Search mytruckpay or MyTruckPay Ireland.",
   alternates: { canonical: "https://mytruckpay.com/faq" },
 };
 

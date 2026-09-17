@@ -5,7 +5,7 @@ import { AnalysisBoard } from "@/components/analysis-board";
 
 export const metadata: Metadata = {
   title: "Verified analysis",
-  description: "TruckPay Verified Analysis after three unique Irish payslips. One slip is not one week.",
+  description: "MyTruckPay Verified Analysis after three unique Irish payslips. One slip is not one week.",
 };
 
 export default async function AnalysisPage() {

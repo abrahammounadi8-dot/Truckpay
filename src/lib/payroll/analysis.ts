@@ -6,7 +6,7 @@ import { isDocumentVerifiedTenure } from "@/lib/payroll/tenure";
 
 export type SetAnalysis = {
   status: AnalysisStatus;
-  verifiedLabel: "TruckPay Verified Analysis" | null;
+  verifiedLabel: "MyTruckPay Verified Analysis" | null;
   required: number;
   have: number;
   latest: Payslip[];
@@ -30,7 +30,7 @@ export function analyseLatestSet(all: Payslip[], profile: EmploymentProfile | nu
 
   if (latest.length < REQUIRED_PAYSLIPS) {
     blockers.push(
-      `TruckPay Verified Analysis needs your latest ${REQUIRED_PAYSLIPS} payslips. You have ${latest.length}.`,
+      `MyTruckPay Verified Analysis needs your latest ${REQUIRED_PAYSLIPS} payslips. You have ${latest.length}.`,
     );
   }
   if (sequence.mixedEmployer) {
@@ -64,7 +64,7 @@ export function analyseLatestSet(all: Payslip[], profile: EmploymentProfile | nu
 
   return {
     status,
-    verifiedLabel: status === "verified" ? "TruckPay Verified Analysis" : null,
+    verifiedLabel: status === "verified" ? "MyTruckPay Verified Analysis" : null,
     required: REQUIRED_PAYSLIPS,
     have: latest.length,
     latest,

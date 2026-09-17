@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PayslipsWorkspace } from "@/components/payslips-workspace";
 
 export const metadata: Metadata = {
-  title: "My TruckPay",
+  title: "MyTruckPay",
   description: "Private Irish haulage payslips. One slip is not assumed to be one week.",
 };
 

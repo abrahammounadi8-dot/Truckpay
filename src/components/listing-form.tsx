@@ -44,7 +44,7 @@ export function ListingForm() {
     return (
       <div className="rounded-lg border border-border bg-card p-6">
         <p className="font-heading text-2xl font-semibold">{tr("Listing request in")}</p>
-        <p className="mt-2 text-sm text-muted-foreground">{tr("We will only publish public facts you confirm. Truckpay will not invent pay figures or reviews for your firm.")}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{tr("We will only publish public facts you confirm. MyTruckPay will not invent pay figures or reviews for your firm.")}</p>
       </div>
     );
   }

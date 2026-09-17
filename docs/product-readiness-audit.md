@@ -1,4 +1,4 @@
-# TruckPay: auditoría previa a documentos reales
+# MyTruckPay: auditoría previa a documentos reales
 
 17 de septiembre de 2026. Resultado: apto para continuar pruebas con datos ficticios; no listo para incorporar nóminas reales de usuarios.
 

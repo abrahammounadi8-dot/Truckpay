@@ -157,13 +157,13 @@ export const uiCopy = [
     "Зарплатные данные от водителей"
   ],
   [
-    "Public stubs only. Private My TruckPay payslips never appear here.",
-    "Solo datos públicos. Las nóminas privadas de Mi TruckPay nunca aparecen aquí.",
-    "Tylko dane publiczne. Prywatne paski My TruckPay nigdy się tu nie pojawiają.",
-    "Apenas dados públicos. Os recibos privados do My TruckPay nunca aparecem aqui.",
-    "Tik vieši duomenys. Privatūs My TruckPay algalapiai čia nerodomi.",
-    "Doar date publice. Fluturașii privați My TruckPay nu apar niciodată aici.",
-    "Только открытые данные. Личные расчётные листки My TruckPay здесь не публикуются."
+    "Public stubs only. Private MyTruckPay payslips never appear here.",
+    "Solo datos públicos. Las nóminas privadas de MyTruckPay nunca aparecen aquí.",
+    "Tylko dane publiczne. Prywatne paski MyTruckPay nigdy się tu nie pojawiają.",
+    "Apenas dados públicos. Os recibos privados do MyTruckPay nunca aparecem aqui.",
+    "Tik vieši duomenys. Privatūs MyTruckPay algalapiai čia nerodomi.",
+    "Doar date publice. Fluturașii privați MyTruckPay nu apar niciodată aici.",
+    "Только открытые данные. Личные расчётные листки MyTruckPay здесь не публикуются."
   ],
   [
     "No slips on file",
@@ -1390,7 +1390,7 @@ export const uiCopy = [
     "неизвестно"
   ],
   [
-    "No take-home figures yet. TruckPay will not invent them. Driver-reported stubs and payroll-verified medians are kept separate.",
+    "No take-home figures yet. MyTruckPay will not invent them. Driver-reported stubs and payroll-verified medians are kept separate.",
     "Aún no hay cifras netas. Los datos declarados por conductores y las medianas calculadas con nóminas se muestran por separado.",
     "Brak kwot netto. Dane kierowców i mediany z pasków są pokazywane oddzielnie.",
     "Ainda sem valores líquidos. Os dados dos motoristas e as medianas dos recibos são apresentados separadamente.",
@@ -1399,22 +1399,22 @@ export const uiCopy = [
     "Сумм на руки пока нет. Данные водителей и медианы по расчётным листкам показаны отдельно."
   ],
   [
-    "Voluntary community slips. Not the same evidence as payroll-verified medians from My TruckPay. Averages here are not “the company salary”.",
-    "Aportaciones voluntarias de la comunidad. No tienen la misma evidencia que las medianas de nóminas de Mi TruckPay ni representan el salario de toda la empresa.",
-    "Dobrowolne dane społeczności. Nie mają tej samej podstawy co mediany z My TruckPay i nie określają płacy całej firmy.",
-    "Contributos voluntários. Não têm a mesma base que as medianas dos recibos My TruckPay nem representam o salário da empresa.",
-    "Savanoriški bendruomenės duomenys. Jų pagrindas skiriasi nuo My TruckPay algalapių medianų; tai nėra visos įmonės atlygis.",
-    "Contribuții voluntare. Nu au aceeași bază ca medianele My TruckPay și nu reprezintă salariul întregii companii.",
-    "Добровольные данные сообщества. Они отличаются от медиан My TruckPay и не определяют зарплату всей компании."
+    "Voluntary community slips. Not the same evidence as payroll-verified medians from MyTruckPay. Averages here are not “the company salary”.",
+    "Aportaciones voluntarias de la comunidad. No tienen la misma evidencia que las medianas de nóminas de MyTruckPay ni representan el salario de toda la empresa.",
+    "Dobrowolne dane społeczności. Nie mają tej samej podstawy co mediany z MyTruckPay i nie określają płacy całej firmy.",
+    "Contributos voluntários. Não têm a mesma base que as medianas dos recibos MyTruckPay nem representam o salário da empresa.",
+    "Savanoriški bendruomenės duomenys. Jų pagrindas skiriasi nuo MyTruckPay algalapių medianų; tai nėra visos įmonės atlygis.",
+    "Contribuții voluntare. Nu au aceeași bază ca medianele MyTruckPay și nu reprezintă salariul întregii companii.",
+    "Добровольные данные сообщества. Они отличаются от медиан MyTruckPay и не определяют зарплату всей компании."
   ],
   [
-    "The quoted column is only filled when a driver also reported what the firm told them they would earn. Truckpay does not invent that number.",
-    "La cifra prometida solo aparece si el conductor la indicó. Truckpay no la inventa.",
-    "Obiecana kwota pojawia się tylko wtedy, gdy podał ją kierowca. Truckpay jej nie wymyśla.",
-    "O valor prometido só aparece se o motorista o indicou. O Truckpay não o inventa.",
-    "Žadėta suma rodoma tik vairuotojui ją nurodžius. Truckpay jos nesugalvoja.",
-    "Suma promisă apare doar dacă șoferul a indicat-o. Truckpay nu o inventează.",
-    "Обещанная сумма появляется только со слов водителя. Truckpay её не выдумывает."
+    "The quoted column is only filled when a driver also reported what the firm told them they would earn. MyTruckPay does not invent that number.",
+    "La cifra prometida solo aparece si el conductor la indicó. MyTruckPay no la inventa.",
+    "Obiecana kwota pojawia się tylko wtedy, gdy podał ją kierowca. MyTruckPay jej nie wymyśla.",
+    "O valor prometido só aparece se o motorista o indicou. O MyTruckPay não o inventa.",
+    "Žadėta suma rodoma tik vairuotojui ją nurodžius. MyTruckPay jos nesugalvoja.",
+    "Suma promisă apare doar dacă șoferul a indicat-o. MyTruckPay nu o inventează.",
+    "Обещанная сумма появляется только со слов водителя. MyTruckPay её не выдумывает."
   ],
   [
     "No driver settlements on file yet. The first wage slip sets the board.",
@@ -1426,13 +1426,13 @@ export const uiCopy = [
     "Зарплатных данных пока нет. Первая запись начнёт сравнение."
   ],
   [
-    "A ranking needs a wage slip that includes both take-home and what the firm quoted. That is driver-reported evidence. TruckPay will not invent either number.",
-    "La clasificación necesita cifras cobradas y prometidas aportadas por conductores. TruckPay no inventa esos datos.",
-    "Ranking wymaga podanych przez kierowcę kwot otrzymanych i obiecanych. TruckPay ich nie wymyśla.",
-    "O ranking precisa dos valores recebidos e prometidos declarados por motoristas. O TruckPay não os inventa.",
-    "Reitingui reikia vairuotojų nurodytų gautų ir žadėtų sumų. TruckPay jų nesugalvoja.",
-    "Clasamentul necesită sumele primite și promise declarate de șoferi. TruckPay nu le inventează.",
-    "Для рейтинга нужны полученные и обещанные суммы от водителей. TruckPay их не выдумывает."
+    "A ranking needs a wage slip that includes both take-home and what the firm quoted. That is driver-reported evidence. MyTruckPay will not invent either number.",
+    "La clasificación necesita cifras cobradas y prometidas aportadas por conductores. MyTruckPay no inventa esos datos.",
+    "Ranking wymaga podanych przez kierowcę kwot otrzymanych i obiecanych. MyTruckPay ich nie wymyśla.",
+    "O ranking precisa dos valores recebidos e prometidos declarados por motoristas. O MyTruckPay não os inventa.",
+    "Reitingui reikia vairuotojų nurodytų gautų ir žadėtų sumų. MyTruckPay jų nesugalvoja.",
+    "Clasamentul necesită sumele primite și promise declarate de șoferi. MyTruckPay nu le inventează.",
+    "Для рейтинга нужны полученные и обещанные суммы от водителей. MyTruckPay их не выдумывает."
   ],
   [
     "Two drivers at the same firm may not do equivalent work. Tenure months are calculated from the start date — we do not store “years” as a typed number. A start date you type yourself is never shown as document-verified.",
@@ -1444,13 +1444,13 @@ export const uiCopy = [
     "Водители одной компании могут выполнять разную работу. Стаж считается от даты начала. Введённая вами дата не считается документально подтверждённой."
   ],
   [
-    "We will only publish public facts you confirm. Truckpay will not invent pay figures or reviews for your firm.",
-    "Solo publicaremos los datos públicos que confirmes. Truckpay no inventará salarios ni reseñas de tu empresa.",
-    "Opublikujemy tylko potwierdzone dane publiczne. Truckpay nie wymyśla płac ani opinii o firmie.",
-    "Só publicaremos dados públicos confirmados por ti. O Truckpay não inventará salários nem avaliações.",
-    "Skelbsime tik jūsų patvirtintus viešus faktus. Truckpay nekurs atlygio skaičių ar atsiliepimų.",
-    "Vom publica doar informațiile publice confirmate de tine. Truckpay nu inventează salarii sau recenzii.",
-    "Опубликуем только подтверждённые вами открытые сведения. Truckpay не выдумывает зарплаты и отзывы."
+    "We will only publish public facts you confirm. MyTruckPay will not invent pay figures or reviews for your firm.",
+    "Solo publicaremos los datos públicos que confirmes. MyTruckPay no inventará salarios ni reseñas de tu empresa.",
+    "Opublikujemy tylko potwierdzone dane publiczne. MyTruckPay nie wymyśla płac ani opinii o firmie.",
+    "Só publicaremos dados públicos confirmados por ti. O MyTruckPay não inventará salários nem avaliações.",
+    "Skelbsime tik jūsų patvirtintus viešus faktus. MyTruckPay nekurs atlygio skaičių ar atsiliepimų.",
+    "Vom publica doar informațiile publice confirmate de tine. MyTruckPay nu inventează salarii sau recenzii.",
+    "Опубликуем только подтверждённые вами открытые сведения. MyTruckPay не выдумывает зарплаты и отзывы."
   ],
   [
     "No job/vehicle/shift slice has three payroll-verified drivers yet, so those medians stay unpublished.",
@@ -1642,7 +1642,7 @@ export const uiCopy = [
     "Анализа листков этой компании пока нет."
   ],
   [
-    "Payroll-verified figures are medians from TruckPay Verified Analysis (three unique slips). They are not driver-reported weekly stubs, and not a single company salary. Two drivers at the same firm may not do equivalent work.",
+    "Payroll-verified figures are medians from MyTruckPay Verified Analysis (three unique slips). They are not driver-reported weekly stubs, and not a single company salary. Two drivers at the same firm may not do equivalent work.",
     "Estas cifras son medianas calculadas con tres nóminas distintas por conductor. Se separan de los registros públicos y no representan un salario único de la empresa. Dos conductores pueden hacer trabajos distintos.",
     "To mediany obliczone z trzech różnych pasków kierowcy, odrębne od danych publicznych. Nie określają jednej płacy firmy. Kierowcy mogą wykonywać różną pracę.",
     "São medianas calculadas com três recibos diferentes por motorista, separadas dos registos públicos. Não representam um salário único da empresa. Os motoristas podem ter funções diferentes.",
@@ -1858,7 +1858,7 @@ export const uiCopy = [
     "В листке"
   ],
   [
-    "TruckPay Verified Analysis needs your latest {required} payslips. You have {have}.",
+    "MyTruckPay Verified Analysis needs your latest {required} payslips. You have {have}.",
     "El análisis necesita tus últimas {required} nóminas. Tienes {have}.",
     "Analiza wymaga ostatnich {required} pasków. Masz {have}.",
     "A análise precisa dos últimos {required} recibos. Tens {have}.",

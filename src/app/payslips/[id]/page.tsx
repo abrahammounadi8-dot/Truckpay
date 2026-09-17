@@ -25,7 +25,7 @@ export default async function PayslipPage({
   const userId = await readUserId();
   if (!userId) {
     return (
-      <MissingSlip message="This slip is not on this device. Open My payslips first so Truckpay can attach a private id." />
+      <MissingSlip message="This slip is not on this device. Open My payslips first so MyTruckPay can attach a private id." />
     );
   }
 
