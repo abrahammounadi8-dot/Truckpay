@@ -16,6 +16,9 @@ export async function POST(request: Request) {
     return Response.json(publicError("Choose a payslip PDF or photo."), { status: 400 });
   }
 
+  if (file.size > 8 * 1024 * 1024) {
+    return Response.json(publicError("That file is too large (max 8 MB). The file was not stored."), { status: 413 });
+  }
   const bytes = new Uint8Array(await file.arrayBuffer());
   const result = await extractPayslipDocument({
     bytes,

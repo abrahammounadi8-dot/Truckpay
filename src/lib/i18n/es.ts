@@ -3,7 +3,7 @@ import type { Messages } from "./en";
 export const es: Messages = {
   language: { label: "Idioma" },
   nav: {
-    myTruckPay: "Mi TruckPay",
+    myTruckPay: "Mis nóminas",
     companies: "Empresas",
     analysis: "Análisis",
     compare: "Comparar",
@@ -14,7 +14,7 @@ export const es: Messages = {
   footer: {
     tagline:
       "TruckPay entiende tu nómina, para que tú no tengas que hacerlo. Irlanda primero. La nómina privada y la inteligencia de empresas crecen juntas — nunca reseñas inventadas.",
-    myTruckPay: "Mi TruckPay",
+    myTruckPay: "Mis nóminas",
     privatePayslips: "Nóminas privadas",
     payrollAnalysis: "Análisis de nómina",
     employmentProfile: "Perfil de empleo",
@@ -86,14 +86,14 @@ export const es: Messages = {
   },
   payslips: {
     kicker: "Mi TruckPay · privado",
-    title: "Mi TruckPay",
-    lead: "Tu espacio de nómina. Revisa cada nueva. El análisis verificado necesita tres nóminas únicas. Aquí no se publica «el sueldo de la empresa». Bórralo cuando quieras.",
+    title: "Mis nóminas",
+    lead: "Tu registro personal está disponible desde la primera nómina. Consulta cada pago y sus deducciones. Tres nóminas distintas con empresa y periodos completos desbloquean la comparación.",
     openAnalysis: "Abrir análisis",
     profile: "Perfil de empleo",
     loading: "Cargando tus nóminas…",
-    emptyTitle: "Aún no hay nóminas en este dispositivo",
-    emptyBody: "Revisa la primera de tres nóminas únicas. No se publica en el tablero.",
-    towardVerified: "{have} de {need} nóminas únicas hacia el análisis verificado. Se rechazan duplicados. Una nómina no es una semana.",
+    emptyTitle: "Aún no tienes nóminas guardadas",
+    emptyBody: "Añade tu primera nómina para empezar el registro. No necesitas tres para consultar tus propios datos.",
+    towardVerified: "{have} de {need} nóminas distintas guardadas. Para desbloquear la comparación, comprueba también empresa y fechas de cada periodo.",
     insurableWeeks: "{count} semana(s) cotizable(s)",
     week: "semana {n}",
     derived: "(derivada)",
@@ -106,7 +106,7 @@ export const es: Messages = {
     title: "Añadir nómina",
     lead: "Suelta el PDF o la foto arriba. Luego comprueba las cifras. No escribas PPSN, permiso ni número de empleado. TruckPay no asume que una nómina sea una semana de trabajo.",
     putHere: "Pon tu nómina aquí",
-    putHereHelp: "Arrastra un PDF o una foto, o elige un archivo. TruckPay lo lee y lo descarta — no lo guarda.",
+    putHereHelp: "Arrastra un PDF o una foto, o elige un archivo. El documento se envía al servidor para leerlo; el original no se conserva. Los datos que revises y guardes sí se conservan.",
     chooseFile: "Elegir PDF o foto",
     reading: "Leyendo…",
     attached: "Adjunto: {name}",
@@ -262,7 +262,7 @@ export const es: Messages = {
     openWorkspace: "Abrir Mi TruckPay",
   },
   wipe: {
-    label: "Borrar mis nóminas en este dispositivo",
+    label: "Borrar mis nóminas y perfil de esta sesión",
     wiping: "Borrando…",
   },
   notFound: {

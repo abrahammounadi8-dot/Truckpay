@@ -5,6 +5,7 @@ import { CompareDock } from "@/components/compare-dock";
 import { LanguageProvider } from "@/components/language-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { PreviewNotice } from "@/components/preview-notice";
 import { LOCALE_COOKIE, localeFromRequest, localeMeta } from "@/lib/i18n";
 import { AppStoreProvider } from "@/lib/store";
 import "./globals.css";
@@ -55,6 +56,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <LanguageProvider initialLocale={locale}>
           <AppStoreProvider>
             <SiteHeader />
+            <PreviewNotice />
             <main className="flex-1">{children}</main>
             <SiteFooter />
             <CompareDock />

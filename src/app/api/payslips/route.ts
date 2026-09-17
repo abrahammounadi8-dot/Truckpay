@@ -6,6 +6,8 @@ import { getOrCreateUserId } from "@/lib/payroll/session";
 import { listPayslipsForUser, savePayslip } from "@/lib/payroll/store";
 import { toPublicPayslip } from "@/lib/payroll/format";
 import { REQUIRED_PAYSLIPS } from "@/lib/payroll/types";
+import { comparisonAccess } from "@/lib/payroll/access-state";
+import { getProfile } from "@/lib/payroll/profile-store";
 
 export const runtime = "nodejs";
 
@@ -51,19 +53,22 @@ export async function POST(request: Request) {
   }
 
   let payslip;
+  let profile;
   try {
+    profile = await getProfile(userId);
     payslip = await savePayslip(toStoredPayslip(userId, parsed.input));
   } catch (error) {
     if (error instanceof DuplicatePayslipError) return Response.json(publicError("That payslip has already been saved."), { status: 409 });
     return Response.json(publicError("Could not save"), { status: 503 });
   }
+  const access = comparisonAccess([payslip, ...existing], profile);
   const have = existing.length + 1;
   return Response.json(
     {
       payslip: toPublicPayslip(payslip),
       have,
       required: REQUIRED_PAYSLIPS,
-      readyForAnalysis: have >= REQUIRED_PAYSLIPS,
+      readyForAnalysis: access.unlocked,
     },
     { status: 201 },
   );
