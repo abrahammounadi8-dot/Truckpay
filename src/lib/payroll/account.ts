@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { database, usesDatabase } from "@/lib/persistence/database";
+import { signAnonymousId } from "./anonymous-cookie";
 
 const SESSION_COOKIE = "tp_session";
 const LINK_TTL_MINUTES = 15;
@@ -57,6 +58,8 @@ export async function discardLoginLink(raw: string): Promise<void> {
 
 export async function redeemLoginLink(raw: string): Promise<boolean> {
   if (!usesDatabase() || !/^[A-Za-z0-9_-]{43}$/.test(raw)) return false;
+  // Fail before consuming the one-time link if anonymous cookie signing is misconfigured.
+  signAnonymousId(crypto.randomUUID());
   const client = await database().connect();
   let userId: string;
   try {
@@ -93,7 +96,7 @@ export async function redeemLoginLink(raw: string): Promise<boolean> {
     await client.query("COMMIT");
     const jar = await cookies();
     jar.set(SESSION_COOKIE, sessionToken, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: SESSION_TTL_DAYS * 86400 });
-    jar.set("tp_uid", userId, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 365 * 86400 });
+    jar.set("tp_uid_v2", signAnonymousId(userId), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 365 * 86400 });
     return true;
   } catch (error) {
     await client.query("ROLLBACK").catch(() => {});
