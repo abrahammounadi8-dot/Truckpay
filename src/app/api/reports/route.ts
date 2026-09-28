@@ -1,3 +1,4 @@
+import { contentLengthTooLarge, rateLimit } from "@/lib/http/request-limits";
 import { parseReportInput, toStoredReport } from "@/lib/report-input";
 import { listReports, saveReport } from "@/lib/report-store";
 
@@ -10,6 +11,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const limited = rateLimit(request, { scope: "report-create", limit: 10, windowMs: 60 * 1000 });
+  if (limited) return limited;
+  if (contentLengthTooLarge(request, 64 * 1024)) {
+    return Response.json({ error: "Request is too large." }, { status: 413 });
+  }
+
   let payload: unknown;
   try {
     payload = await request.json();

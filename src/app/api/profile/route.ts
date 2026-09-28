@@ -1,3 +1,4 @@
+import { contentLengthTooLarge, rateLimit } from "@/lib/http/request-limits";
 import { parseProfileInput, refreshTenure, toStoredProfile } from "@/lib/payroll/profile";
 import { getProfile, saveProfile } from "@/lib/payroll/profile-store";
 import { getOrCreateUserId } from "@/lib/payroll/session";
@@ -20,6 +21,12 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const limited = rateLimit(request, { scope: "profile-update", limit: 30, windowMs: 60 * 1000 });
+  if (limited) return limited;
+  if (contentLengthTooLarge(request, 64 * 1024)) {
+    return Response.json({ error: "Request is too large." }, { status: 413 });
+  }
+
   let payload: unknown;
   try {
     payload = await request.json();

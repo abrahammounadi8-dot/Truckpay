@@ -1,3 +1,4 @@
+import { contentLengthTooLarge, rateLimit } from "@/lib/http/request-limits";
 import { DuplicatePayslipError } from "@/lib/persistence/documents";
 import { parsePayslipInput, toStoredPayslip } from "@/lib/payroll/parse";
 import { findDuplicate, hashFromInput } from "@/lib/payroll/fingerprint";
@@ -23,6 +24,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const limited = rateLimit(request, { scope: "payslip-create", limit: 30, windowMs: 60 * 1000 });
+  if (limited) return limited;
+  if (contentLengthTooLarge(request, 100 * 1024)) {
+    return Response.json(publicError("Request is too large."), { status: 413 });
+  }
+
   let payload: unknown;
   try {
     payload = await request.json();
