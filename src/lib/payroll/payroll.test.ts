@@ -4,6 +4,7 @@ import { analyseLatestSet } from "./analysis";
 import { compareLatestToRecent } from "./change";
 import { classifyDeduction } from "./classify";
 import { companyPayStats } from "./company-stats";
+import { publicCompanyStats } from "./public-company-stats";
 import { payConfidence } from "./confidence";
 import { findDuplicate, hashFromInput } from "./fingerprint";
 import { reconcilePayslip } from "./reconcile";
@@ -71,6 +72,33 @@ function profile(overrides: Partial<EmploymentProfile> = {}): EmploymentProfile 
     ...overrides,
   };
 }
+
+describe("public company publication", () => {
+  it("withholds all counts and medians below ten distinct verified drivers", () => {
+    const entries = Array.from({ length: 10 }, (_, driver) =>
+      [1, 2, 3].map((week) => slip({
+        id: `driver-${driver}-week-${week}`,
+        userId: `driver-${driver}`,
+        paymentDate: `2026-03-${String(week * 7).padStart(2, "0")}`,
+        payPeriodStart: `2026-03-${String(week * 7 - 6).padStart(2, "0")}`,
+        payPeriodEnd: `2026-03-${String(week * 7).padStart(2, "0")}`,
+        payFrequency: "weekly",
+        employmentWeeks: 1,
+        grossPay: 1000 + driver,
+        basicRate: 20 + driver,
+        basicHours: 40,
+      })),
+    ).flat();
+    const profiles = Array.from({ length: 10 }, (_, driver) => profile({ userId: `driver-${driver}` }));
+    assert.equal(publicCompanyStats("nolan", entries.slice(0, 27), profiles), null);
+    const result = publicCompanyStats("nolan", entries, profiles);
+    assert.ok(result);
+    assert.equal(result.sample, "10+ drivers");
+    assert.equal(Object.hasOwn(result, "driverCount"), false);
+    assert.equal(Object.hasOwn(result, "bands"), false);
+    assert.equal(Object.hasOwn(result, "slices"), false);
+  });
+});
 
 describe("weekly equivalent", () => {
   it("uses insurable weeks and does not treat a lunar slip as one week", () => {
