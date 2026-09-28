@@ -9,20 +9,12 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { PayGapBar } from "@/components/pay-gap-bar";
 import { ReviewCard } from "@/components/review-card";
 import { EmptyStub, SettlementStub } from "@/components/settlement-stub";
-import { CompanyPayStatsPanel } from "@/components/company-pay-stats";
 import { useAppStore } from "@/lib/store";
 import type { Company } from "@/lib/types";
-import type { CompanyPayStats } from "@/lib/payroll/company-stats";
 import { companyStats, equipmentLabels, operationLabels, reportsFor } from "@/lib/metrics";
 import { cn } from "@/lib/utils";
 
-export function CompanyDetail({
-  company,
-  payStats,
-}: {
-  company: Company;
-  payStats: CompanyPayStats;
-}) {
+export function CompanyDetail({ company }: { company: Company }) {
   const tr = useUiCopy();
   const { reports, compareSlugs, toggleCompare } = useAppStore();
   const stats = useMemo(() => companyStats(company.slug, reports), [company.slug, reports]);
@@ -142,7 +134,6 @@ export function CompanyDetail({
           </dl>
         </section>
 
-        <CompanyPayStatsPanel stats={payStats} />
 
         <section className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
