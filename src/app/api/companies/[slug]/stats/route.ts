@@ -1,8 +1,10 @@
 import { getCompany } from "@/lib/data";
+import { listProfiles } from "@/lib/payroll/profile-store";
+import { listAllPayslips } from "@/lib/payroll/store";
+import { publicCompanyStats, publicCompanyStatsEnabled } from "@/lib/payroll/public-company-stats";
 
 export const runtime = "nodejs";
 
-/** Payroll-derived public statistics are disabled during the private pilot. */
 export async function GET(
   _request: Request,
   context: { params: Promise<{ slug: string }> },
@@ -11,8 +13,12 @@ export async function GET(
   if (!getCompany(slug)) {
     return Response.json({ error: "Unknown haulier." }, { status: 404 });
   }
+  if (!publicCompanyStatsEnabled()) {
+    return Response.json({ stats: null }, { headers: { "Cache-Control": "no-store" } });
+  }
+  const [payslips, profiles] = await Promise.all([listAllPayslips(), listProfiles()]);
   return Response.json(
-    { error: "Company payroll statistics are not available." },
-    { status: 404, headers: { "Cache-Control": "no-store" } },
+    { stats: publicCompanyStats(slug, payslips, profiles) },
+    { headers: { "Cache-Control": "no-store" } },
   );
 }
