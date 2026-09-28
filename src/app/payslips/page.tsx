@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PayslipsWorkspace } from "@/components/payslips-workspace";
+import { LegacySessionNotice } from "@/components/legacy-session-notice";
 
 export const metadata: Metadata = {
   title: "MyTruckPay",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function PayslipsPage() {
-  return <PayslipsWorkspace />;
+  return <><LegacySessionNotice /><PayslipsWorkspace /></>;
 }
