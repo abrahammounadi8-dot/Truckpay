@@ -9,12 +9,14 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { PayGapBar } from "@/components/pay-gap-bar";
 import { ReviewCard } from "@/components/review-card";
 import { EmptyStub, SettlementStub } from "@/components/settlement-stub";
+import { formatEuroMaybe } from "@/lib/payroll/format";
+import type { PublicCompanyStats } from "@/lib/payroll/public-company-stats";
 import { useAppStore } from "@/lib/store";
 import type { Company } from "@/lib/types";
 import { companyStats, equipmentLabels, operationLabels, reportsFor } from "@/lib/metrics";
 import { cn } from "@/lib/utils";
 
-export function CompanyDetail({ company }: { company: Company }) {
+export function CompanyDetail({ company, payStats }: { company: Company; payStats: PublicCompanyStats | null }) {
   const tr = useUiCopy();
   const { reports, compareSlugs, toggleCompare } = useAppStore();
   const stats = useMemo(() => companyStats(company.slug, reports), [company.slug, reports]);
@@ -134,6 +136,18 @@ export function CompanyDetail({ company }: { company: Company }) {
           </dl>
         </section>
 
+
+        {payStats ? (
+          <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
+            <h2 className="font-heading text-xl font-semibold">{tr("Payroll-verified pay")}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{payStats.sample}. {tr("Small samples are not statistically representative. Medians do not establish a company-wide salary.")}</p>
+            <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div><dt>{tr("Median gross / week equiv.")}</dt><dd>{formatEuroMaybe(payStats.medianGrossWeekly)}</dd></div>
+              <div><dt>{tr("Median base hourly rate")}</dt><dd>{formatEuroMaybe(payStats.medianBaseHourlyRate)}</dd></div>
+              <div><dt>{tr("Median paid hours / week equiv.")}</dt><dd>{payStats.medianPaidHoursWeekly ?? "—"}</dd></div>
+            </dl>
+          </section>
+        ) : null}
 
         <section className="space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
