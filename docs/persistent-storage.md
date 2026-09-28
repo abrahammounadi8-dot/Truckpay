@@ -16,8 +16,12 @@ Existing JSON files are not imported automatically. Keep a protected backup and 
 
 This change covers private payslips and employment profiles. Public community reports and listing requests still use their existing storage.
 
-## Session limitations
-Identity still uses the existing anonymous tp_uid cookie. Permanent server storage does not provide account recovery or access from another device. Clearing the cookie loses access to the prior anonymous records. Authentication is a separate requirement before presenting this as a recoverable account.
+## Email accounts
+Apply both migrations before enabling account access. Set `DATABASE_URL`, `APP_BASE_URL` (the exact public origin, e.g. `https://mytruckpay.com`), `RESEND_API_KEY`, and `EMAIL_FROM` (a sender address on a verified domain) as server secrets. The email sender uses Resend's API. Account access is unavailable until these are configured; do not promise recovery in production before a real email delivery and second-browser test succeeds.
+
+The first verified email claims the anonymous UUID and its saved payroll records. Existing emails sign back in to their original UUID on another device. Links expire after 15 minutes and are consumed once. Sessions are stored as SHA-256 token hashes for 30 days. After a UUID is claimed, the old anonymous cookie alone cannot read it. The app never sends payroll data to the email provider.
+
+Anonymous records still depend on the original browser until the email is verified. Signing in from a second browser with other unsaved anonymous records does not merge the two histories. The initial account UI is in English and Spanish; other interface languages currently fall back to English for this screen.
 
 ## Checks
 npm test includes real PostgreSQL SQL execution through PGlite: user isolation, preserved null/zero values, profile updates, duplicate races, scoped deletion, and repeatable migration. A deployed provider connection and restart test must also pass before production activation.
@@ -33,7 +37,7 @@ npm run db:import -- /secure/path/payslips.json /secure/path/profiles.json
 
 The importer only reads those two explicit paths. Use an empty `{"profiles":[]}` file if no profile data exists. It keeps user UUIDs, derives missing content hashes, skips byte-order-independent identical JSON records, and refuses to overwrite conflicting records. All inserts are in a single transaction. Source files are never modified or deleted. The command prints counts only.
 
-Preserving UUIDs does not transfer browser cookies to a new hostname. Plan account/session recovery before migrating real users to another origin.
+Preserving UUIDs does not transfer anonymous browser cookies to a new hostname. Verify the email account on the original hostname before changing domains, then sign in on the new hostname.
 
 ## Render configuration
 

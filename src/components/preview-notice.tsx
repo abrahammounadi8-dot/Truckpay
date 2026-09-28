@@ -2,13 +2,13 @@
 import Link from "next/link";
 import { useT } from "./language-provider";
 const copy = {
-  es: ["Versión de prueba: usa solo documentos ficticios.", "El acceso depende de este navegador. Aún no hay cuenta recuperable ni acceso entre dispositivos. Las cifras se guardan en el servidor; perder la sesión no las borra.", "Privacidad y datos"],
-  en: ["Test version: use synthetic documents only.", "Access depends on this browser. Recoverable accounts and cross-device access are not available yet. Figures are stored on the server; losing the session does not delete them.", "Privacy and data"],
-  pl: ["Wersja testowa: używaj tylko fikcyjnych dokumentów.", "Dostęp zależy od tej przeglądarki. Odzyskiwanie konta i dostęp z innych urządzeń nie są jeszcze dostępne. Dane są na serwerze; utrata sesji ich nie usuwa.", "Prywatność i dane"],
-  pt: ["Versão de teste: usa apenas documentos fictícios.", "O acesso depende deste navegador. Ainda não há recuperação de conta nem acesso entre dispositivos. Os valores ficam no servidor; perder a sessão não os apaga.", "Privacidade e dados"],
-  lt: ["Bandomoji versija: naudokite tik išgalvotus dokumentus.", "Prieiga priklauso nuo šios naršyklės. Paskyros atkūrimas ir prieiga iš kitų įrenginių dar negalimi. Duomenys saugomi serveryje; praradus seansą jie neištrinami.", "Privatumas ir duomenys"],
-  ro: ["Versiune de test: folosește doar documente fictive.", "Accesul depinde de acest browser. Recuperarea contului și accesul de pe alte dispozitive nu sunt încă disponibile. Datele sunt pe server; pierderea sesiunii nu le șterge.", "Confidențialitate și date"],
-  ru: ["Тестовая версия: используйте только вымышленные документы.", "Доступ зависит от этого браузера. Восстановление учётной записи и доступ с других устройств пока недоступны. Данные хранятся на сервере; потеря сеанса не удаляет их.", "Конфиденциальность и данные"],
+  es: ["Versión de prueba: usa solo documentos ficticios.", "Si no verificas tu correo en Cuenta, el acceso a las nóminas depende de este navegador. Perder la sesión no borra los datos guardados en el servidor.", "Privacidad y datos"],
+  en: ["Test version: use synthetic documents only.", "Without a verified email in Account, access to payslips depends on this browser. Losing the session does not delete data stored on the server.", "Privacy and data"],
+  pl: ["Wersja testowa: używaj tylko fikcyjnych dokumentów.", "Bez zweryfikowanego adresu e-mail na stronie konta dostęp do pasków wypłaty zależy od tej przeglądarki. Utrata sesji nie usuwa danych z serwera.", "Prywatność i dane"],
+  pt: ["Versão de teste: usa apenas documentos fictícios.", "Sem um email verificado na Conta, o acesso aos recibos depende deste navegador. Perder a sessão não apaga os dados guardados no servidor.", "Privacidade e dados"],
+  lt: ["Bandomoji versija: naudokite tik išgalvotus dokumentus.", "Nepatvirtinus el. pašto paskyroje, prieiga prie algalapių priklauso nuo šios naršyklės. Praradus seansą serveryje saugomi duomenys neištrinami.", "Privatumas ir duomenys"],
+  ro: ["Versiune de test: folosește doar documente fictive.", "Fără un e-mail verificat în Cont, accesul la fluturașii de salariu depinde de acest browser. Pierderea sesiunii nu șterge datele de pe server.", "Confidențialitate și date"],
+  ru: ["Тестовая версия: используйте только вымышленные документы.", "Без подтверждённого адреса электронной почты в аккаунте доступ к расчётным листкам зависит от этого браузера. Потеря сеанса не удаляет данные с сервера.", "Конфиденциальность и данные"],
 };
 export function PreviewNotice() {
   const { locale } = useT();

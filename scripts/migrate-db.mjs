@@ -7,6 +7,7 @@ try {
   await client.query("BEGIN");
   await client.query("SELECT pg_advisory_xact_lock(847291)");
   await client.query(await readFile(new URL("../src/lib/persistence/migrations/001-documents.sql", import.meta.url), "utf8"));
+  await client.query(await readFile(new URL("../src/lib/persistence/migrations/002-email-accounts.sql", import.meta.url), "utf8"));
   await client.query("COMMIT");
   console.log("Truckpay database migration complete.");
 } catch {
