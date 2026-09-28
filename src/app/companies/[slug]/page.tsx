@@ -2,9 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CompanyDetail } from "@/components/company-detail";
 import { fleet, getCompany } from "@/lib/data";
-import { companyPayStats } from "@/lib/payroll/company-stats";
-import { listProfiles } from "@/lib/payroll/profile-store";
-import { listAllPayslips } from "@/lib/payroll/store";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +31,5 @@ export default async function CompanyPage({
   const { slug } = await params;
   const company = getCompany(slug);
   if (!company) notFound();
-  const asOf = new Date().toISOString().slice(0, 10);
-  const stats = companyPayStats(slug, await listAllPayslips(), await listProfiles(), asOf);
-  return <CompanyDetail company={company} payStats={stats} />;
+  return <CompanyDetail company={company} />;
 }
