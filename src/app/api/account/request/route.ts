@@ -1,5 +1,5 @@
 import { accountSession, discardLoginLink, issueLoginLink, normalizeEmail } from "@/lib/payroll/account";
-import { readUserId } from "@/lib/payroll/session";
+import { getOrCreateUserId } from "@/lib/payroll/session";
 import { contentLengthTooLarge, rateLimit } from "@/lib/http/request-limits";
 import { usesDatabase } from "@/lib/persistence/database";
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const current = await accountSession();
     // A signed-in user cannot claim the same data under another email.
     if (current) return Response.json({ error: "Sign out before using a different email." }, { status: 409 });
-    const proposedId = await readUserId() ?? crypto.randomUUID();
+    const proposedId = await getOrCreateUserId();
     const linkToken = await issueLoginLink(email, proposedId);
     if (!linkToken) return Response.json(generic);
     const link = new URL("/account/verify", origin);
