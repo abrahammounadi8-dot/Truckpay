@@ -14,7 +14,7 @@ Servicio gratuito con datos reales, cuenta recuperable, análisis privado para e
 | Extracción | PDF/foto por HTTP; imagen temporal para OCR; original no guardado como nómina | Verificar límites, registros y eliminación en producción. |
 | Nóminas | Empresa, fechas, importes, horas y deducciones; JSON local o PostgreSQL si DATABASE_URL | Retención, proveedor, ubicación, copias, restauración y borrado. |
 | Perfil | Empresa, antigüedad declarada, trabajo, vehículo, turno y tarifa | Minimizar datos y documentar finalidad. |
-| Estadísticas | Nóminas y perfiles de todos los usuarios calculados en /api/companies/[slug]/stats y /api/analysis | Mantener esta función como objetivo del lanzamiento; documentar finalidad y base jurídica, información previa al conductor, límites de muestra y resistencia a identificación. Bajo el umbral de tres se ocultan medianas pero se muestran recuentos: corregir antes de habilitarla. |
+| Estadísticas | Nóminas y perfiles de todos los usuarios calculados en /api/companies/[slug]/stats y /api/analysis | En la rama, la función se prepara con PUBLIC_PAYROLL_STATS_ENABLED=false por defecto. Si se activa expresamente, solo ofrece medianas globales de empresa tras diez conductores verificados, muestra «10+», sin recuentos exactos ni segmentos. El umbral no garantiza anonimato: documentar finalidad, base jurídica, información previa y riesgos de inferencia temporal antes de activarla. |
 | Reportes públicos | Datos semanales declarados en /api/reports | Decidir moderación, retirada y aviso antes de aceptar aportaciones reales. |
 | Solicitudes de empresas | Nombre y datos de contacto en /api/listings | Retención y aviso propios. |
 | Borrado | DELETE /api/session elimina nóminas y perfil de la cookie presente | Recuperación tras pérdida de cookie; copias y otros flujos separados. |
@@ -24,7 +24,7 @@ Archivos revisados: src/lib/payroll/session.ts; src/app/api/payslips/extract/rou
 ## Criterios antes de recibir nóminas reales
 
 1. Cuentas recuperables, cierre de sesión y prueba de aislamiento entre usuarios.
-2. Diseñar y probar estadísticas públicas seguras: documentar finalidad y base jurídica, informar previamente a usuarios, decidir si el uso requiere consentimiento separado, suprimir recuentos pequeños y segmentos identificables, impedir inferencias por combinación de consultas y probar con empresas pequeñas. Si no supera esta revisión, no aceptar nóminas reales hasta definir un lanzamiento completo acordado con el usuario.
+2. Completar y probar estadísticas públicas: la rama incluye una salida global sin recuentos exactos y con umbral de diez; falta documentar finalidad y base jurídica, informar previamente a usuarios, evaluar si corresponde consentimiento separado, impedir inferencias por comparación temporal y probar con empresas pequeñas. La variable PUBLIC_PAYROLL_STATS_ENABLED debe permanecer apagada hasta cerrar estos puntos. Si no supera esta revisión, no aceptar nóminas reales hasta definir un lanzamiento completo acordado con el usuario.
 3. Base de datos persistente, copia y restauración probadas. Definir conservación y eliminación de copias.
 4. Inventario de proveedores, región de tratamiento, contratos de encargado y transferencias.
 5. Documentar responsable y contacto, finalidad y base jurídica por flujo, datos exactos, plazos, destinatarios, derechos y gestión de incidentes. Evaluar si se requiere evaluación de impacto.
