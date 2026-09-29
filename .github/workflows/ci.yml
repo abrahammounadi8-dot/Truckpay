@@ -18,6 +18,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run test:accounts
+      - run: node scripts/test-operator-review.cjs
       - run: npm run test:flow
       - run: npm run lint
       - run: npm run build

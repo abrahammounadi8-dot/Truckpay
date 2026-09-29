@@ -4,3 +4,5 @@
 /data
 /docs
 /.github
+/scripts/operator-review.cjs
+/scripts/operator-panel
