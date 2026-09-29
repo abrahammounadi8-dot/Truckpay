@@ -10,8 +10,8 @@ la propuesta de cuentas por correo, no en una auditoría del despliegue actual.
 
 ### Responsable y contacto
 
-MyTruckPay es operado por **[NOMBRE LEGAL DEL RESPONSABLE]**.
-Puedes contactar para asuntos de privacidad en **[CORREO PÚBLICO VERIFICADO]**.
+MyTruckPay es operado por **Ibrahim Mounadi Boujanna**.
+Puedes contactar para asuntos de privacidad en **privacy@mytruckpay.com**.
 
 ### Datos y uso
 
@@ -86,11 +86,10 @@ antes de describir decisiones automatizadas o perfiles en el aviso definitivo.
 
 ## Decisiones necesarias para cerrar el borrador
 
-1. El titular debe confirmar el nombre legal del responsable y el correo público.
-2. Comprobar el alojamiento y almacenamiento realmente usados en producción.
-3. Definir y aplicar conservación, limpieza de registros caducados y copias.
-4. Cerrar el uso de los datos en estadísticas y su base jurídica.
-5. Incorporar el aviso definitivo al flujo de recogida antes de admitir datos reales.
+1. Comprobar el alojamiento y almacenamiento realmente usados en producción.
+2. Definir y aplicar conservación, limpieza de registros caducados y copias.
+3. Cerrar el uso de los datos en estadísticas y su base jurídica.
+4. Incorporar el aviso definitivo al flujo de recogida antes de admitir datos reales.
 
 Fuente oficial consultada el 29 de septiembre de 2026:
 Data Protection Commission, información que debe facilitarse conforme a los
