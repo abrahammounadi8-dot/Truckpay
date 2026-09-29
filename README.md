@@ -34,3 +34,5 @@ Required production configuration is validated in `src/lib/auth/production.ts`. 
 See [source reconciliation and verification](docs/production-reconciliation.md) for the recovered deployment baseline and retained GitHub protections. Vercel was not Git-connected at reconciliation time; a GitHub merge alone does not publish.
 
 See [public statistics review](docs/publication-review.md) and issue #7 before considering reactivation. The raw internal calculator is not a public release policy. Older design documents describe earlier prototypes and do not override the publication pause or current authentication behavior.
+
+An internal disclosure-review prototype now prepares net-pay intervals by frequency and historical tenure, requires reviewed distinct people and a new consent notice, and records non-public reservations atomically. Run `node scripts/preview-publication-policy.cjs` for a synthetic demonstration. Its policy parameters are provisional; it cannot enable publication. The new journal migration is not wired into production deployment. See the review document for remaining identity, consent, integration and release-approval work.
