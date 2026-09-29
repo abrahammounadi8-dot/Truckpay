@@ -1,5 +1,5 @@
 import { database, usesDatabase } from "@/lib/persistence/database";
-import { DocumentRepository } from "@/lib/persistence/documents";
+import { erasePrivateData } from "@/lib/persistence/erase-private-data";
 import { deleteProfile } from "@/lib/payroll/profile-store";
 import { getOrCreateUserId, rotateUserId } from "@/lib/payroll/session";
 import { accountSession, revokeSession } from "@/lib/payroll/account";
@@ -25,10 +25,7 @@ export async function DELETE(request: Request) {
       const client = await database().connect();
       try {
         await client.query("BEGIN");
-        removed = await new DocumentRepository(client).wipe(userId);
-        if ((await accountSession())?.userId === userId) {
-          await client.query("DELETE FROM truckpay_accounts WHERE user_id = $1", [userId]);
-        }
+        removed = await erasePrivateData(client, userId, (await accountSession())?.userId === userId);
         await client.query("COMMIT");
       } catch (error) { await client.query("ROLLBACK"); throw error; }
       finally { client.release(); }
