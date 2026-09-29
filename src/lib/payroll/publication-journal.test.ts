@@ -9,7 +9,7 @@ import { invalidatePublicationReview, readPublicationHistory, reservePublication
 async function withJournal(run: (db: PGlite, pool: ReviewPool) => Promise<void>) {
   const db = new PGlite();
   try {
-    for (const name of ["001-documents.sql", "003-publication-review.sql"]) {
+    for (const name of ["001-documents.sql", "003-publication-review.sql", "004-publication-source.sql"]) {
       await db.exec(await readFile(new URL(`../persistence/migrations/${name}`, import.meta.url), "utf8"));
     }
     const pool: ReviewPool = { connect: async () => ({ query: async (sql, params) => db.query(sql, params), release: () => {} }) };

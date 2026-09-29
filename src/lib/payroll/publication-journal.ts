@@ -9,7 +9,7 @@ export type ReviewConnection = { query: (sql: string, params?: unknown[]) => Pro
 export type ReviewPool = { connect: () => Promise<ReviewConnection> };
 type FreshInput = Omit<PublicationInput, "history">;
 
-async function historyInConnection(connection: ReviewConnection): Promise<ReleaseHistory[]> {
+export async function historyInConnection(connection: ReviewConnection): Promise<ReleaseHistory[]> {
   const result = await connection.query(`SELECT r.employer_slug, r.period_start::text, r.period_end::text,
     COALESCE(array_agg(p.person_key) FILTER (WHERE p.person_key IS NOT NULL), ARRAY[]::text[]) AS people
     FROM truckpay_publication_reviews r LEFT JOIN truckpay_publication_review_people p ON p.review_id = r.id
@@ -37,6 +37,7 @@ export async function reservePublicationReview(pool: ReviewPool, review: Publica
     // Serialize reservations and block consent/payroll writes while revalidating.
     await connection.query("SELECT pg_advisory_xact_lock(847293)");
     await connection.query("LOCK TABLE truckpay_documents IN SHARE MODE");
+    await connection.query("LOCK TABLE truckpay_publication_identities IN SHARE MODE");
     const history = await historyInConnection(connection);
     const current = { ...await loadFresh(connection), history };
     if (!reviewStillMatches(candidate, current)) throw new Error("Disclosure review is stale or blocked; prepare a new review.");

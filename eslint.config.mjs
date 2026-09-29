@@ -10,7 +10,7 @@ const eslintConfig = defineConfig([
     rules: {
       "no-restricted-imports": ["error", {
         patterns: [
-          { group: ["**/publication-policy", "**/publication-policy.*", "**/publication-journal", "**/publication-journal.*", "**/testing/publication-fixture"], message: "Disclosure review contains private audit data and cannot be imported by pages, components or API routes." },
+          { group: ["**/publication-policy", "**/publication-policy.*", "**/publication-journal", "**/publication-journal.*", "**/publication-source", "**/publication-source.*", "**/testing/publication-*"], message: "Disclosure review contains private audit data and cannot be imported by pages, components or API routes." },
           { group: ["**/company-stats", "**/company-stats.*"], importNames: ["calculateCompanyPayStats"], message: "The raw calculator is not a publication policy. Use the protected public statistics function." },
         ],
       }],

@@ -18,6 +18,7 @@ for(const ext of ['.ts','.tsx'])require.extensions[ext]=(module,filename)=>modul
  const auth=await createLocalAuth({database:new DatabaseSync(':memory:'),secret:randomBytes(48).toString('hex'),baseURL:origin,deliver:async message=>mail.push(message)});
  const db=new PGlite();
  await db.exec(fs.readFileSync(root+'/src/lib/persistence/migrations/001-documents.sql','utf8'));
+ for(const name of ['003-publication-review.sql','004-publication-source.sql'])await db.exec(fs.readFileSync(root+'/src/lib/persistence/migrations/'+name,'utf8'));
  const adapter={query:async(sql,params)=>{const r=await db.query(sql,params);return {rows:r.rows,rowCount:r.affectedRows??null};}};
  adapter.connect=async()=>({...adapter,release:()=>{}});
  let requestHeaders=new Headers();
@@ -67,10 +68,12 @@ for(const ext of ['.ts','.tsx'])require.extensions[ext]=(module,filename)=>modul
   assert.equal((await run(sharing.PUT,'PUT','',sharingBody)).status,401);
   assert.equal((await run(sharing.PUT,'PUT',a,sharingBody,undefined,'https://attacker.invalid')).status,403);
   assert.equal((await run(sharing.PUT,'PUT',a,{enabled:true,noticeVersion:'old'})).status,400);
+  assert.equal((await run(sharing.PUT,'PUT',a,{enabled:true,noticeVersion:'2026-09-28'})).status,400);
   assert.equal((await run(sharing.PUT,'PUT',a,{enabled:'true',noticeVersion:STATISTICS_NOTICE_VERSION})).status,400);
   assert.equal((await run(sharing.PUT,'PUT',a,sharingBody)).status,200);
   assert.equal((await (await run(profile.GET,'GET',a)).json()).profile.statisticsSharing.enabled,true);
   assert.equal((await (await run(profile.GET,'GET',b)).json()).profile,null);
+  assert.equal((await db.query('SELECT user_id FROM truckpay_publication_identities')).rows.length,0,'consent never self-attests a distinct person');
   const employment=require(root+'/src/app/api/employment-start/route.ts');
   const {issueAmountReceipt,amountSnapshot}=require(root+'/src/lib/payroll/amount-review.ts');
   const {parsePayslipInput}=require(root+'/src/lib/payroll/parse.ts');
@@ -97,7 +100,13 @@ for(const ext of ['.ts','.tsx'])require.extensions[ext]=(module,filename)=>modul
   assert.equal((await run(item.DELETE,'DELETE',a,undefined,context,'https://attacker.invalid')).status,403);
   assert.equal((await run(profile.PUT,'PUT',a,{employerName:'Synthetic Haulage',startDate:'2026-01-01'})).status,200);
   assert.equal((await (await run(profile.GET,'GET',a)).json()).profile.statisticsSharing.enabled,true);
+  const syntheticPerson='10000000-0000-4000-8000-000000000099';
+  await db.query("INSERT INTO truckpay_publication_identities(user_id,person_key,reviewer_reference) VALUES($1::uuid,$2::uuid,'synthetic-review')",[aSession.user.id,syntheticPerson]);
+  await db.query("INSERT INTO truckpay_publication_reviews(id,employer_slug,period_start,period_end,fingerprint,proposal,reviewer_reference) VALUES('route-test','synthetic-haulage','2025-01-01','2025-03-31','synthetic','{}','synthetic')");
+  await db.query("INSERT INTO truckpay_publication_review_people(person_key,review_id) VALUES($1,'route-test')",[syntheticPerson]);
+  assert.equal((await db.query("SELECT invalidated_at FROM truckpay_publication_reviews WHERE id='route-test'")).rows[0].invalidated_at,null);
   assert.equal((await run(sharing.PUT,'PUT',a,{enabled:false})).status,200);
+  assert.ok((await db.query("SELECT invalidated_at FROM truckpay_publication_reviews WHERE id='route-test'")).rows[0].invalidated_at,'actual withdrawal route invalidates its pending review');
   assert.equal((await run(profile.PUT,'PUT',a,{employerName:'Synthetic Haulage',statisticsSharing:{enabled:true,noticeVersion:STATISTICS_NOTICE_VERSION}})).status,200);
   assert.equal((await (await run(profile.GET,'GET',a)).json()).profile.statisticsSharing.enabled,false);
   assert.equal((await catalogue.GET()).status,200);

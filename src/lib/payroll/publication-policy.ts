@@ -4,14 +4,15 @@
 import { createHash } from "node:crypto";
 import { analyseLatestSet } from "./analysis";
 import { median } from "./weekly";
+import { STATISTICS_NOTICE_VERSION, STATISTICS_REVIEW_RULES } from "./statistics-sharing";
 import { employmentStartFor, profileAtPayslip, validateEmploymentStart } from "./employment-month";
 import type { EmploymentProfile, Payslip, TenureBand } from "./types";
 
 export const PUBLICATION_POLICY = Object.freeze({
   version: "salary-tenure-intervals-v1-draft",
-  noticeVersion: "salary-tenure-intervals-v1-draft",
-  minimumPeoplePerCell: 10,
-  intervalEuros: 100,
+  noticeVersion: STATISTICS_NOTICE_VERSION,
+  minimumPeoplePerCell: STATISTICS_REVIEW_RULES.minimumPeoplePerCell,
+  intervalEuros: STATISTICS_REVIEW_RULES.intervalEuros,
   minimumPayslipsPerPerson: 3,
 });
 
