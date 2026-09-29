@@ -8,6 +8,7 @@ it("CI rejects raw salary calculators and internal review data in serving code",
     ["src/app/api/example/route.ts", 'import { calculateCompanyPayStats as raw } from "@/lib/payroll/company-stats"; export const GET = raw;'],
     ["src/components/example.tsx", 'import { preparePublicationReview } from "@/lib/payroll/publication-policy"; export default preparePublicationReview;'],
     ["src/app/example/page.tsx", 'import { readPublicationHistory } from "../../lib/payroll/publication-journal"; export default readPublicationHistory;'],
+    ["src/app/api/example/route.ts", 'import { loadPublicationSource } from "@/lib/payroll/publication-source"; export const GET = loadPublicationSource;'],
   ]) {
     const [result] = await lint.lintText(code, { filePath });
     assert.ok(result.messages.some(m => m.ruleId === "no-restricted-imports"), filePath);
