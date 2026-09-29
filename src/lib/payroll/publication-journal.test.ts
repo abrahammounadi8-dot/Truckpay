@@ -20,11 +20,15 @@ async function withJournal(run: (db: PGlite, pool: ReviewPool) => Promise<void>)
 it("persists one immutable reservation and refuses a second review for its period", async () => {
   await withJournal(async (db, pool) => {
     const input = publicationFixture(), review = preparePublicationReview(input);
-    const id = await reservePublicationReview(pool, review, "synthetic-review-001", async () => input);
+    const id = await reservePublicationReview(pool, review, "synthetic-review-001", async () => {
+      // Caller-owned objects can change while awaiting I/O; journal uses its own copy.
+      review.audit.personKeys = [];
+      return input;
+    });
     assert.equal((await db.query("SELECT id FROM truckpay_publication_reviews")).rows.length, 1);
     assert.equal((await db.query("SELECT person_key FROM truckpay_publication_review_people")).rows.length, 10);
     assert.equal((await readPublicationHistory(pool))[0].personKeys.length, 10);
-    await assert.rejects(reservePublicationReview(pool, review, "synthetic-review-002", async () => input), /stale or blocked/);
+    await assert.rejects(reservePublicationReview(pool, preparePublicationReview(input), "synthetic-review-002", async () => input), /stale or blocked/);
     assert.equal((await db.query<{ id: string }>("SELECT id FROM truckpay_publication_reviews")).rows[0].id, id);
   });
 });

@@ -30,6 +30,7 @@ export async function readPublicationHistory(pool: ReviewPool): Promise<ReleaseH
 export async function reservePublicationReview(pool: ReviewPool, review: PublicationReview,
   reviewerReference: string, loadFresh: (connection: ReviewConnection) => Promise<FreshInput>): Promise<string> {
   if (!reviewerReference.trim()) throw new Error("A disclosure review reference is required.");
+  const candidate = structuredClone(review);
   const connection = await pool.connect();
   try {
     await connection.query("BEGIN");
@@ -38,13 +39,13 @@ export async function reservePublicationReview(pool: ReviewPool, review: Publica
     await connection.query("LOCK TABLE truckpay_documents IN SHARE MODE");
     const history = await historyInConnection(connection);
     const current = { ...await loadFresh(connection), history };
-    if (!reviewStillMatches(review, current)) throw new Error("Disclosure review is stale or blocked; prepare a new review.");
+    if (!reviewStillMatches(candidate, current)) throw new Error("Disclosure review is stale or blocked; prepare a new review.");
     const id = randomUUID();
     await connection.query(`INSERT INTO truckpay_publication_reviews
       (id, employer_slug, period_start, period_end, fingerprint, proposal, reviewer_reference)
       VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7)`, [id, current.employerSlug, current.period.start, current.period.end,
-      review.audit.fingerprint, JSON.stringify(review.proposal), reviewerReference]);
-    for (const key of review.audit.personKeys) {
+      candidate.audit.fingerprint, JSON.stringify(candidate.proposal), reviewerReference]);
+    for (const key of candidate.audit.personKeys) {
       await connection.query("INSERT INTO truckpay_publication_review_people (person_key, review_id) VALUES ($1,$2)", [key, id]);
     }
     await connection.query("COMMIT");
