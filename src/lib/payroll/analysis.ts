@@ -1,3 +1,4 @@
+import { consecutiveOnboarding } from "./onboarding";
 import { detectSetAnomalies } from "@/lib/payroll/anomalies";
 import { REQUIRED_PAYSLIPS, type AnalysisStatus, type Anomaly, type EmploymentProfile, type Payslip } from "@/lib/payroll/types";
 import { inspectSequence, type SequenceReport } from "@/lib/payroll/sequence";
@@ -14,17 +15,26 @@ export type SetAnalysis = {
   blockers: string[];
   warnings: string[];
   ownMedianWeeklyGross: number | null;
+  ownNetByFrequency: { frequency: string; medianNet: number; payslipCount: number }[];
   ownMedianWeeklyHours: number | null;
   ownMedianBaseRate: number | null;
   anomalies: Anomaly[];
 };
 
 export function analyseLatestSet(all: Payslip[], profile: EmploymentProfile | null): SetAnalysis {
-  const latest = [...all]
+  const eligible = all.filter(s => !s.manualAmountAudit);
+  const completed = consecutiveOnboarding(eligible);
+  const candidates = completed.unlocked ? completed.slips : eligible;
+  const latest = [...new Map(candidates.map(s => [s.contentHash || s.id, s])).values()]
     .sort((a, b) => b.paymentDate.localeCompare(a.paymentDate) || b.createdAt.localeCompare(a.createdAt))
     .slice(0, REQUIRED_PAYSLIPS);
 
   const sequence = inspectSequence(latest);
+  const onboarding = consecutiveOnboarding(latest);
+  if (onboarding.unlocked && onboarding.inferred) {
+    sequence.consecutive = true;
+    sequence.consecutiveEpistemic = "inference";
+  }
   const blockers: string[] = [];
   const warnings: string[] = [];
 
@@ -40,8 +50,8 @@ export function analyseLatestSet(all: Payslip[], profile: EmploymentProfile | nu
   if (latest.length >= REQUIRED_PAYSLIPS && !employer) {
     blockers.push("Link the slips to the current employer so they can be analysed as one job.");
   }
-  if (latest.length >= REQUIRED_PAYSLIPS && !sequence.periodsExtracted) {
-    blockers.push("Each of the three slips needs a pay period start and end as printed. One slip is not assumed to be one week.");
+  if (latest.length >= REQUIRED_PAYSLIPS && !onboarding.unlocked) {
+    blockers.push("Use three consecutive payslips from the same employer with the same weekly, fortnightly or monthly frequency. Printed periods or a matching payment cadence are needed.");
   }
 
   if (sequence.missingPeriods.length) {
@@ -72,6 +82,11 @@ export function analyseLatestSet(all: Payslip[], profile: EmploymentProfile | nu
     blockers,
     warnings,
     ownMedianWeeklyGross: median(weeklyGross),
+    ownNetByFrequency: [...new Set(latest.map(s => s.payFrequency))].flatMap(frequency => {
+      const values = latest.filter(s => s.payFrequency === frequency).map(s => s.netPay).filter((v): v is number => v != null && Number.isFinite(v));
+      const value = median(values);
+      return value == null ? [] : [{ frequency, medianNet: value, payslipCount: values.length }];
+    }),
     ownMedianWeeklyHours: median(weeklyHours),
     ownMedianBaseRate: median(rates),
     anomalies: detectSetAnomalies(latest, profile),

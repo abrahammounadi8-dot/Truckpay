@@ -1,42 +1,35 @@
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getLocalAuth, localAuthOrigin } from "@/lib/auth/server";
+import { localAuthEnabled, verifiedAccountId, validPrivateOrigin } from "@/lib/auth/config";
+import { emailConfiguration } from "@/lib/auth/email";
+import { database } from "@/lib/persistence/database";
+import { recordActivity } from "@/lib/retention/service";
 
-const COOKIE = "tp_uid";
-const UUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-/**
- * Internal user id is a random UUID. Never a PPSN, licence, or employee number.
- */
-export async function getOrCreateUserId(): Promise<string> {
-  const jar = await cookies();
-  const existing = jar.get(COOKIE)?.value;
-  if (existing && UUID.test(existing)) return existing;
-  const id = crypto.randomUUID();
-  jar.set(COOKIE, id, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365,
-    secure: process.env.NODE_ENV === "production",
-  });
+export async function readUserId(): Promise<string | null> {
+  if (!localAuthEnabled() || emailConfiguration().mode === "invalid") return null;
+  const id = verifiedAccountId(await (await getLocalAuth()).api.getSession({ headers: await headers() }));
+  if (id && process.env.NODE_ENV === "production" && process.env.MTP_RETENTION_ENABLED === "enabled") {
+    if (!await recordActivity(database(), id)) return null;
+  }
   return id;
 }
 
-export async function readUserId(): Promise<string | null> {
-  const jar = await cookies();
-  const existing = jar.get(COOKIE)?.value;
-  return existing && UUID.test(existing) ? existing : null;
+export async function privateApiIdentity(request: Request): Promise<string | Response> {
+  if (!validPrivateOrigin(request, localAuthOrigin)) return privateJson({ error: "Invalid request origin." }, { status: 403 });
+  const id = await readUserId();
+  return id ?? privateJson({ error: "Sign in to access your private data.", code: "AUTH_REQUIRED" }, { status: 401 });
 }
 
-export async function rotateUserId(): Promise<string> {
-  const jar = await cookies();
-  const id = crypto.randomUUID();
-  jar.set(COOKIE, id, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365,
-    secure: process.env.NODE_ENV === "production",
-  });
+export function privateJson(body: unknown, init: ResponseInit = {}) {
+  const responseHeaders = new Headers(init.headers);
+  responseHeaders.set("Cache-Control", "private, no-store");
+  responseHeaders.append("Vary", "Cookie");
+  return Response.json(body, { ...init, headers: responseHeaders });
+}
+
+export async function requireAccount() {
+  const id = await readUserId();
+  if (!id) redirect("/account");
   return id;
 }

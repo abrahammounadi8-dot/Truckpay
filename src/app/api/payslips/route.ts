@@ -1,9 +1,12 @@
 import { contentLengthTooLarge, rateLimit } from "@/lib/http/request-limits";
+import { employmentStartFor, validateEmploymentStart } from "@/lib/payroll/employment-month";
+import { checkAmountReceipt } from "@/lib/payroll/amount-review";
+import { attachProcessing } from "@/lib/payroll/process";
 import { DuplicatePayslipError } from "@/lib/persistence/documents";
 import { parsePayslipInput, toStoredPayslip } from "@/lib/payroll/parse";
 import { findDuplicate, hashFromInput } from "@/lib/payroll/fingerprint";
 import { publicError } from "@/lib/payroll/privacy";
-import { getOrCreateUserId } from "@/lib/payroll/session";
+import { privateApiIdentity, privateJson } from "@/lib/payroll/session";
 import { listPayslipsForUser, savePayslip } from "@/lib/payroll/store";
 import { toPublicPayslip } from "@/lib/payroll/format";
 import { comparisonAccess } from "@/lib/payroll/access-state";
@@ -11,11 +14,12 @@ import { getProfile } from "@/lib/payroll/profile-store";
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  const userId = await getOrCreateUserId();
+export async function GET(request: Request) {
+  const userId = await privateApiIdentity(request);
+  if (userId instanceof Response) return userId;
   const [payslips, profile] = await Promise.all([listPayslipsForUser(userId), getProfile(userId)]);
   const access = comparisonAccess(payslips, profile);
-  return Response.json({
+  return privateJson({
     payslips: payslips.map(toPublicPayslip),
     required: access.required,
     have: access.have,
@@ -24,34 +28,43 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const limited = rateLimit(request, { scope: "payslip-create", limit: 30, windowMs: 60 * 1000 });
+  const userId = await privateApiIdentity(request);
+  if (userId instanceof Response) return userId;
+  const limited = rateLimit(request, { scope: "payslip-create", limit: 30, windowMs: 60000 });
   if (limited) return limited;
-  if (contentLengthTooLarge(request, 100 * 1024)) {
-    return Response.json(publicError("Request is too large."), { status: 413 });
+  if (contentLengthTooLarge(request, 102400)) {
+    return privateJson({ error: "Request is too large." }, { status: 413 });
   }
 
   let payload: unknown;
   try {
     payload = await request.json();
   } catch {
-    return Response.json(publicError("Send JSON."), { status: 400 });
+    return privateJson(publicError("Send JSON."), { status: 400 });
   }
 
   const parsed = parsePayslipInput(payload);
   if (parsed.error || !parsed.input) {
-    return Response.json(publicError(parsed.error ?? "Invalid payslip."), { status: 400 });
+    return privateJson(publicError(parsed.error ?? "Invalid payslip."), { status: 400 });
   }
 
-  const userId = await getOrCreateUserId();
+  const amountCheck = checkAmountReceipt(userId, (payload as Record<string, unknown>).amountReceipt, parsed.input);
+  if (amountCheck.error) return privateJson({ error: amountCheck.error }, { status: 403 });
+
   let existing: Awaited<ReturnType<typeof listPayslipsForUser>>;
   try {
     existing = await listPayslipsForUser(userId);
   } catch {
-    return Response.json(publicError("Could not save"), { status: 503 });
+    return privateJson(publicError("Could not save"), { status: 503 });
   }
+  const employmentProfile = await getProfile(userId);
+  const start = employmentStartFor(employmentProfile, parsed.input.employerSlug);
+  if (!start || !parsed.input.employerSlug) return privateJson({ error: "Indica y guarda el mes y año en que empezaste en esta empresa.", code: "EMPLOYMENT_START_REQUIRED" }, { status: 422 });
+  const startError = validateEmploymentStart(start.startMonth, parsed.input.employerSlug, existing, parsed.input.payPeriodEnd || parsed.input.paymentDate);
+  if (startError) return privateJson({ error: startError }, { status: 422 });
   const duplicate = findDuplicate(existing, hashFromInput(parsed.input));
   if (duplicate) {
-    return Response.json(
+    return privateJson(
       {
         ...publicError("That payslip looks like one you already entered (same dates and totals)."),
         duplicateOf: duplicate.id,
@@ -64,13 +77,15 @@ export async function POST(request: Request) {
   let profile;
   try {
     profile = await getProfile(userId);
-    payslip = await savePayslip(toStoredPayslip(userId, parsed.input));
+    const record = toStoredPayslip(userId, parsed.input);
+    if (amountCheck.audit) record.manualAmountAudit = amountCheck.audit;
+    payslip = await savePayslip(attachProcessing(record));
   } catch (error) {
-    if (error instanceof DuplicatePayslipError) return Response.json(publicError("That payslip has already been saved."), { status: 409 });
-    return Response.json(publicError("Could not save"), { status: 503 });
+    if (error instanceof DuplicatePayslipError) return privateJson(publicError("That payslip has already been saved."), { status: 409 });
+    return privateJson(publicError("Could not save"), { status: 503 });
   }
   const access = comparisonAccess([payslip, ...existing], profile);
-  return Response.json(
+  return privateJson(
     {
       payslip: toPublicPayslip(payslip),
       have: access.have,

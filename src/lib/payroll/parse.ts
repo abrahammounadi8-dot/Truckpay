@@ -124,10 +124,10 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
 
 export function toStoredPayslip(userId: string, input: PayslipInput): Payslip {
   const deductions = (input.deductions ?? []).map((line) =>
-    classifyDeduction(line.rawLabel, line.amount, "IE"),
+    minimizedDeduction(line.rawLabel, line.amount),
   );
   const allowances = (input.allowances ?? []).map((line) =>
-    classifyAllowance(line.rawLabel, line.amount),
+    classifyAllowance("Allowance", line.amount),
   );
   const needsReview = deductions.some((line) => line.needsReview) || allowances.some((line) => line.needsReview);
 
@@ -211,4 +211,9 @@ function parseLines(value: unknown): { rawLabel: string; amount: number }[] | fa
     lines.push({ rawLabel: rawLabel.slice(0, 80), amount });
   }
   return lines;
+}
+
+function minimizedDeduction(label: string, amount: number) {
+  const line = classifyDeduction(label, amount, "IE");
+  return {...line, rawLabel: line.normalizedCategory === "UNKNOWN" ? "Other deduction" : line.normalizedCategory};
 }

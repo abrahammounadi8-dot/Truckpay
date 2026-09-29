@@ -1,0 +1,5 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node scripts/migrate-db.mjs && node scripts/migrate-production-auth.cjs && npm run build",
+  "crons": [{ "path": "/api/internal/retention", "schedule": "17 4 * * *" }]
+}

@@ -22,9 +22,6 @@ export function SiteFooter() {
             <Link href="/payslips" className="hover:text-primary-foreground">
               {t("footer.privatePayslips")}
             </Link>
-            <Link href="/analysis" className="hover:text-primary-foreground">
-              {t("footer.payrollAnalysis")}
-            </Link>
             <Link href="/profile" className="hover:text-primary-foreground">
               {t("footer.employmentProfile")}
             </Link>

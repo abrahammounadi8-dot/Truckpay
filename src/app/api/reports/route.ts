@@ -11,9 +11,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const limited = rateLimit(request, { scope: "report-create", limit: 10, windowMs: 60 * 1000 });
+  const limited = rateLimit(request, { scope: "report-create", limit: 10, windowMs: 60000 });
   if (limited) return limited;
-  if (contentLengthTooLarge(request, 64 * 1024)) {
+  if (contentLengthTooLarge(request, 65536)) {
     return Response.json({ error: "Request is too large." }, { status: 413 });
   }
 

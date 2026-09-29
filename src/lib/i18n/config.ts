@@ -1,10 +1,11 @@
-export const locales = ["en", "es", "pl", "pt", "lt", "ro", "ru"] as const;
+export const locales = ["en", "es", "pl", "pt", "lt", "ro", "ru", "de"] as const;
 export type Locale = (typeof locales)[number];
 
 export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_COOKIE = "tp_lang";
 
 export const localeMeta: Record<Locale, { nativeName: string; htmlLang: string }> = {
+  de: { nativeName: "Deutsch", htmlLang: "de" },
   en: { nativeName: "English", htmlLang: "en-IE" },
   es: { nativeName: "Español", htmlLang: "es" },
   pl: { nativeName: "Polski", htmlLang: "pl" },

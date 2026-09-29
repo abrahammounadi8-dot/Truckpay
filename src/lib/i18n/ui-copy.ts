@@ -1,8 +1,17 @@
 import { translateDiagnosticSpanish } from "./diagnostics-es";
+import { uiGerman } from "./ui-de";
 import type { Locale } from "./config";
 import { interpolate } from "./lookup";
 /** Columns: en, es, pl, pt, lt, ro, ru. */
 export const uiCopy = [
+  ["Public pay report","Reporte salarial público","Publiczny raport płacowy","Relatório salarial público","Vieša atlyginimo ataskaita","Raport salarial public","Публичный отчёт о зарплате"],
+  ["Report your actual pay","Presenta tu salario real","Podaj swoje rzeczywiste wynagrodzenie","Indica o teu salário real","Nurodykite faktiškai gautą atlyginimą","Raportează salariul primit efectiv","Укажите фактически полученную зарплату"],
+  ["Enter the company name and the amounts actually paid. Weekly take-home is required. This report is public; only include payroll figures, not personal information.","Escribe el nombre de la empresa y los importes realmente cobrados. El neto semanal es obligatorio. Este reporte es público; incluye solo cifras salariales, sin datos personales.","Wpisz nazwę firmy i faktycznie otrzymane kwoty. Tygodniowe wynagrodzenie netto jest wymagane. Raport jest publiczny; podaj tylko kwoty, bez danych osobowych.","Escreve o nome da empresa e os valores realmente recebidos. O salário líquido semanal é obrigatório. Este relatório é público; inclui apenas valores salariais, sem dados pessoais.","Įveskite įmonės pavadinimą ir faktiškai gautas sumas. Savaitės atlyginimas į rankas yra privalomas. Ataskaita vieša; pateikite tik atlyginimo sumas, be asmens duomenų.","Introdu numele firmei și sumele primite efectiv. Salariul net săptămânal este obligatoriu. Raportul este public; include doar sume salariale, fără date personale.","Введите название компании и фактически полученные суммы. Зарплата за неделю на руки обязательна. Отчёт публичный; указывайте только суммы, без персональных данных."],
+  ["Hourly rate and km must be valid numbers if provided.","La tarifa por hora y los kilómetros deben ser números válidos si los indicas.","Stawka godzinowa i kilometry muszą być poprawnymi liczbami, jeśli je podajesz.","A tarifa por hora e os quilómetros devem ser números válidos, se indicados.","Valandinis tarifas ir kilometrai turi būti tinkami skaičiai, jei nurodyti.","Tariful orar și kilometrii trebuie să fie numere valide, dacă sunt completate.","Почасовая ставка и километры должны быть допустимыми числами, если указаны."],
+  ["Type any company name. Suggestions are optional.","Escribe cualquier empresa. Las sugerencias son opcionales.","Wpisz dowolną nazwę firmy. Podpowiedzi są opcjonalne.","Escreve qualquer empresa. As sugestões são opcionais.","Įveskite bet kurios įmonės pavadinimą. Pasiūlymai neprivalomi.","Scrie orice nume de firmă. Sugestiile sunt opționale.","Введите название любой компании. Подсказки необязательны."],
+  ["Enter the company name.","Escribe el nombre de la empresa.","Wpisz nazwę firmy.","Escreve o nome da empresa.","Įveskite įmonės pavadinimą.","Introdu numele firmei.","Введите название компании."],
+  ["Company name must be 120 characters or fewer.","El nombre de la empresa debe tener como máximo 120 caracteres.","Nazwa firmy może mieć maksymalnie 120 znaków.","O nome da empresa deve ter até 120 caracteres.","Įmonės pavadinimas turi būti ne ilgesnis kaip 120 simbolių.","Numele firmei trebuie să aibă cel mult 120 de caractere.","Название компании должно содержать не более 120 символов."],
+  ["Company name reported by a driver; company details are not verified.","Empresa indicada por un conductor; sus datos no están verificados.","Firma wskazana przez kierowcę; jej dane nie są zweryfikowane.","Empresa indicada por um motorista; os seus dados não estão verificados.","Vairuotojo nurodyta įmonė; jos duomenys nepatikrinti.","Firmă indicată de un șofer; datele sale nu sunt verificate.","Компания указана водителем; сведения о ней не проверены."],
   [
     "Directory",
     "Directorio",
@@ -2049,7 +2058,7 @@ export const uiCopy = [
   ]
 
 ] as const;
-const localeIndex: Record<Locale, number> = { en: 0, es: 1, pl: 2, pt: 3, lt: 4, ro: 5, ru: 6 };
+const localeIndex: Record<Locale, number> = { en: 0, es: 1, pl: 2, pt: 3, lt: 4, ro: 5, ru: 6, de: 7 };
 const catalog = new Map<string, readonly string[]>(uiCopy.map(row => [row[0], row]));
 
 const templates = uiCopy.filter(row => row[0].includes("{")).map(row => {
@@ -2062,10 +2071,10 @@ const templates = uiCopy.filter(row => row[0].includes("{")).map(row => {
 });
 export function translateUi(locale: Locale, text: string, vars?: Record<string, string | number>): string {
   const direct = catalog.get(text);
-  if (direct) return interpolate(direct[localeIndex[locale]], vars);
+  if (direct) return interpolate(locale === "de" ? uiGerman[direct[0]] : direct[localeIndex[locale]], vars);
   for (const { row, names, pattern } of templates) {
     const match = text.match(pattern);
-    if (match) return interpolate(row[localeIndex[locale]], Object.fromEntries(names.map((name, i) => [name, match[i + 1]])));
+    if (match) return interpolate(locale === "de" ? uiGerman[row[0]] : row[localeIndex[locale]], Object.fromEntries(names.map((name, i) => [name, match[i + 1]])));
   }
   if (locale === "es") return translateDiagnosticSpanish(text, value => catalog.get(value)?.[1] ?? value) ?? text;
   return text;

@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { fleet } from "@/lib/data";
 import { companyStats } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
 import type { Equipment } from "@/lib/types";
@@ -30,14 +29,14 @@ type SortKey = "name" | "reports" | "pay" | "county";
 
 export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string }) {
   const { t } = useT();
-  const { reports } = useAppStore();
+  const { reports, companies } = useAppStore();
   const [query, setQuery] = useState(initialQuery);
   const [equipment, setEquipment] = useState<Equipment | "all">("all");
   const [sort, setSort] = useState<SortKey>("name");
 
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const filtered = fleet.filter((company) => {
+    const filtered = companies.filter((company) => {
       const matchesQuery =
         !needle ||
         company.name.toLowerCase().includes(needle) ||
@@ -56,7 +55,7 @@ export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string 
       if (sort === "county") return a.county.localeCompare(b.county);
       return a.name.localeCompare(b.name);
     });
-  }, [query, equipment, sort, reports]);
+  }, [query, equipment, sort, reports, companies]);
 
   return (
     <div className="space-y-6">

@@ -2,6 +2,7 @@ import { Pool } from "pg";
 type DatabaseGlobal = typeof globalThis & { truckpayDatabase?: Pool };
 /** Configured databases never fall back to disk when unavailable. */
 export function usesDatabase(): boolean {
+  if (process.env.NODE_ENV === "production" && !process.env.DATABASE_URL) throw new Error("Production requires DATABASE_URL; local storage fallback is disabled.");
   return Boolean(process.env.DATABASE_URL);
 }
 export function database(): Pool {

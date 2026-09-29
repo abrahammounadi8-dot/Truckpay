@@ -57,11 +57,12 @@ export function emptyLine(seed?: string): Line {
 }
 
 
-/** Build a complete replacement; missing values must never inherit another slip. */
+/** Replace slip values; only the group pay frequency may be reused explicitly. */
 export function draftFromExtraction(
   fields: Record<string, string | number | null>,
   deductions: { rawLabel: string; amount: number }[],
   allowances: { rawLabel: string; amount: number }[],
+  groupFrequency: PayFrequency = "unknown",
 ) {
   const form = { ...emptyForm };
   for (const key of Object.keys(emptyForm) as (keyof FormState)[]) {
@@ -70,6 +71,7 @@ export function draftFromExtraction(
     if (key === "payFrequency" && !["unknown", "weekly", "fortnightly", "lunar", "monthly"].includes(String(value))) continue;
     (form as Record<string, string>)[key] = String(value);
   }
+  if (form.payFrequency === "unknown") form.payFrequency = groupFrequency;
   const lines = (items: { rawLabel: string; amount: number }[]) =>
     items.length ? items.map(line => ({ key: crypto.randomUUID(), rawLabel: line.rawLabel, amount: String(line.amount) })) : [emptyLine()];
   return { form, deductions: lines(deductions), allowances: lines(allowances) };

@@ -2,7 +2,7 @@ import type { TenureBandStats } from "@/lib/payroll/company-stats";
 import type { Epistemic } from "@/lib/payroll/types";
 
 export type PayFactor = {
-  factor: "base_hourly_rate" | "normal_hours";
+  factor: "net" | "base_hourly_rate" | "normal_hours";
   epistemic: Epistemic;
   summary: string;
   yours: number | null;

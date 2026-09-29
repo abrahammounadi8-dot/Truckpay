@@ -45,7 +45,7 @@ export function CompanyDetail({
               </p>
               <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">{company.name}</h1>
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-primary-foreground/70">
-                {company.summary}
+                {company.driverReported ? tr("Company name reported by a driver; company details are not verified.") : company.summary}
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-primary-foreground/65">
                 <MapPin className="size-4" />
@@ -122,7 +122,7 @@ export function CompanyDetail({
           <PayGapBar stats={stats} />
         </section>
 
-        <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
+        {!company.driverReported && <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
           <h2 className="font-heading text-xl font-semibold">{tr("Public facts")}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{tr("Taken from the operator’s own site. Not a review.")}</p>
           <dl className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -140,7 +140,7 @@ export function CompanyDetail({
               value={company.equipment.map((item) => tr(equipmentLabels[item])).join(" · ")}
             />
           </dl>
-        </section>
+        </section>}
 
         <CompanyPayStatsPanel stats={payStats} />
 

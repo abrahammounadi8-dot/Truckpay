@@ -6,16 +6,15 @@ import { XIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/components/language-provider";
-import { fleet } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function CompareDock() {
   const { t } = useT();
-  const { compareSlugs, toggleCompare, clearCompare, ready } = useAppStore();
+  const { companies, compareSlugs, toggleCompare, clearCompare, ready } = useAppStore();
   const selected = useMemo(
-    () => compareSlugs.map((slug) => fleet.find((company) => company.slug === slug)).filter(Boolean),
-    [compareSlugs],
+    () => compareSlugs.map((slug) => companies.find((company) => company.slug === slug)).filter(Boolean),
+    [compareSlugs, companies],
   );
 
   if (!ready || selected.length === 0) return null;

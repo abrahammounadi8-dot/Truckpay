@@ -26,13 +26,18 @@ export function attachProcessing(slip: Payslip): Payslip {
     weekAssignment,
   };
   const provenance = buildProvenance(withWeek);
+  if (slip.manualAmountAudit) {
+    for (const field of Object.values(provenance)) { field.source = "unverified"; field.verification_status = "unverified"; field.confidence = 0; }
+    withWeek.reviewStatus = "needs_review";
+  }
   const weeklyRecord = buildWeeklyRecord(withWeek, provenance);
+  if (slip.manualAmountAudit) weeklyRecord.comparable = false;
   return {
     ...withWeek,
     provenance,
     weeklyRecord,
     reviewStatus:
-      weekAssignment.verification_status === "needs_review" || slip.reviewStatus === "needs_review"
+      !!slip.manualAmountAudit || weekAssignment.verification_status === "needs_review" || slip.reviewStatus === "needs_review"
         ? "needs_review"
         : slip.reviewStatus,
   };

@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { fleet } from "@/lib/data";
 import { equipmentLabels, operationLabels, payTypeLabels } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
 import type { Equipment, Operation, PayType } from "@/lib/types";
@@ -17,26 +16,20 @@ const operations: Operation[] = ["domestic", "uk", "europe"];
 export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
   const tr = useUiCopy();
   const router = useRouter();
-  const { submitReport } = useAppStore();
+  const { submitReport, companies } = useAppStore();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const initialSlug =
-    defaultCompany && fleet.some((company) => company.slug === defaultCompany)
-      ? defaultCompany
-      : fleet[0]?.slug ?? "";
   const [form, setForm] = useState({
-    companySlug: initialSlug,
+    companyName: defaultCompany ?? "",
     role: "HGV driver",
     tenure: "1–2 years",
     payType: "hourly" as PayType,
     equipment: "curtain" as Equipment,
     operation: "domestic" as Operation,
-    quotedWeekly: "",
     hourlyRate: "",
     weeklyPay: "",
     kmPerWeek: "",
     hoursPerWeek: "45",
-    body: "",
   });
 
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -48,21 +41,21 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
     setPending(true);
     setError(null);
     try {
-      await submitReport({
-        companySlug: form.companySlug,
+      const saved = await submitReport({
+        companySlug: "",
+        companyName: form.companyName,
         role: form.role,
         tenure: form.tenure,
         payType: form.payType,
         equipment: form.equipment,
         operation: form.operation,
-        quotedWeekly: form.quotedWeekly ? Number(form.quotedWeekly) : undefined,
         hourlyRate: form.hourlyRate ? Number(form.hourlyRate) : undefined,
         weeklyPay: Number(form.weeklyPay),
         kmPerWeek: form.kmPerWeek ? Number(form.kmPerWeek) : undefined,
         hoursPerWeek: Number(form.hoursPerWeek),
-        body: form.body,
+        body: "",
       });
-      router.push(`/companies/${form.companySlug}`);
+      router.push(`/companies/${saved.companySlug}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : tr("Could not save"));
     } finally {
@@ -73,17 +66,18 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
   return (
     <form onSubmit={onSubmit} className="space-y-5 rounded-xl bg-card p-5 ring-1 ring-foreground/10">
       <Field label={tr("Haulage firm")}>
-        <select
-          className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
-          value={form.companySlug}
-          onChange={(event) => set("companySlug", event.target.value)}
-        >
-          {fleet.map((company) => (
-            <option key={company.slug} value={company.slug}>
-              {company.name}
-            </option>
-          ))}
-        </select>
+        <Input
+          list="report-company-suggestions"
+          value={form.companyName}
+          onChange={(event) => set("companyName", event.target.value)}
+          placeholder={tr("Company name")}
+          maxLength={120}
+          required
+        />
+        <datalist id="report-company-suggestions">
+          {companies.map((company) => <option key={company.slug} value={company.name} />)}
+        </datalist>
+        <p className="text-xs text-muted-foreground">{tr("Type any company name. Suggestions are optional.")}</p>
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={tr("Job title")}>
@@ -144,14 +138,6 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
             required
           />
         </Field>
-        <Field label={tr("What they quoted weekly (€) — optional")}>
-          <Input
-            inputMode="decimal"
-            value={form.quotedWeekly}
-            onChange={(event) => set("quotedWeekly", event.target.value)}
-            placeholder={tr("Only if they named a figure")}
-          />
-        </Field>
         <Field label={tr("Hourly rate (€) — optional")}>
           <Input
             inputMode="decimal"
@@ -175,14 +161,6 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
           />
         </Field>
       </div>
-      <Field label={tr("Notes — optional. Facts from your slip only.")}>
-        <textarea
-          className="min-h-28 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-sm"
-          value={form.body}
-          onChange={(event) => set("body", event.target.value)}
-          placeholder={tr("Hours, wait time, what was deducted — only what you saw.")}
-        />
-      </Field>
       {error ? <p className="text-sm text-destructive">{tr(error)}</p> : null}
       <Button type="submit" disabled={pending} className="w-full sm:w-auto">
         {pending ? tr("Filing…") : tr("File wage slip")}
