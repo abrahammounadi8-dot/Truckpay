@@ -1,18 +1,21 @@
 import { cookies } from "next/headers";
+import { accountForUser, accountSession } from "./account";
+import { signAnonymousId, verifyAnonymousId } from "./anonymous-cookie";
 
-const COOKIE = "tp_uid";
-const UUID =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+// Separate name preserves the legacy cookie for a controlled migration or rollback.
+const COOKIE = "tp_uid_v2";
 
 /**
  * Internal user id is a random UUID. Never a PPSN, licence, or employee number.
  */
 export async function getOrCreateUserId(): Promise<string> {
+  const session = await accountSession();
+  if (session) return session.userId;
   const jar = await cookies();
-  const existing = jar.get(COOKIE)?.value;
-  if (existing && UUID.test(existing)) return existing;
+  const existing = verifyAnonymousId(jar.get(COOKIE)?.value);
+  if (existing && !(await accountForUser(existing))) return existing;
   const id = crypto.randomUUID();
-  jar.set(COOKIE, id, {
+  jar.set(COOKIE, signAnonymousId(id), {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
@@ -23,15 +26,17 @@ export async function getOrCreateUserId(): Promise<string> {
 }
 
 export async function readUserId(): Promise<string | null> {
+  const session = await accountSession();
+  if (session) return session.userId;
   const jar = await cookies();
-  const existing = jar.get(COOKIE)?.value;
-  return existing && UUID.test(existing) ? existing : null;
+  const existing = verifyAnonymousId(jar.get(COOKIE)?.value);
+  return existing && !(await accountForUser(existing)) ? existing : null;
 }
 
 export async function rotateUserId(): Promise<string> {
   const jar = await cookies();
   const id = crypto.randomUUID();
-  jar.set(COOKIE, id, {
+  jar.set(COOKIE, signAnonymousId(id), {
     httpOnly: true,
     sameSite: "lax",
     path: "/",

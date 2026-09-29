@@ -10,6 +10,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
+  { href: "/account", key: "Account" as const, match: ["/account"] },
   { href: "/payslips", key: "nav.myTruckPay" as const, match: ["/payslips", "/profile"] },
   { href: "/companies", key: "nav.companies" as const, match: ["/companies", "/rankings"] },
   { href: "/analysis", key: "nav.analysis" as const, match: ["/analysis"] },
@@ -23,7 +24,7 @@ function isActive(pathname: string, match: string[]) {
 export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const { t } = useT();
+  const { t, locale } = useT();
 
   return (
     <header className="sticky top-0 z-50 overflow-visible bg-primary text-primary-foreground">
@@ -51,7 +52,7 @@ export function SiteHeader() {
                     : "text-primary-foreground/70 hover:bg-primary-foreground/8 hover:text-primary-foreground",
                 )}
               >
-                {t(link.key)}
+                {link.key === "Account" ? (locale === "es" ? "Cuenta" : "Account") : t(link.key)}
               </Link>
             );
           })}
@@ -87,7 +88,7 @@ export function SiteHeader() {
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2 text-sm font-medium text-primary-foreground/85 hover:bg-primary-foreground/10"
               >
-                {t(link.key)}
+                {link.key === "Account" ? (locale === "es" ? "Cuenta" : "Account") : t(link.key)}
               </Link>
             ))}
             <Link

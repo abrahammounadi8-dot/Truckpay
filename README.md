@@ -26,7 +26,7 @@ The `raw_label` is always kept.
 
 ## Persistence
 
-Private payslips are stored in `data/payslips.json` locally (scoped to your session cookie). On Vercel that file lives in `/tmp`. That is a stand-in.
+Private payslips use PostgreSQL when `DATABASE_URL` is set. Local development without it uses `data/payslips.json` (Vercel: `/tmp`). Verified email accounts require the database and email configuration described in `docs/persistent-storage.md`; anonymous access remains tied to its browser until verified.
 
 The intended schema is in `src/lib/persistence/schema.sql` (users, documents, extracted payslips, normalized lines, aggregated company stats with **no user id**). JSON is not being deleted until a database cutover is approved.
 

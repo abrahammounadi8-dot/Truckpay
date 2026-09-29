@@ -34,7 +34,7 @@ export function WipeSession() {
   return (
     <div className="space-y-3">
       {confirming ? <>
-        <p>{es ? "Se borrarán todas las nóminas y el perfil vinculados a esta sesión. No podrás recuperarlos desde la aplicación." : "All payslips and the profile linked to this session will be deleted. You cannot restore them from the app."}</p>
+        <p>{es ? "Se borrarán definitivamente todas tus nóminas privadas, tu perfil y, si existe, tu cuenta de correo verificada. No podrás recuperarlos desde la aplicación." : "All your private payslips, profile and any verified email account will be permanently deleted. You cannot restore them from the app."}</p>
         <div className="flex flex-wrap gap-3">
           <Button type="button" variant="destructive" disabled={pending} onClick={onWipe}>{pending ? t("wipe.wiping") : es ? "Confirmar borrado definitivo" : "Confirm permanent deletion"}</Button>
           <Button type="button" variant="outline" disabled={pending} onClick={() => { setConfirming(false); setError(false); }}>{es ? "Cancelar" : "Cancel"}</Button>

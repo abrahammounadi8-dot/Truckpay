@@ -13,6 +13,31 @@ export function contentLengthTooLarge(request: Request, maxBytes: number): boole
   return Number.isFinite(value) && value > maxBytes;
 }
 
+export class RequestTooLargeError extends Error {}
+
+/** Enforce the limit on bytes actually received, including chunked requests. */
+export async function readBoundedJson(request: Request, maxBytes: number): Promise<unknown> {
+  const reader = request.body?.getReader();
+  if (!reader) throw new SyntaxError("Missing JSON body");
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > maxBytes) {
+        await reader.cancel();
+        throw new RequestTooLargeError("Request too large");
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+}
+
 export function rateLimit(
   request: Request,
   options: { scope: string; limit: number; windowMs: number },
