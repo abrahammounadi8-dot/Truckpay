@@ -1,4 +1,5 @@
 "use client";
+import { EmploymentStartField } from "./employment-start-field";
 import { useUiCopy } from "@/components/language-provider";
 
 import { useEffect, useState } from "react";
@@ -7,13 +8,13 @@ import { Input } from "@/components/ui/input";
 import {
   JOB_TYPE_LABELS,
   SHIFT_TYPE_LABELS,
-  TENURE_BAND_LABELS,
-  TENURE_SOURCE_LABELS,
+
+
   VEHICLE_TYPE_LABELS,
   type EmploymentProfile,
   type JobType,
   type ShiftType,
-  type TenureSource,
+
   type TimeFraction,
   type VehicleType,
 } from "@/lib/payroll/types";
@@ -24,15 +25,14 @@ type PublicProfile = Omit<EmploymentProfile, "userId">;
 
 export function EmploymentProfileForm() {
   const tr = useUiCopy();
-  const [profile, setProfile] = useState<PublicProfile | null>(null);
+  const [employmentReady, setEmploymentReady] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
     employerName: "",
-    employmentStartDate: "",
-    tenureSource: "user_declared" as TenureSource,
+
     jobType: "distribution" as JobType,
     vehicleType: "articulated" as VehicleType,
     timeFraction: "full_time" as TimeFraction,
@@ -47,11 +47,10 @@ export function EmploymentProfileForm() {
       .then((data: { profile?: PublicProfile | null }) => {
         setLoaded(true);
         if (!data.profile) return;
-        setProfile(data.profile);
+
         setForm({
           employerName: data.profile.employerName ?? data.profile.employerSlug ?? "",
-          employmentStartDate: data.profile.employmentStartDate ?? "",
-          tenureSource: data.profile.tenureSource ?? "user_declared",
+
           jobType: data.profile.jobType,
           vehicleType: data.profile.vehicleType,
           timeFraction: data.profile.timeFraction,
@@ -77,13 +76,13 @@ export function EmploymentProfileForm() {
         body: JSON.stringify({
           ...form,
           employerName: form.employerName || null,
-          employmentStartDate: form.employmentStartDate || null,
+
           agreedBaseRate: form.agreedBaseRate ? Number(form.agreedBaseRate.replace(",", ".")) : null,
         }),
       });
       const data = (await res.json()) as { error?: string; profile?: PublicProfile };
       if (!res.ok || !data.profile) throw new Error(data.error ?? tr("Could not save"));
-      setProfile(data.profile);
+
       setSaved(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : tr("Could not save"));
@@ -104,38 +103,7 @@ export function EmploymentProfileForm() {
           autoComplete="organization"
         />
       </label>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium">{tr("Employment start date")}</span>
-          <Input
-            type="date"
-            value={form.employmentStartDate}
-            onChange={(event) => setForm({ ...form, employmentStartDate: event.target.value })}
-          />
-        </label>
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium">{tr("Where that date came from")}</span>
-          <select
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
-            value={form.tenureSource}
-            onChange={(event) => setForm({ ...form, tenureSource: event.target.value as TenureSource })}
-          >
-            <option value="user_declared">{tr(TENURE_SOURCE_LABELS.user_declared)}</option>
-            <option value="payslip">{tr(TENURE_SOURCE_LABELS.payslip)}</option>
-            <option value="employment_contract">{tr(TENURE_SOURCE_LABELS.employment_contract)}</option>
-            <option value="other_verified_document">{tr(TENURE_SOURCE_LABELS.other_verified_document)}</option>
-          </select>
-        </label>
-      </div>
-      {profile?.tenureMonths != null && profile.tenureBand ? (
-        <p className="text-sm">
-          <strong>{tr("Tenure: {n} months", { n: profile.tenureMonths })}</strong> ({tr(TENURE_BAND_LABELS[profile.tenureBand])}
-          ). {tr(TENURE_SOURCE_LABELS[profile.tenureSource ?? "user_declared"])}
-          
-        </p>
-      ) : (
-        <p className="text-sm text-muted-foreground">{tr("Add a start date to calculate tenure in months.")}</p>
-      )}
+      <EmploymentStartField employerName={form.employerName} onReady={setEmploymentReady} />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select
           label={tr("Job type")}
@@ -178,7 +146,7 @@ export function EmploymentProfileForm() {
       </div>
       {error ? <p className="text-sm text-destructive">{tr(error)}</p> : null}
       {saved ? <p className="text-sm text-pay-up">{tr("Profile saved.")}</p> : null}
-      <Button type="submit" disabled={pending || !loaded}>
+      <Button type="submit" disabled={pending || !loaded || !employmentReady}>
         {pending ? tr("Saving…") : tr("Save employment profile")}
       </Button>
     </form>

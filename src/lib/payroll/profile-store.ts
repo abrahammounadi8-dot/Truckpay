@@ -61,3 +61,29 @@ export async function listProfiles(): Promise<EmploymentProfile[]> {
   if (usesDatabase()) return new DocumentRepository(database()).list<EmploymentProfile>("profile");
   return readAll();
 }
+
+// Serialize read/modify/write operations in this process to preserve other employers.
+let profileUpdates: Promise<unknown> = Promise.resolve();
+export async function updateProfile(userId: string, change: (current: EmploymentProfile | null) => EmploymentProfile | Promise<EmploymentProfile>): Promise<EmploymentProfile> {
+  if (usesDatabase()) {
+    const client = await database().connect();
+    try {
+      await client.query("BEGIN");
+      // Same lock as batch import: stale edits must not restore withdrawn sharing.
+      await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [userId]);
+      const repository = new DocumentRepository(client);
+      const current = await repository.get<EmploymentProfile>("profile", userId, userId);
+      const changed = await change(current);
+      if (changed.userId !== userId) throw new Error("Profile ownership mismatch.");
+      const saved = await repository.save("profile", userId, userId, changed);
+      await client.query("COMMIT");
+      return saved;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally { client.release(); }
+  }
+  const result = profileUpdates.then(async () => saveProfile(await change(await getProfile(userId))));
+  profileUpdates = result.catch(() => {});
+  return result;
+}

@@ -1,51 +1,46 @@
-import { comparisonDenied } from "@/lib/payroll/access";
+import { comparisonAccess } from "@/lib/payroll/access-state";
 import { analyseLatestSet } from "@/lib/payroll/analysis";
 import { compareLatestToRecent } from "@/lib/payroll/change";
 import { companyPayStats } from "@/lib/payroll/company-stats";
-import { explainPayDifferences } from "@/lib/payroll/explain";
+import type { PayFactor } from "@/lib/payroll/explain";
 import { toPublicPayslip } from "@/lib/payroll/format";
-import { refreshTenure } from "@/lib/payroll/profile";
-import { getProfile, listProfiles } from "@/lib/payroll/profile-store";
-import { getOrCreateUserId } from "@/lib/payroll/session";
-import { listAllPayslips, listPayslipsForUser } from "@/lib/payroll/store";
-import { JOB_TYPE_LABELS, VEHICLE_TYPE_LABELS, SHIFT_TYPE_LABELS } from "@/lib/payroll/types";
+import { employmentStartFor, profileAtPayslip, payslipTenureDate, validateEmploymentStart } from "@/lib/payroll/employment-month";
+import { getProfile } from "@/lib/payroll/profile-store";
+import { privateApiIdentity, privateJson } from "@/lib/payroll/session";
+import { listPayslipsForUser } from "@/lib/payroll/store";
+
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  const denied = await comparisonDenied();
-  if (denied) return denied;
-  const userId = await getOrCreateUserId();
+export async function GET(request: Request) {
+  const userId = await privateApiIdentity(request);
+  if (userId instanceof Response) return userId;
+
   const asOf = new Date().toISOString().slice(0, 10);
-  const slips = await listPayslipsForUser(userId);
+  const employerFilter = new URL(request.url).searchParams.get("employer");
+  const slips = (await listPayslipsForUser(userId)).filter(s => !s.manualAmountAudit && (!employerFilter || s.employerSlug === employerFilter));
   const profileRaw = await getProfile(userId);
-  const profile = profileRaw ? refreshTenure(profileRaw, asOf) : null;
+  const selected = analyseLatestSet(slips, null);
+  const reference = selected.latest[0];
+  const start = employmentStartFor(profileRaw, reference?.employerSlug);
+  if (reference && (!start || validateEmploymentStart(start.startMonth, reference.employerSlug ?? "", slips, payslipTenureDate(reference)))) return privateJson({ employmentRequired: { employerName: reference.employerName ?? reference.employerSlug ?? "", asOf: payslipTenureDate(reference) } });
+  const access = comparisonAccess(slips, profileRaw);
+  if (!access.unlocked) return privateJson({ code: "PAYSLIPS_REQUIRED", ...access }, { status: 403 });
+  const profile = reference ? profileAtPayslip(profileRaw, reference) : null;
   const analysis = analyseLatestSet(slips, profile);
 
-  const employerSlug = profile?.employerSlug ?? analysis.latest.find((slip) => slip.employerSlug)?.employerSlug ?? null;
-  const allSlips = await listAllPayslips();
-  const profiles = await listProfiles();
-  const company = employerSlug ? companyPayStats(employerSlug, allSlips, profiles, asOf) : null;
+  const employerSlug = reference?.employerSlug ?? analysis.latest.find((slip) => slip.employerSlug)?.employerSlug ?? null;
+  const company = employerSlug ? companyPayStats(employerSlug, [], [], asOf) : null;
   const band = company && profile?.tenureBand ? company.bands.find((item) => item.band === profile.tenureBand) ?? null : null;
 
-  const jobNote = profile
-    ? `${JOB_TYPE_LABELS[profile.jobType]}, ${VEHICLE_TYPE_LABELS[profile.vehicleType]}, ${SHIFT_TYPE_LABELS[profile.shiftType]}, ${profile.timeFraction.replaceAll("_", "-")}`
-    : "job, vehicle and shift not on file";
-
-  const factors =
-    analysis.status === "verified"
-      ? explainPayDifferences({
-          ownRate: analysis.ownMedianBaseRate,
-          ownWeeklyHours: analysis.ownMedianWeeklyHours,
-          ownWeeklyGross: analysis.ownMedianWeeklyGross,
-          band: band ?? null,
-          jobNote,
-        })
-      : [];
+  const factors: PayFactor[] = analysis.status === "verified" && band != null ? analysis.ownNetByFrequency.flatMap(own => {
+    const peer = band.netByFrequency.find(group => group.frequency === own.frequency && group.driverCount > 1);
+    return peer ? [{ factor: "net" as const, epistemic: "fact" as const, yours: own.medianNet, peerMedian: peer.medianNet, summary: "Net pay medians compared at the same pay frequency and tenure band. Different tax circumstances and duties can affect take-home pay." }] : [];
+  }) : [];
 
   const payChange = compareLatestToRecent(slips);
 
-  return Response.json({
+  return privateJson({
     analysis: {
       ...analysis,
       latest: analysis.latest.map(toPublicPayslip),

@@ -1,19 +1,21 @@
+import { listDirectoryCompanies } from "@/lib/directory-store";
+import { resolveEmployer } from "@/lib/payroll/employer";
+
 import { companyPayStats } from "@/lib/payroll/company-stats";
-import { getCompany } from "@/lib/data";
-import { listProfiles } from "@/lib/payroll/profile-store";
-import { listAllPayslips } from "@/lib/payroll/store";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(
   _request: Request,
   context: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await context.params;
-  if (!getCompany(slug)) {
+  const company = (await listDirectoryCompanies()).find(company => company.slug === slug || resolveEmployer(company.name).employerSlug === slug);
+  if (!company) {
     return Response.json({ error: "Unknown haulier." }, { status: 404 });
   }
   const asOf = new Date().toISOString().slice(0, 10);
-  const stats = companyPayStats(slug, await listAllPayslips(), await listProfiles(), asOf);
-  return Response.json({ stats });
+  const stats = companyPayStats(resolveEmployer(company.name).employerSlug ?? slug, [], [], asOf);
+  return Response.json({ stats }, { headers: { "Cache-Control": "no-store" } });
 }

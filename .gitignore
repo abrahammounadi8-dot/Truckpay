@@ -46,3 +46,7 @@ yarn-error.log*
 next-env.d.ts
 
 /data/profiles.json
+
+# Runtime documents and local authentication secrets
+/data/**
+!/data/.gitkeep

@@ -1,6 +1,6 @@
 /** Verified analysis needs three distinct slips. Public directory, compare and rankings stay open. */
 import { redirect } from "next/navigation";
-import { readUserId } from "./session";
+import { readUserId, requireAccount } from "./session";
 import { listPayslipsForUser } from "./store";
 import { getProfile } from "./profile-store";
 import { comparisonAccess } from "./access-state";
@@ -12,6 +12,7 @@ export async function getComparisonAccess() {
   return comparisonAccess(slips, profile);
 }
 export async function requireComparisonAccess() {
+  await requireAccount();
   if (!(await getComparisonAccess()).unlocked) redirect("/welcome");
 }
 export async function comparisonDenied() {
@@ -21,7 +22,7 @@ export async function comparisonDenied() {
     : Response.json(
         {
           error:
-            "Add three distinct payslips with their employer and pay periods to unlock verified payroll analysis.",
+            "Add three consecutive payslips of the same frequency from the same employer to unlock payroll analysis.",
           code: "PAYSLIPS_REQUIRED",
           ...access,
         },

@@ -6,21 +6,20 @@ import { useT } from "@/components/language-provider";
 import { CompanyCard } from "@/components/company-card";
 import { EmptyStub, SettlementStub } from "@/components/settlement-stub";
 import { buttonVariants } from "@/components/ui/button";
-import { fleet } from "@/lib/data";
 import { boardTotals, companyStats, formatMoney } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function HomeBoard() {
-  const { reports } = useAppStore();
+  const { reports, companies } = useAppStore();
   const { t } = useT();
   const totals = boardTotals(reports);
 
   const ranked = useMemo(() => {
-    return [...fleet]
+    return [...companies]
       .map((company) => ({ company, stats: companyStats(company.slug, reports) }))
       .filter((row) => row.stats.count > 0);
-  }, [reports]);
+  }, [reports, companies]);
 
   const worst = [...ranked]
     .filter((row) => row.stats.gapPercent != null)
@@ -94,7 +93,7 @@ export function HomeBoard() {
               </Link>
             </div>
             <div className="mt-10 grid max-w-lg grid-cols-3 gap-6 border-t border-primary-foreground/12 pt-6">
-              <Stat value={String(fleet.length)} label={t("home.hauliersListed")} />
+              <Stat value={String(companies.length)} label={t("home.hauliersListed")} />
               <Stat value={String(totals.slipCount)} label={t("home.driverStubs")} />
               <Stat
                 value={totals.avgGapPercent != null ? `${totals.avgGapPercent}%` : "—"}
@@ -135,7 +134,7 @@ export function HomeBoard() {
           />
           <Mini
             kicker={t("home.hauliers")}
-            title={t("home.onTheBoard", { count: fleet.length })}
+            title={t("home.onTheBoard", { count: companies.length })}
             detail={t("home.publicHqOnly")}
             href="/companies"
           />
@@ -157,7 +156,7 @@ export function HomeBoard() {
           </Link>
         </div>
         <div className="grid gap-5 md:grid-cols-2">
-          {(featured.length ? featured.map((row) => row.company) : fleet.slice(0, 4)).map((company) => (
+          {(featured.length ? featured.map((row) => row.company) : companies.slice(0, 4)).map((company) => (
             <CompanyCard key={company.slug} company={company} />
           ))}
         </div>

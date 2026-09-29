@@ -6,6 +6,16 @@ const pages: Record<
   Locale,
   { kicker: string; title: string; lead: string; items: FaqItem[] }
 > = {
+  de: {
+    kicker: "Irland · MyTruckPay", title: "So findest du MyTruckPay", lead: "MyTruckPay ist die Website für irische Transport-Lohnabrechnungen unter mytruckpay.com. Nicht zu verwechseln mit der US-Plattform truckpay.com.",
+    items: [
+      {q:"Was ist MyTruckPay?",a:"MyTruckPay hilft Fahrern in Irland, Lohnabrechnungen privat zu prüfen. PAYE, PRSI und USC werden ausgelesen, wenn sie aufgedruckt sind. Eine Zahlung gilt nicht automatisch als eine Woche. Drei unterschiedliche Abrechnungen schalten die verifizierte Analyse frei. Öffentliche Lohndaten stammen aus Meldungen, nicht aus erfundenen Bewertungen."},
+      {q:"Ist MyTruckPay dasselbe wie truckpay.com?",a:"Nein. truckpay.com ist ein US-Unternehmen für elektronische Transportbelege, Aufträge und Zahlungen. MyTruckPay ist für irische Lohnabrechnungen vorgesehen. Unsere Website ist mytruckpay.com."},
+      {q:"Wie finde ich MyTruckPay bei Google?",a:"Suche nach MyTruckPay oder MyTruckPay Ireland. Bei TruckPay erscheint häufig zuerst die US-Website. Du kannst mytruckpay.com direkt in die Adresszeile eingeben."},
+      {q:"Wie prüfe ich eine irische Transport-Lohnabrechnung?",a:"Öffne mytruckpay.com und füge ein PDF oder Foto hinzu. Trage die aufgedruckten Werte selbst ein, falls die Datei nicht lesbar ist. Das Original wird nicht aufbewahrt. Fehlende Angaben bleiben leer und werden nicht geschätzt."},
+      {q:"Erfindet MyTruckPay Löhne oder Bewertungen?",a:"Nein. Fehlende Angaben bleiben leer. Berechnete Werte sind gekennzeichnet. Unbekannte Abzugsbezeichnungen bleiben unbekannt. Ohne Fahrermeldungen zeigt das öffentliche Verzeichnis keine Lohndaten."}
+    ]
+  },
   en: {
     kicker: "Ireland · MyTruckPay",
     title: "How to find MyTruckPay",

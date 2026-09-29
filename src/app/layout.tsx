@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { cookies, headers } from "next/headers";
-import { CompareDock } from "@/components/compare-dock";
 import { LanguageProvider } from "@/components/language-provider";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import { PreviewNotice } from "@/components/preview-notice";
 import { SiteJsonLd } from "@/components/site-json-ld";
 import { LOCALE_COOKIE, localeFromRequest, localeMeta } from "@/lib/i18n";
-import { AppStoreProvider } from "@/lib/store";
 import "./globals.css";
+import "./entry.css";
+import { ApplicationFrame } from "@/components/application-frame";
 
 const sans = IBM_Plex_Sans({
   variable: "--font-sans-family",
@@ -73,13 +70,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <SiteJsonLd />
         <LanguageProvider initialLocale={locale}>
-          <AppStoreProvider>
-            <SiteHeader />
-            <PreviewNotice />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-            <CompareDock />
-          </AppStoreProvider>
+          <ApplicationFrame>{children}</ApplicationFrame>
         </LanguageProvider>
       </body>
     </html>

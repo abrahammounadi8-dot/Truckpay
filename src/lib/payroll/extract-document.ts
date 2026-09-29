@@ -1,16 +1,19 @@
-import { mkdtemp, writeFile, unlink, rmdir } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+
 import { extractFromPayslipText, type ExtractedPayslipDraft } from "@/lib/payroll/extract-text";
 
-const execFileAsync = promisify(execFile);
+import { extractSagePage } from "./extract-sage";
+
+
 const MAX_BYTES = 8 * 1024 * 1024;
 const PDF = "application/pdf";
 const IMAGES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export type DocumentExtractResult = {
+  passwordStatus?: "required" | "incorrect";
   kind: "pdf" | "image" | "unsupported";
   stored: false;
   fileLabel: string;
@@ -22,6 +25,7 @@ export async function extractPayslipDocument(input: {
   bytes: Uint8Array;
   mime: string;
   filename: string;
+  password?: string;
 }): Promise<DocumentExtractResult> {
   const fileLabel = safeFileLabel(input.filename);
   if (input.bytes.byteLength > MAX_BYTES) {
@@ -36,8 +40,17 @@ export async function extractPayslipDocument(input: {
 
   const mime = input.mime || guessMime(input.filename);
   if (mime === PDF || input.filename.toLowerCase().endsWith(".pdf")) {
-    const text = await readPdfText(input.bytes);
-    const draft = extractFromPayslipText(text);
+    let draft: ExtractedPayslipDraft;
+    try {
+      draft = await readPdfDraft(input.bytes, input.password);
+    } catch (error) {
+      if (error instanceof Error && error.name === "PasswordException") {
+        return { kind: "pdf", stored: false, fileLabel, message: "PDF password needed.",
+          passwordStatus: input.password ? "incorrect" : "required", draft: emptyDraft() };
+      }
+      return { kind: "unsupported", stored: false, fileLabel,
+        message: "The PDF could not be opened. Check the file and try again.", draft: emptyDraft() };
+    }
     return {
       kind: "pdf",
       stored: false,
@@ -48,7 +61,7 @@ export async function extractPayslipDocument(input: {
   }
 
   if (IMAGES.has(mime) || /\.(jpe?g|png|webp|gif)$/i.test(input.filename)) {
-    const text = await readImageText(input.bytes, input.filename);
+    const text = await readImageText(input.bytes);
     const draft = extractFromPayslipText(text);
     return {
       kind: "image",
@@ -96,39 +109,41 @@ function guessMime(name: string): string {
   return "";
 }
 
-async function readPdfText(bytes: Uint8Array): Promise<string> {
+async function readPdfDraft(bytes: Uint8Array, password?: string): Promise<ExtractedPayslipDraft> {
+  const { extractText, extractTextItems, getDocumentProxy } = await import("unpdf");
+  const pdf = await getDocumentProxy(bytes, { password });
   try {
-    const { extractText } = await import("unpdf");
-    const { text } = await extractText(bytes, { mergePages: true });
-    return text;
-  } catch {
-    return "";
-  }
-}
-
-async function readImageText(bytes: Uint8Array, filename: string): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), "truckpay-ocr-"));
-  const ext = imageExt(filename);
-  const file = join(dir, `slip.${ext}`);
-  try {
-    await writeFile(file, bytes);
-    const { stdout } = await execFileAsync(
-      "tesseract",
-      [file, "stdout", "-l", "eng", "--psm", "6"],
-      { timeout: 25000, maxBuffer: 2_000_000 },
-    );
-    return stdout ?? "";
-  } catch {
-    return "";
+    const { items } = await extractTextItems(pdf);
+    const sage = items.map(extractSagePage).filter(draft => draft !== null);
+    if (process.env.NODE_ENV === "development") {
+      // Local diagnostic: only counts and known heading presence; never document text,
+      // filenames, passwords, identities or payroll values.
+      const headings = ["PAYMENTDETAILS", "DEDUCTIONDETAILS", "CUMULATIVEDETAILS", "THISPERIOD", "DESCRIPTION", "HOURS", "VALUE", "BALANCE", "NETPAY"];
+      await writeFile(join(tmpdir(), "truckpay-extraction-status.json"), JSON.stringify({
+        version: 1, checkedAt: new Date().toISOString(),
+        pages: items.map(page => ({ items: page.length,
+          headings: headings.filter(label => page.some(i => i.str.toUpperCase().replace(/[^A-Z0-9]/g, "") === label)) })),
+        sagePages: sage.length, fieldCounts: sage.map(draft => draft.filledKeys.length),
+      })).catch(() => undefined);
+    }
+    // Never combine distinct payslips from a multi-page file.
+    if (sage.length) return items.length === 1 ? sage[0] : emptyDraft();
+    const { text } = await extractText(pdf, { mergePages: true });
+    return extractFromPayslipText(text);
   } finally {
-    await unlink(file).catch(() => undefined);
-    await rmdir(dir).catch(() => undefined);
+    await pdf.loadingTask.destroy();
   }
 }
 
-function imageExt(filename: string): string {
-  const match = filename.toLowerCase().match(/\.(jpe?g|png|webp|gif)$/);
-  if (!match) return "png";
-  if (match[1] === "jpeg") return "jpg";
-  return match[1]!;
+async function readImageText(bytes: Uint8Array): Promise<string> {
+  // Feed the image through a pipe: no original image is written to a temporary file.
+  return new Promise(resolve => {
+    try {
+    const child = execFile("tesseract", ["stdin", "stdout", "-l", "eng", "--psm", "6"],
+      { timeout: 25000, maxBuffer: 2_000_000, encoding: "utf8" },
+      (error, stdout) => resolve(error ? "" : stdout));
+    child.stdin?.on("error", () => { /* The process callback reports failure. */ });
+    child.stdin?.end(bytes);
+    } catch { resolve(""); }
+  });
 }

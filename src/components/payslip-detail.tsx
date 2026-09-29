@@ -1,4 +1,5 @@
 "use client";
+import { EmploymentStartField } from "./employment-start-field";
 import { useUiCopy } from "@/components/language-provider";
 
 import Link from "next/link";
@@ -85,6 +86,8 @@ export function PayslipDetail({
       </div>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
+      {slip.manualAmountAudit && <p role="status" className="rounded-lg border border-amber-500 p-3">Importes modificados manualmente para una prueba local. No verificados por el documento ni incluidos en el análisis verificado.</p>}
+      <EmploymentStartField employerName={slip.employerName ?? slip.employerSlug ?? ""} asOf={slip.payPeriodEnd || slip.paymentDate} />
       <WeekBanner slip={slip} />
 
       <div className="stub-paper rounded-xl p-5 ring-1 ring-foreground/10">

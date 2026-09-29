@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { fleet } from "@/lib/data";
 import type { DriverReport, Equipment, Operation, PayType } from "@/lib/types";
 
@@ -7,12 +8,12 @@ const OPERATIONS: Operation[] = ["domestic", "uk", "europe"];
 
 export type ReportInput = {
   companySlug: string;
+  companyName?: string;
   role: string;
   tenure: string;
   payType: PayType;
   equipment: Equipment;
   operation: Operation;
-  quotedWeekly?: number;
   hourlyRate?: number;
   weeklyPay: number;
   kmPerWeek?: number;
@@ -25,10 +26,16 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
     return { error: "Send a JSON wage slip." };
   }
   const body = raw as Record<string, unknown>;
-  const companySlug = asString(body.companySlug);
-  if (!fleet.some((company) => company.slug === companySlug)) {
-    return { error: "Pick a haulier on the board." };
-  }
+  const submittedName = asString(body.companyName).replace(/\s+/g, " ");
+  if (submittedName.length > 120) return { error: "Company name must be 120 characters or fewer." };
+  const legacyCompany = fleet.find(company => company.slug === asString(body.companySlug));
+  const companyName = submittedName || legacyCompany?.name || "";
+  if (!companyName) return { error: "Enter the company name." };
+  const identity = companyName.normalize("NFKC").toLowerCase();
+  const known = fleet.find(company => [company.name, company.shortName, company.slug]
+    .some(name => name.normalize("NFKC").toLowerCase() === identity));
+  // Names outside the directory cannot collide with curated companies or other alphabets.
+  const companySlug = known?.slug ?? ("reported-" + createHash("sha256").update(identity).digest("hex"));
 
   const weeklyPay = Number(body.weeklyPay);
   if (!Number.isFinite(weeklyPay) || weeklyPay <= 0 || weeklyPay > 20000) {
@@ -40,11 +47,10 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
     return { error: "Hours per week has to be a real number." };
   }
 
-  const quotedWeekly = optionalNumber(body.quotedWeekly, 20000);
   const hourlyRate = optionalNumber(body.hourlyRate, 80);
   const kmPerWeek = optionalNumber(body.kmPerWeek, 10000);
-  if (quotedWeekly === false || hourlyRate === false || kmPerWeek === false) {
-    return { error: "Quoted pay, hourly rate, and km have to be real numbers if you fill them in." };
+  if (hourlyRate === false || kmPerWeek === false) {
+    return { error: "Hourly rate and km must be valid numbers if provided." };
   }
 
   const payType = PAY_TYPES.includes(body.payType as PayType)
@@ -60,17 +66,17 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
   return {
     report: {
       companySlug,
+      companyName,
       role: asString(body.role).slice(0, 80) || "HGV driver",
       tenure: asString(body.tenure).slice(0, 40) || "1–2 years",
       payType,
       equipment,
       operation,
-      quotedWeekly,
       hourlyRate,
       weeklyPay: Math.round(weeklyPay),
       kmPerWeek,
       hoursPerWeek: Math.round(hoursPerWeek),
-      body: asString(body.body).slice(0, 4000),
+      body: "",
     },
   };
 }

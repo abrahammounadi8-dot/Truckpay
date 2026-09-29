@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
+import { emailCopy } from "@/lib/auth/email-copy";
 import { useT } from "./language-provider";
 const copy = {
+  de: ["Testversion: Nur fiktive Dokumente verwenden.", "Lokale Testumgebung. Angaben zum E-Mail-Modus findest du unter Mein Konto.", "Datenschutz und Daten"],
   es: ["Versión de prueba: usa solo documentos ficticios.", "El acceso depende de este navegador. Aún no hay cuenta recuperable ni acceso entre dispositivos. Las cifras se guardan en el servidor; perder la sesión no las borra.", "Privacidad y datos"],
   en: ["Test version: use synthetic documents only.", "Access depends on this browser. Recoverable accounts and cross-device access are not available yet. Figures are stored on the server; losing the session does not delete them.", "Privacy and data"],
   pl: ["Wersja testowa: używaj tylko fikcyjnych dokumentów.", "Dostęp zależy od tej przeglądarki. Odzyskiwanie konta i dostęp z innych urządzeń nie są jeszcze dostępne. Dane są na serwerze; utrata sesji ich nie usuwa.", "Prywatność i dane"],
@@ -12,6 +14,8 @@ const copy = {
 };
 export function PreviewNotice() {
   const { locale } = useT();
-  const [title, detail, link] = copy[locale];
+  if (process.env.NODE_ENV === "production") return null;
+  const [title, , link] = copy[locale];
+  const detail = emailCopy[locale].general;
   return <aside className="border-b border-border bg-muted px-4 py-3 text-sm"><div className="mx-auto max-w-6xl"><strong>{title}</strong> <span>{detail}</span> <Link className="underline" href="/privacy">{link}</Link></div></aside>;
 }

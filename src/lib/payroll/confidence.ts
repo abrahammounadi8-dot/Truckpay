@@ -7,7 +7,7 @@ import type { PayConfidence } from "@/lib/payroll/types";
  * MEDIUM — 3+ drivers and 9+ verified payslips.
  * LOW — anything else, including cells that do not meet the median publish threshold.
  *
- * Publishing a median still requires 3 drivers in that cell. LOW + a published
+ * Publishing a median requires 1 eligible driver in that cell. LOW + a published
  * median means the sample exists but is not treated as representative.
  */
 export function payConfidence(args: {

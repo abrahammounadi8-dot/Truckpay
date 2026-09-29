@@ -27,10 +27,10 @@ export function HomeAccessBanner({ access }: { access: Access }) {
             {t("access.howItWorks")}
           </Link>
           <Link
-            href={access.unlocked ? "/analysis" : "/payslips/new"}
+            href={access.unlocked ? "/payslips#summary" : "/payslips/new"}
             className={cn(buttonVariants({ size: "sm" }))}
           >
-            {access.unlocked ? t("access.openAnalysis") : t("access.addPayslip")}
+            {access.unlocked ? t("payslips.title") : t("access.addPayslip")}
           </Link>
         </div>
       </div>

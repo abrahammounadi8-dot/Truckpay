@@ -7,22 +7,21 @@ import { CompanyMark } from "@/components/company-mark";
 import { PayGapBar } from "@/components/pay-gap-bar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { fleet } from "@/lib/data";
 import { companyStats, equipmentLabels, formatMoney, operationLabels } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function CompareTable({ ids }: { ids: string[] }) {
   const tr = useUiCopy();
-  const { compareSlugs, toggleCompare, reports } = useAppStore();
+  const { companies, compareSlugs, toggleCompare, reports } = useAppStore();
   const slugs = useMemo(() => {
-    const fromQuery = ids.filter((id) => fleet.some((company) => company.slug === id));
+    const fromQuery = ids.filter((id) => companies.some((company) => company.slug === id));
     if (fromQuery.length) return fromQuery.slice(0, 3);
     return compareSlugs;
-  }, [ids, compareSlugs]);
+  }, [ids, compareSlugs, companies]);
 
   const selected = slugs
-    .map((slug) => fleet.find((company) => company.slug === slug))
+    .map((slug) => companies.find((company) => company.slug === slug))
     .filter((company) => company != null);
 
   if (selected.length === 0) {
@@ -38,16 +37,16 @@ export function CompareTable({ ids }: { ids: string[] }) {
   const rows: { label: string; render: (slug: string) => React.ReactNode }[] = [
     {
       label: tr("Headquarters"),
-      render: (slug) => fleet.find((item) => item.slug === slug)!.headquarters,
+      render: (slug) => companies.find((item) => item.slug === slug)!.headquarters,
     },
     {
       label: tr("County"),
-      render: (slug) => fleet.find((item) => item.slug === slug)!.county,
+      render: (slug) => companies.find((item) => item.slug === slug)!.county,
     },
     {
       label: tr("Equipment"),
       render: (slug) =>
-        fleet
+        companies
           .find((item) => item.slug === slug)!
           .equipment.map((item) => tr(equipmentLabels[item]))
           .join(", "),
@@ -55,14 +54,14 @@ export function CompareTable({ ids }: { ids: string[] }) {
     {
       label: tr("Lanes"),
       render: (slug) =>
-        fleet
+        companies
           .find((item) => item.slug === slug)!
           .operations.map((item) => tr(operationLabels[item]))
           .join(", "),
     },
     {
       label: tr("Fleet notes"),
-      render: (slug) => fleet.find((item) => item.slug === slug)!.fleetNote ?? tr("Not stated publicly"),
+      render: (slug) => companies.find((item) => item.slug === slug)!.fleetNote ?? tr("Not stated publicly"),
     },
     {
       label: tr("Wage slips"),

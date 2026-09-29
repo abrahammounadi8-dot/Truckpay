@@ -1,12 +1,7 @@
-import { HomeAccessBanner } from "@/components/home-access-banner";
-import { HomeBoard } from "@/components/home-board";
-import { getComparisonAccess } from "@/lib/payroll/access";
-
+import { VisitorHome } from "@/components/visitor-home";
+import { readUserId } from "@/lib/payroll/session";
+import { SignedInHome } from "@/components/signed-in-home";
 export default async function HomePage() {
-  return (
-    <>
-      <HomeAccessBanner access={await getComparisonAccess()} />
-      <HomeBoard />
-    </>
-  );
+  if (!await readUserId()) return <VisitorHome />;
+  return <SignedInHome />;
 }

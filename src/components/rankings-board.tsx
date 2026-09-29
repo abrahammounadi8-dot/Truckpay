@@ -7,20 +7,19 @@ import { CompanyMark } from "@/components/company-mark";
 import { PayGapBar } from "@/components/pay-gap-bar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { fleet } from "@/lib/data";
 import { companyStats, formatMoney } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function RankingsBoard() {
   const tr = useUiCopy();
-  const { reports } = useAppStore();
+  const { reports, companies } = useAppStore();
   const ranked = useMemo(() => {
-    return [...fleet]
+    return [...companies]
       .map((company) => ({ company, stats: companyStats(company.slug, reports) }))
       .filter((row) => row.stats.gapPercent != null)
       .sort((a, b) => (b.stats.gapPercent ?? 0) - (a.stats.gapPercent ?? 0));
-  }, [reports]);
+  }, [reports, companies]);
 
   if (ranked.length === 0) {
     return (

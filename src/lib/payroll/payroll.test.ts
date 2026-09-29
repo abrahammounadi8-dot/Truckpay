@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { analyseLatestSet } from "./analysis";
 import { compareLatestToRecent } from "./change";
 import { classifyDeduction } from "./classify";
-import { companyPayStats } from "./company-stats";
+import { calculateCompanyPayStats as companyPayStats } from "./company-stats";
 import { payConfidence } from "./confidence";
 import { findDuplicate, hashFromInput } from "./fingerprint";
 import { reconcilePayslip } from "./reconcile";
@@ -193,8 +193,8 @@ describe("tenure", () => {
 describe("verified analysis", () => {
   it("needs three unique slips with periods", () => {
     const two = [
-      slip({ id: "1", paymentDate: "2026-03-22", payPeriodStart: "2026-03-16", payPeriodEnd: "2026-03-22" }),
-      slip({ id: "2", paymentDate: "2026-03-15", payPeriodStart: "2026-03-09", payPeriodEnd: "2026-03-15" }),
+      slip({ grossPay: 900, id: "1", paymentDate: "2026-03-22", payPeriodStart: "2026-03-16", payPeriodEnd: "2026-03-22" }),
+      slip({ grossPay: 900, id: "2", paymentDate: "2026-03-15", payPeriodStart: "2026-03-09", payPeriodEnd: "2026-03-15" }),
     ];
     const short = analyseLatestSet(two, profile());
     assert.equal(short.status, "need_more");
@@ -202,7 +202,7 @@ describe("verified analysis", () => {
 
     const three = [
       ...two,
-      slip({ id: "3", paymentDate: "2026-03-08", payPeriodStart: "2026-03-02", payPeriodEnd: "2026-03-08" }),
+      slip({ grossPay: 900, id: "3", paymentDate: "2026-03-08", payPeriodStart: "2026-03-02", payPeriodEnd: "2026-03-08" }),
     ];
     const ready = analyseLatestSet(three, profile());
     assert.equal(ready.status, "verified");

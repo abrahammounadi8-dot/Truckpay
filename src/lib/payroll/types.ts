@@ -224,6 +224,7 @@ export type SourceDocumentMeta = {
 };
 
 export type Payslip = {
+  manualAmountAudit?: import("./amount-review").ManualAmountAudit;
   id: string;
   userId: string;
   countryCode: CountryCode;
@@ -264,6 +265,9 @@ export type Payslip = {
 };
 
 export type EmploymentProfile = {
+  statisticsSharing?: { enabled: boolean; noticeVersion: string; updatedAt: string };
+  employmentStarts?: Record<string, import("./employment-month").EmploymentStart>;
+  employmentStartMonth?: string | null;
   userId: string;
   employerSlug: string | null;
   employerName: string | null;

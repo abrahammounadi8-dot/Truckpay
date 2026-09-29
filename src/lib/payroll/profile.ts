@@ -1,3 +1,4 @@
+import { employmentStartFor, monthlyTenure } from "./employment-month";
 import { resolveEmployer } from "@/lib/payroll/employer";
 import {
   isDocumentVerifiedTenure,
@@ -113,6 +114,11 @@ export function toStoredProfile(userId: string, input: ProfileInput, asOf: strin
 }
 
 export function refreshTenure(profile: EmploymentProfile, asOf: string): EmploymentProfile {
+  const entry = employmentStartFor(profile, profile.employerSlug);
+  if (entry) {
+    const tenure = monthlyTenure(entry.startMonth, asOf);
+    return { ...profile, employmentStartMonth: entry.startMonth, employmentStartDate: null, tenureMonths: tenure?.months ?? null, tenureBand: tenure?.band ?? null, tenureSource: "user_declared", tenureConfidence: 0.4 };
+  }
   if (!profile.employmentStartDate) return profile;
   const months = tenureMonthsFromStart(profile.employmentStartDate, asOf);
   return {

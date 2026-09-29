@@ -2,7 +2,7 @@ import type { Epistemic, Payslip } from "@/lib/payroll/types";
 import { median, round2, weeklyEquivalentGross, weeklyEquivalentHours, weeklyMethod } from "@/lib/payroll/weekly";
 
 export type PayChangeLine = {
-  kind: "gross_delta" | "hours" | "unexplained" | "rate" | "new_deduction";
+  kind: "net_delta" | "gross_delta" | "hours" | "unexplained" | "rate" | "new_deduction";
   epistemic: Epistemic;
   confidence: number;
   summary: string;
@@ -151,6 +151,13 @@ export function compareLatestToRecent(slips: Payslip[]): PayChangeReport | null 
       });
     }
   }
+
+  const priorNet = prior.filter(s => s.payFrequency === latest.payFrequency && s.currency === latest.currency).map(s => s.netPay).filter((v): v is number => v != null && Number.isFinite(v));
+  const netMedian = median(priorNet);
+  if (latest.netPay != null && netMedian != null) lines.push({
+    kind: "net_delta", epistemic: "fact", confidence: 0.9, amount: round2(latest.netPay - netMedian),
+    summary: "Difference between this payslip's net pay and the median of earlier net payments from the same employer, currency and pay frequency.",
+  });
 
   return {
     latestPayslipId: latest.id,

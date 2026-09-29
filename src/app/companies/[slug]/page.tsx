@@ -1,10 +1,11 @@
+import { listDirectoryCompanies } from "@/lib/directory-store";
+import { resolveEmployer } from "@/lib/payroll/employer";
+
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CompanyDetail } from "@/components/company-detail";
-import { fleet, getCompany } from "@/lib/data";
+import { fleet } from "@/lib/data";
 import { companyPayStats } from "@/lib/payroll/company-stats";
-import { listProfiles } from "@/lib/payroll/profile-store";
-import { listAllPayslips } from "@/lib/payroll/store";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const company = getCompany(slug);
+  const company = ((await listDirectoryCompanies()).find(company => company.slug === slug || resolveEmployer(company.name).employerSlug === slug));
   if (!company) return { title: "Company" };
   return {
     title: company.name,
@@ -32,9 +33,9 @@ export default async function CompanyPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const company = getCompany(slug);
+  const company = ((await listDirectoryCompanies()).find(company => company.slug === slug || resolveEmployer(company.name).employerSlug === slug));
   if (!company) notFound();
   const asOf = new Date().toISOString().slice(0, 10);
-  const stats = companyPayStats(slug, await listAllPayslips(), await listProfiles(), asOf);
+  const stats = companyPayStats(resolveEmployer(company.name).employerSlug ?? slug, [], [], asOf);
   return <CompanyDetail company={company} payStats={stats} />;
 }

@@ -5,6 +5,7 @@ export type Operation = "domestic" | "uk" | "europe";
 export type PayType = "hourly" | "day" | "salary" | "percentage";
 
 export type Company = {
+  driverReported?: boolean;
   slug: string;
   name: string;
   shortName: string;
@@ -21,6 +22,7 @@ export type Company = {
 };
 
 export type DriverReport = {
+  companyName?: string;
   id: string;
   companySlug: string;
   role: string;

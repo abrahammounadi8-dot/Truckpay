@@ -1,7 +1,11 @@
 "use client";
+import type { CompanyPayStats } from "./payroll/company-stats";
+import { companyNameKey } from "./directory-companies";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
-import type { DriverReport } from "@/lib/types";
+
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { reportCompanies } from "@/lib/report-companies";
+import type { Company, DriverReport } from "@/lib/types";
 import type { ReportInput } from "@/lib/report-input";
 
 const STORAGE_KEY = "truckpay.reports";
@@ -9,6 +13,8 @@ const COMPARE_KEY = "truckpay.compare";
 const EVENT = "truckpay-store";
 
 type Store = {
+  payStats: Record<string, CompanyPayStats>;
+  companies: Company[];
   reports: DriverReport[];
   compareSlugs: string[];
   submitReport: (input: ReportInput) => Promise<DriverReport>;
@@ -29,8 +35,10 @@ function readJson<T>(key: string, fallback: T): T {
   }
 }
 
-let reportsCache: DriverReport[] = [];
-let compareCache: string[] = [];
+const EMPTY_REPORTS: DriverReport[] = [];
+const EMPTY_COMPARE: string[] = [];
+let reportsCache: DriverReport[] = EMPTY_REPORTS;
+let compareCache: string[] = EMPTY_COMPARE;
 
 function isLiveReport(value: unknown): value is DriverReport {
   if (!value || typeof value !== "object") return false;
@@ -48,8 +56,10 @@ function isLiveReport(value: unknown): value is DriverReport {
 }
 
 function loadCaches() {
-  reportsCache = readJson<unknown[]>(STORAGE_KEY, []).filter(isLiveReport);
-  compareCache = readJson<string[]>(COMPARE_KEY, []).slice(0, 3);
+  const reports = readJson<unknown[]>(STORAGE_KEY, []).filter(isLiveReport);
+  reportsCache = reports.length ? reports : EMPTY_REPORTS;
+  const compare = readJson<string[]>(COMPARE_KEY, []).slice(0, 3);
+  compareCache = compare.length ? compare : EMPTY_COMPARE;
 }
 
 function subscribe(callback: () => void) {
@@ -75,23 +85,30 @@ function cacheReports(reports: DriverReport[]) {
   emit();
 }
 
+let clientCachesLoaded = false;
+
+function ensureClientCaches() {
+  if (clientCachesLoaded || typeof window === "undefined") return;
+  loadCaches();
+  clientCachesLoaded = true;
+}
+
 function getReports() {
+  ensureClientCaches();
   return reportsCache;
 }
 
 function getCompare() {
+  ensureClientCaches();
   return compareCache;
 }
 
-const emptyReports: DriverReport[] = [];
-const emptyCompare: string[] = [];
-
 function getServerEmptyReports(): DriverReport[] {
-  return emptyReports;
+  return EMPTY_REPORTS;
 }
 
 function getServerEmptyCompare(): string[] {
-  return emptyCompare;
+  return EMPTY_COMPARE;
 }
 
 function mergeReports(server: DriverReport[], local: DriverReport[]): DriverReport[] {
@@ -105,6 +122,17 @@ function mergeReports(server: DriverReport[], local: DriverReport[]): DriverRepo
 }
 
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
+  const [payStats, setPayStats] = useState<Record<string, CompanyPayStats>>({});
+  const [registeredCompanies, setRegisteredCompanies] = useState<Company[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => { fetch("/api/companies", { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject()).then((data: { companies: Company[]; payStats?: Record<string, CompanyPayStats> }) => { if (!cancelled) { setRegisteredCompanies(data.companies); setPayStats(data.payStats ?? {}); } }).catch(() => {}); };
+    load();
+    window.addEventListener("truckpay-payslips-changed", load);
+    window.addEventListener("truckpay-employment-changed", load);
+    window.addEventListener("focus", load);
+    return () => { cancelled = true; window.removeEventListener("truckpay-payslips-changed", load); window.removeEventListener("truckpay-employment-changed", load); window.removeEventListener("focus", load); };
+  }, []);
   const reports = useSyncExternalStore(subscribe, getReports, getServerEmptyReports);
   const compareSlugs = useSyncExternalStore(subscribe, getCompare, getServerEmptyCompare);
   const ready = useSyncExternalStore(
@@ -163,9 +191,15 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     emit();
   }, []);
 
+  const companies = useMemo(() => {
+    const merged = new Map<string, Company>();
+    for (const company of [...registeredCompanies, ...reportCompanies(reports)]) merged.set(companyNameKey(company.name), company);
+    return [...merged.values()];
+  }, [reports, registeredCompanies]);
+
   const value = useMemo(
-    () => ({ reports, compareSlugs, submitReport, toggleCompare, clearCompare, ready }),
-    [reports, compareSlugs, submitReport, toggleCompare, clearCompare, ready],
+    () => ({ companies, payStats, reports, compareSlugs, submitReport, toggleCompare, clearCompare, ready }),
+    [companies, payStats, reports, compareSlugs, submitReport, toggleCompare, clearCompare, ready],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
@@ -175,8 +209,4 @@ export function useAppStore() {
   const ctx = useContext(StoreContext);
   if (!ctx) throw new Error("useAppStore must be used inside AppStoreProvider");
   return ctx;
-}
-
-if (typeof window !== "undefined") {
-  loadCaches();
 }

@@ -1,5 +1,6 @@
 import { payConfidence } from "@/lib/payroll/confidence";
-import { refreshTenure } from "@/lib/payroll/profile";
+import { consecutiveOnboarding } from "./onboarding";
+import { employmentStartFor, validateEmploymentStart, profileAtPayslip } from "@/lib/payroll/employment-month";
 import { analyseLatestSet } from "@/lib/payroll/analysis";
 import type {
   EmploymentProfile,
@@ -15,9 +16,10 @@ import type {
 import { TENURE_BAND_LABELS } from "@/lib/payroll/types";
 import { median, weeklyEquivalentGross, weeklyEquivalentHours } from "@/lib/payroll/weekly";
 
-const PUBLISH_MIN_DRIVERS = 3;
+const PUBLISH_MIN_DRIVERS = 1;
 
 export type TenureBandStats = {
+  netByFrequency: { frequency: string; medianNet: number; driverCount: number; payslipCount: number }[];
   band: TenureBand;
   label: string;
   evidenceLevel: EvidenceLevel;
@@ -33,6 +35,7 @@ export type TenureBandStats = {
 };
 
 export type ContextualSlice = {
+  netByFrequency: TenureBandStats["netByFrequency"];
   jobType: JobType;
   vehicleType: VehicleType;
   shiftType: ShiftType;
@@ -50,6 +53,9 @@ export type ContextualSlice = {
 };
 
 export type CompanyPayStats = {
+  publicationStatus?: "paused";
+  driverCount: number;
+  verifiedPayslipCount: number;
   employerSlug: string;
   evidenceLevel: EvidenceLevel;
   confidence: PayConfidence;
@@ -62,6 +68,7 @@ export type CompanyPayStats = {
 type Profile = EmploymentProfile;
 
 type Bucket = {
+  nativeNet: Map<string, { values: number[]; drivers: number; slips: number }>;
   weekly: number[];
   rates: number[];
   hours: number[];
@@ -70,14 +77,15 @@ type Bucket = {
   periods: Set<string>;
 };
 
-export function companyPayStats(
+export function calculateCompanyPayStats(
   employerSlug: string,
   allPayslips: Payslip[],
   profiles: Profile[],
   asOf: string,
 ): CompanyPayStats {
+  void asOf;
   const byUser = new Map<string, Payslip[]>();
-  for (const slip of allPayslips.filter((item) => item.employerSlug === employerSlug)) {
+  for (const slip of allPayslips.filter((item) => item.employerSlug === employerSlug && !item.manualAmountAudit)) {
     const list = byUser.get(slip.userId) ?? [];
     list.push(slip);
     byUser.set(slip.userId, list);
@@ -96,55 +104,70 @@ export function companyPayStats(
   const allPeriods = new Set<string>();
 
   for (const [userId, userSlips] of byUser) {
-    const profile = refreshTenure(
-      profiles.find((item) => item.userId === userId) ?? emptyProfile(userId, employerSlug),
-      asOf,
-    );
+    const sourceProfile = profiles.find(item => item.userId === userId) ?? emptyProfile(userId, employerSlug);
+    const selected = analyseLatestSet(userSlips, null);
+    const reference = selected.latest[0];
+    if (!reference) continue;
+    const profile = profileAtPayslip(sourceProfile, reference)!;
     const analysis = analyseLatestSet(userSlips, profile);
     if (analysis.status !== "verified") continue;
-    const band = profile.tenureBand;
-    if (!band) continue;
+    const declaration = employmentStartFor(sourceProfile, employerSlug);
+    if (!declaration || validateEmploymentStart(declaration.startMonth, employerSlug, userSlips)) continue;
+    const unique = [...new Map(userSlips.map(slip => [slip.contentHash || slip.id, slip])).values()];
+    const byBand = new Map<TenureBand, { slips: Payslip[]; profile: Profile }>();
+    for (const slip of unique) {
+      if (consecutiveOnboarding([slip]).have !== 1) continue;
+      const atDate = profileAtPayslip(sourceProfile, slip);
+      if (!atDate?.tenureBand) continue;
+      const entry = byBand.get(atDate.tenureBand) ?? { slips: [], profile: atDate };
+      entry.slips.push(slip); byBand.set(atDate.tenureBand, entry);
+    }
+    if (!byBand.size) continue;
     drivers += 1;
-    slips += analysis.latest.length;
-    const bucket = buckets[band];
-    bucket.drivers += 1;
-    bucket.slips += analysis.latest.length;
-    if (analysis.ownMedianWeeklyGross != null) bucket.weekly.push(analysis.ownMedianWeeklyGross);
-    if (analysis.ownMedianBaseRate != null) bucket.rates.push(analysis.ownMedianBaseRate);
-    if (analysis.ownMedianWeeklyHours != null) bucket.hours.push(analysis.ownMedianWeeklyHours);
-    for (const slip of analysis.latest) {
-      const period = slip.payPeriodStart && slip.payPeriodEnd
-        ? `${slip.payPeriodStart}:${slip.payPeriodEnd}`
-        : slip.paymentDate;
-      bucket.periods.add(period);
-      allPeriods.add(period);
-      const weekly = weeklyEquivalentGross(slip);
-      if (weekly != null && analysis.ownMedianWeeklyGross == null) bucket.weekly.push(weekly);
-      const hours = weeklyEquivalentHours(slip);
-      if (hours != null && analysis.ownMedianWeeklyHours == null) bucket.hours.push(hours);
+    for (const [band, entry] of byBand) {
+      const records = entry.slips;
+      slips += records.length;
+      const bucket = buckets[band];
+      bucket.drivers += 1; // Once per account and band, never once per document.
+      bucket.slips += records.length;
+      for (const frequency of new Set(records.map(s => s.payFrequency))) {
+        const native = records.filter(s => s.payFrequency === frequency && s.netPay != null && Number.isFinite(s.netPay));
+        const value = median(native.map(s => s.netPay!));
+        if (value == null) continue;
+        const group = bucket.nativeNet.get(frequency) ?? { values: [], drivers: 0, slips: 0 };
+        group.values.push(value); group.drivers += 1; group.slips += native.length;
+        bucket.nativeNet.set(frequency, group);
+      }
+      const gross = median(records.map(weeklyEquivalentGross).filter((v): v is number => v != null));
+      const hours = median(records.map(weeklyEquivalentHours).filter((v): v is number => v != null));
+      const rate = median(records.map(s => s.basicRate).filter((v): v is number => v != null));
+      if (gross != null) bucket.weekly.push(gross);
+      if (hours != null) bucket.hours.push(hours);
+      if (rate != null) bucket.rates.push(rate);
+      for (const slip of records) {
+        const period = slip.payPeriodStart && slip.payPeriodEnd ? slip.payPeriodStart + ":" + slip.payPeriodEnd : slip.paymentDate;
+        bucket.periods.add(period); allPeriods.add(period);
+      }
+      // Job/shift attributes from a different current employer are not reused for old jobs.
+      if (sourceProfile.employerSlug !== employerSlug) continue;
+      const dims: SliceDims = { jobType: entry.profile.jobType, vehicleType: entry.profile.vehicleType, shiftType: entry.profile.shiftType, timeFraction: entry.profile.timeFraction, tenureBand: band };
+      const key = sliceKey(dims);
+      const slice = sliceMap.get(key) ?? { ...emptyBucket(), ...dims };
+      slice.drivers += 1; slice.slips += records.length;
+      for (const frequency of new Set(records.map(s => s.payFrequency))) {
+        const native = records.filter(s => s.payFrequency === frequency && s.netPay != null && Number.isFinite(s.netPay));
+        const value = median(native.map(s => s.netPay!));
+        if (value == null) continue;
+        const group = slice.nativeNet.get(frequency) ?? { values: [], drivers: 0, slips: 0 };
+        group.values.push(value); group.drivers += 1; group.slips += native.length;
+        slice.nativeNet.set(frequency, group);
+      }
+      if (gross != null) slice.weekly.push(gross);
+      if (hours != null) slice.hours.push(hours);
+      if (rate != null) slice.rates.push(rate);
+      for (const slip of records) slice.periods.add(slip.payPeriodStart && slip.payPeriodEnd ? slip.payPeriodStart + ":" + slip.payPeriodEnd : slip.paymentDate);
+      sliceMap.set(key, slice);
     }
-
-    const dims: SliceDims = {
-      jobType: profile.jobType,
-      vehicleType: profile.vehicleType,
-      shiftType: profile.shiftType,
-      timeFraction: profile.timeFraction,
-      tenureBand: band,
-    };
-    const key = sliceKey(dims);
-    const slice = sliceMap.get(key) ?? { ...emptyBucket(), ...dims };
-    slice.drivers += 1;
-    slice.slips += analysis.latest.length;
-    if (analysis.ownMedianWeeklyGross != null) slice.weekly.push(analysis.ownMedianWeeklyGross);
-    if (analysis.ownMedianBaseRate != null) slice.rates.push(analysis.ownMedianBaseRate);
-    if (analysis.ownMedianWeeklyHours != null) slice.hours.push(analysis.ownMedianWeeklyHours);
-    for (const slip of analysis.latest) {
-      const period = slip.payPeriodStart && slip.payPeriodEnd
-        ? `${slip.payPeriodStart}:${slip.payPeriodEnd}`
-        : slip.paymentDate;
-      slice.periods.add(period);
-    }
-    sliceMap.set(key, slice);
   }
 
   const bands: TenureBandStats[] = (Object.keys(buckets) as TenureBand[]).map((band) => {
@@ -159,6 +182,7 @@ export function companyPayStats(
     const sampleNote = `Based on ${bucket.drivers} driver${bucket.drivers === 1 ? "" : "s"} and ${bucket.slips} verified payslip${bucket.slips === 1 ? "" : "s"}.`;
     return {
       band,
+      netByFrequency: [...bucket.nativeNet].filter(([, group]) => group.drivers >= PUBLISH_MIN_DRIVERS).map(([frequency, group]) => ({ frequency, medianNet: median(group.values)!, driverCount: group.drivers, payslipCount: group.slips })),
       label: TENURE_BAND_LABELS[band],
       evidenceLevel: "payroll_verified" as const,
       confidence,
@@ -170,7 +194,7 @@ export function companyPayStats(
       distinctPeriodCount: bucket.periods.size,
       published,
       sampleNote: published
-        ? `${sampleNote} Median of weekly-equivalent figures (not “the company salary”). Small samples are not statistically representative.`
+        ? `${sampleNote} Net medians per payslip, separated by frequency (not “the company salary”). Small samples are not statistically representative.`
         : `${sampleNote} Too few drivers in this tenure band to publish a median.`,
     };
   });
@@ -186,6 +210,7 @@ export function companyPayStats(
         published,
       });
       return {
+        netByFrequency: [...slice.nativeNet].map(([frequency, group]) => ({ frequency, medianNet: median(group.values)!, driverCount: group.drivers, payslipCount: group.slips })),
         jobType: slice.jobType,
         vehicleType: slice.vehicleType,
         shiftType: slice.shiftType,
@@ -216,6 +241,8 @@ export function companyPayStats(
 
   return {
     employerSlug,
+    driverCount: drivers,
+    verifiedPayslipCount: slips,
     evidenceLevel: "payroll_verified",
     confidence: overallConfidence,
     bands,
@@ -242,7 +269,7 @@ function sliceKey(dims: SliceDims): string {
 }
 
 function emptyBucket(): Bucket {
-  return { weekly: [], rates: [], hours: [], drivers: 0, slips: 0, periods: new Set() };
+  return { nativeNet: new Map(), weekly: [], rates: [], hours: [], drivers: 0, slips: 0, periods: new Set() };
 }
 
 function emptyProfile(userId: string, employerSlug: string): Profile {
@@ -263,5 +290,21 @@ function emptyProfile(userId: string, employerSlug: string): Profile {
     agreedBaseRate: null,
     countryCode: "IE",
     updatedAt: "",
+  };
+}
+
+/** Launch gate: never derive public output from payroll until disclosure controls are reviewed.
+ * Keep the private calculator above unchanged. Re-enabling publication requires a code review,
+ * including current consent, per-metric distinct contributors and protection across releases.
+ */
+export function companyPayStats(...args: Parameters<typeof calculateCompanyPayStats>): CompanyPayStats {
+  const employerSlug = args[0];
+  const empty = calculateCompanyPayStats(employerSlug, [], [], "");
+  return {
+    ...empty,
+    publicationStatus: "paused",
+    headline: "Public salary statistics are temporarily unavailable.",
+    disclaimer: "Public salary statistics are paused while privacy protections are reviewed. Private payslip analysis remains available.",
+    bands: empty.bands.map(band => ({ ...band, sampleNote: "Public salary statistics are temporarily unavailable." })),
   };
 }

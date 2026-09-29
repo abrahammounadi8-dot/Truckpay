@@ -7,4 +7,5 @@ import { pt } from "./pt";
 import { ro } from "./ro";
 import { ru } from "./ru";
 
-export const dictionaries: Record<Locale, Messages> = { en, es, pl, pt, lt, ro, ru };
+import { de } from "./de";
+export const dictionaries: Record<Locale, Messages> = { en, es, pl, pt, lt, ro, ru, de };

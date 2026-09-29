@@ -1,0 +1,18 @@
+import { headers } from "next/headers";
+import { getProfile } from "@/lib/payroll/profile-store";
+import { sharesStatistics } from "@/lib/payroll/statistics-sharing";
+import { readUserId } from "@/lib/payroll/session";
+import { AccountPanel } from "@/components/account-panel";
+import { localAuthEnabled, verifiedAccountId } from "@/lib/auth/config";
+import { getLocalAuth, getDeliveryStatus } from "@/lib/auth/server";
+export const metadata = { title: "My account", robots: { index: false, follow: false } };
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ error?: string; next?: string }> }) {
+  const params = await searchParams;
+  const callbackURL = params.next && /^\/report(?:\?company=[A-Za-z0-9%_-]+)?$/.test(params.next) ? params.next : "/";
+  const delivery = await getDeliveryStatus();
+  const enabled = localAuthEnabled() && delivery.mode !== "invalid";
+  const session = enabled ? await (await getLocalAuth()).api.getSession({ headers: await headers() }) : null;
+  const id = verifiedAccountId(session) ? await readUserId() : null;
+  const sharing = id ? sharesStatistics(await getProfile(id)) : false;
+  return <AccountPanel sharesStatistics={sharing} callbackURL={callbackURL} delivery={delivery} enabled={enabled} email={id ? session!.user.email : null} failed={Boolean((await searchParams).error)} />;
+}
