@@ -1,6 +1,6 @@
 import { accountSession, discardLoginLink, issueLoginLink, normalizeEmail } from "@/lib/payroll/account";
 import { getOrCreateUserId } from "@/lib/payroll/session";
-import { contentLengthTooLarge, rateLimit } from "@/lib/http/request-limits";
+import { contentLengthTooLarge, rateLimit, readBoundedJson, RequestTooLargeError } from "@/lib/http/request-limits";
 import { usesDatabase } from "@/lib/persistence/database";
 
 export const runtime = "nodejs";
@@ -22,7 +22,8 @@ export async function POST(request: Request) {
   } catch { return Response.json({ error: "Email sign-in is not configured yet." }, { status: 503 }); }
   if (request.headers.get("origin") !== origin) return Response.json({ error: "Forbidden." }, { status: 403 });
   let email: string | null;
-  try { email = normalizeEmail((await request.json()).email); } catch { return Response.json({ error: "Invalid email." }, { status: 400 }); }
+  try { email = normalizeEmail((await readBoundedJson(request, 2048) as { email?: unknown })?.email); }
+  catch (error) { return Response.json({ error: error instanceof RequestTooLargeError ? "Request too large." : "Invalid email." }, { status: error instanceof RequestTooLargeError ? 413 : 400 }); }
   if (!email) return Response.json({ error: "Invalid email." }, { status: 400 });
   try {
     const current = await accountSession();
