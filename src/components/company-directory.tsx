@@ -60,6 +60,10 @@ export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string 
 
   return (
     <div className="space-y-6">
+      <aside className="rounded-xl border border-accent/40 bg-accent/10 p-4 text-sm leading-6">
+        <p className="font-semibold">{locale === "es" ? "Tu nombre, correo y documentos de nómina no se publican" : "Your name, email and payslip documents are not published"}</p>
+        <p className="mt-1">{locale === "es" ? "Solo se muestran las estadísticas salariales que hayas autorizado. Puedes gestionar o retirar tu permiso en Mi cuenta." : "Only salary statistics you have authorised are shown. You can manage or withdraw your permission in My account."}</p>
+      </aside>
       <div className="grid gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:grid-cols-3">
         <div>
           <Label htmlFor="search">{t("companies.search")}</Label>
