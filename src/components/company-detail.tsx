@@ -3,6 +3,7 @@ import { useUiCopy } from "@/components/language-provider";
 
 import { useMemo } from "react";
 import Link from "next/link";
+import { CompanyAddress } from "./company-address";
 import { ArrowLeft, ExternalLink, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -44,6 +45,7 @@ export function CompanyDetail({
                 {company.county}
               </p>
               <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">{company.name}</h1>
+              <CompanyAddress company={company} />
               <p className="mt-3 max-w-2xl text-sm leading-relaxed text-primary-foreground/70">
                 {company.driverReported ? tr("Company name reported by a driver; company details are not verified.") : company.summary}
               </p>
