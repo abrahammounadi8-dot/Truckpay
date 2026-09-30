@@ -44,6 +44,7 @@ export async function extractPayslipDocument(input: {
     try {
       draft = await readPdfDraft(input.bytes, input.password);
     } catch (error) {
+      if (error instanceof Error && error.message === "MULTIPLE_PAGES") return { kind: "unsupported", stored: false, fileLabel, message: "Upload one payslip page at a time. Split this PDF into separate pages before uploading.", draft: emptyDraft() };
       if (error instanceof Error && error.name === "PasswordException") {
         return { kind: "pdf", stored: false, fileLabel, message: "PDF password needed.",
           passwordStatus: input.password ? "incorrect" : "required", draft: emptyDraft() };
@@ -69,7 +70,7 @@ export async function extractPayslipDocument(input: {
       fileLabel,
       message:
         text.length === 0 && draft.filledKeys.length === 0
-          ? "Photo attached. No labelled figures could be read — type what is printed. The photo was not stored."
+          ? "No amounts could be read from the photo. Try the original PDF from your employer. The photo was not stored."
           : draftMessage("photo", draft),
       draft,
     };
@@ -88,7 +89,7 @@ function draftMessage(kind: "PDF" | "photo", draft: ExtractedPayslipDraft): stri
   if (draft.filledKeys.length > 0) {
     return `Read ${draft.filledKeys.length} labelled field(s) from the ${kind}. Check them — MyTruckPay does not guess missing figures. The file was discarded.`;
   }
-  return `The ${kind} was read but no labelled pay figures were found. Type the printed figures below. The file was discarded.`;
+  return `No labelled pay figures were found in the ${kind}. Try an original PDF with selectable text. The file was discarded.`;
 }
 
 function emptyDraft(): ExtractedPayslipDraft {
@@ -113,6 +114,7 @@ async function readPdfDraft(bytes: Uint8Array, password?: string): Promise<Extra
   const { extractText, extractTextItems, getDocumentProxy } = await import("unpdf");
   const pdf = await getDocumentProxy(bytes, { password });
   try {
+    if (pdf.numPages !== 1) throw new Error("MULTIPLE_PAGES");
     const { items } = await extractTextItems(pdf);
     const sage = items.map(extractSagePage).filter(draft => draft !== null);
     if (process.env.NODE_ENV === "development") {
