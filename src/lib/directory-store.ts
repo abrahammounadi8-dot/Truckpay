@@ -1,4 +1,5 @@
 import "server-only";
+import { addPublicAddresses } from "./company-address-store";
 import { companyPayStats } from "./payroll/company-stats";
 import { resolveEmployer } from "./payroll/employer";
 import { publicStatisticsSource } from "./payroll/public-statistics-source";
@@ -13,6 +14,6 @@ export async function listDirectoryWithPayStats() {
   const asOf = new Date().toISOString().slice(0, 10);
   const payStats = Object.fromEntries(companies.map(company => [company.slug,
     companyPayStats(resolveEmployer(company.name).employerSlug ?? company.slug, payslips, profiles, asOf)]));
-  return { companies, payStats };
+  return { companies: await addPublicAddresses(companies), payStats };
 }
 export async function listDirectoryCompanies() { return (await listDirectoryWithPayStats()).companies; }

@@ -5,6 +5,7 @@ export type Operation = "domestic" | "uk" | "europe";
 export type PayType = "hourly" | "day" | "salary" | "percentage";
 
 export type Company = {
+  publicAddress?: { address: string; sourceUrl: string; sourceName: string; mapUrl: string };
   driverReported?: boolean;
   slug: string;
   name: string;

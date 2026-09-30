@@ -2,6 +2,7 @@
 import { useUiCopy, useT } from "@/components/language-provider";
 
 import Link from "next/link";
+import { CompanyAddress } from "./company-address";
 import { tenureBandLabel } from "@/lib/payroll/employment-month";
 import { formatEuroMaybe } from "@/lib/payroll/format";
 import { CompanyMark } from "@/components/company-mark";
@@ -34,6 +35,7 @@ export function CompanyCard({ company }: { company: Company }) {
             {company.name}
           </Link>
           <p className="text-xs text-muted-foreground">{company.headquarters}</p>
+          <CompanyAddress company={company} />
           {payroll ? (<p className="mt-1.5 text-xs text-muted-foreground">{salaryBands.length ? (locale === "es" ? "Salarios de nóminas por antigüedad" : "Payslip pay by tenure") : (locale === "es" ? "Sin aportaciones autorizadas" : "No authorised contributions")}</p>) : stats.count > 0 ? (
             <p className="mt-1.5 text-xs text-muted-foreground">
               {tr("Saved slips: {n}", { n: stats.count })}
