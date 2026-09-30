@@ -28,10 +28,14 @@ export function PayslipProgress({ have, required, unlocked, needsDetails = false
   const { locale } = useT();
   const c = copy[locale];
   const labels = progressLabels[locale];
+  const remaining = Math.max(0, required - have);
   return <section className="rounded-xl border border-accent/40 bg-accent/10 p-5" aria-label={c[0]}>
     {savedCount !== undefined && <p className="mb-3 font-medium">{labels[0]}: {savedCount}</p>}
     <p className="font-heading text-2xl font-semibold">{Math.min(have, required)} / {required}<span className="ml-2 font-sans text-sm font-normal">{labels[1]}</span></p>
     <p className="mt-2 font-medium">{unlocked ? c[2] : c[0]}</p>
+    {!unlocked && <p className="mt-2 font-semibold" role="status">{remaining > 0
+      ? (locale === "es" ? `Te ${remaining === 1 ? "falta 1 nómina válida consecutiva" : `faltan ${remaining} nóminas válidas consecutivas`}.` : `${remaining} more qualifying consecutive payslip${remaining === 1 ? "" : "s"} needed.`)
+      : (locale === "es" ? "Ya tienes los tres períodos. Revisa el mes de inicio en la empresa para abrir el análisis." : "You have three periods. Check your employment start month to unlock analysis.")}</p>}
     {!unlocked && <p className="mt-2 text-sm leading-6">{c[1]}</p>}
     <progress className="mt-4 h-2 w-full accent-amber-500" value={Math.min(have, required)} max={required} aria-label={labels[1]} />
     {needsDetails && !unlocked && <div role="status" className="mt-3 rounded-lg border border-accent/40 bg-background p-3 text-sm leading-6">

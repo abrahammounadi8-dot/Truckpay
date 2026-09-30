@@ -6,7 +6,7 @@ import { PayslipGapNotice } from "./payslip-gap-notice";
 import { EmploymentStartField } from "./employment-start-field";
 import { PayslipProgress } from "./payslip-progress";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useT } from "@/components/language-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { frequencyMessageKey } from "@/lib/i18n";
@@ -20,7 +20,7 @@ type PublicPayslip = Omit<Payslip, "userId">;
 
 type PayslipResponse = { payslips: PublicPayslip[]; have: number; required: number; readyForAnalysis: boolean };
 
-export function PayslipList({ onHasPayslipsChange, onAccessChange }: { onHasPayslipsChange?: (hasPayslips: boolean) => void; onAccessChange?: (unlocked: boolean) => void }) {
+export function PayslipList({ onHasPayslipsChange, onAccessChange, afterProgress }: { onHasPayslipsChange?: (hasPayslips: boolean) => void; onAccessChange?: (unlocked: boolean) => void; afterProgress?: ReactNode }) {
   const { t, locale } = useT();
   const h = historyCopy[locale];
   const [result, setResult] = useState<PayslipResponse | null>(null);
@@ -48,7 +48,7 @@ export function PayslipList({ onHasPayslipsChange, onAccessChange }: { onHasPays
   }
   if (slips.length === 0) {
     return (
-      <div className="space-y-4"><PayslipProgress have={0} required={result.required} unlocked={false} /><div className="rounded-xl border border-dashed border-border bg-card px-6 py-16 text-center">
+      <div className="space-y-4"><PayslipProgress have={0} required={result.required} unlocked={false} />{afterProgress}<div className="rounded-xl border border-dashed border-border bg-card px-4 py-6 text-center">
         <p className="font-heading text-xl font-semibold">{t("payslips.emptyTitle")}</p>
         <p className="mt-2 text-sm text-muted-foreground">{t("payslips.emptyBody")}</p>
         <Link href="/payslips/new" className={cn(buttonVariants(), "mt-5 inline-flex bg-accent text-accent-foreground hover:bg-accent/90")}>
@@ -73,6 +73,7 @@ export function PayslipList({ onHasPayslipsChange, onAccessChange }: { onHasPays
   return (
     <div className="space-y-4">
       <PayslipProgress have={result.have} required={result.required} unlocked={result.readyForAnalysis} savedCount={slips.length} paymentGap={paymentGap} needsDetails={slips.length > result.have && !result.readyForAnalysis} />
+      {afterProgress}
       <h2 className="font-heading text-2xl font-semibold">{h[0]}</h2>
       {groups.map((group) => (
         <section key={group.key} className="space-y-3 rounded-xl border border-border p-4" aria-label={group.label ?? t("detail.employerMissing")}>

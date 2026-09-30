@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useT } from "./language-provider";
 import { ACTIVE_PUBLICATION_NOTICE_VERSION } from "@/lib/payroll/publication-consent";
 import { StatisticsReviewNotice } from "./statistics-review-notice";
@@ -8,6 +9,7 @@ import { StatisticsReviewNotice } from "./statistics-review-notice";
 export function StatisticsSharing({ initialEnabled }: { initialEnabled: boolean }) {
   const { locale } = useT();
   const es = locale === "es";
+  const router = useRouter();
   const [enabled, setEnabled] = useState(initialEnabled);
   const [pending, setPending] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
@@ -24,6 +26,7 @@ export function StatisticsSharing({ initialEnabled }: { initialEnabled: boolean 
       setAcknowledged(false);
       setStatus(es ? "Preferencia guardada." : "Preference saved.");
       window.dispatchEvent(new Event("truckpay-employment-changed"));
+      router.refresh();
     } catch { setStatus(es ? "No se pudo guardar. Inténtalo de nuevo." : "Could not save. Please retry."); }
     finally { setPending(false); }
   }
@@ -34,7 +37,8 @@ export function StatisticsSharing({ initialEnabled }: { initialEnabled: boolean 
     <Link href="/privacy" className="text-sm underline">{es ? "Leer la política de privacidad" : "Read the privacy notice"}</Link>
     <p className="font-medium">{enabled ? (es ? "Publicación de estadísticas autorizada" : "Publication of statistics allowed") : (es ? "No participas en las estadísticas públicas. Una preferencia anterior no activa este nuevo permiso." : "You are not participating in public statistics. An earlier preference does not enable this new permission.")}</p>
     {!enabled && <label className="flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1" checked={acknowledged} onChange={event => setAcknowledged(event.target.checked)} disabled={pending} /><span>{es ? "He leído este aviso y autorizo publicar estadísticas de mis nóminas, incluso si soy el único participante." : "I have read this notice and allow publication of statistics from my payslips, even if I am the only contributor."}</span></label>}
-    <button type="button" disabled={pending || (!enabled && !acknowledged)} onClick={change} className="rounded-lg border px-4 py-3 disabled:opacity-50">{pending ? (es ? "Guardando…" : "Saving…") : enabled ? (es ? "Retirar autorización" : "Withdraw permission") : (es ? "Autorizar publicación" : "Allow publication")}</button>
+    <button type="button" disabled={pending || (!enabled && !acknowledged)} onClick={change} className="min-h-11 w-full rounded-lg border px-4 py-3 disabled:opacity-50 sm:w-auto">{pending ? (es ? "Guardando…" : "Saving…") : enabled ? (es ? "Retirar autorización" : "Withdraw permission") : (es ? "Autorizar publicación" : "Allow publication")}</button>
+    {enabled && <Link href="/companies" className="flex min-h-11 items-center text-sm underline">{es ? "Ver la lista de empresas" : "View Companies"}</Link>}
     <p role="status" aria-live="polite">{status}</p>
   </section>;
 }
