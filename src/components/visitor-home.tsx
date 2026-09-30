@@ -36,7 +36,7 @@ export function VisitorHome() {
    </section>
    <aside className="mt-8 flex gap-3 rounded-xl border border-border p-5 text-sm leading-6 text-muted-foreground">
     <ShieldCheck className="mt-1 size-5 shrink-0" aria-hidden="true"/>
-    <div><p>{es?"Tus documentos se procesan para leer los datos. Tú revisas las cifras antes de guardarlas. Las comparativas se muestran cuando hay datos suficientes.":"Documents are processed to read their data. You review the figures before saving. Comparisons appear when enough data is available."}</p><p className="mt-2">{es?"Versión de prueba: utiliza solo documentos ficticios.":"Test version: use synthetic documents only."}</p><Link href="/privacy" className="mt-2 inline-block font-medium text-foreground underline underline-offset-4">{es?"Privacidad y datos":"Privacy and data"}</Link></div>
+    <div><p>{es?"Tus documentos se procesan para leer los datos. Tú revisas las cifras antes de guardarlas. El análisis privado está disponible; las comparativas salariales públicas están en pausa.":"Documents are processed to read their data. You review the figures before saving. Private analysis is available; public salary comparisons are paused."}</p><p className="mt-2">{es?"Versión de prueba: utiliza solo documentos ficticios.":"Test version: use synthetic documents only."}</p><Link href="/privacy" className="mt-2 inline-block font-medium text-foreground underline underline-offset-4">{es?"Privacidad y datos":"Privacy and data"}</Link></div>
    </aside>
   </div>
  </div>;
