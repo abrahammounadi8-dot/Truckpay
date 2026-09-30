@@ -265,7 +265,10 @@ export type Payslip = {
 };
 
 export type EmploymentProfile = {
+  /** Internal disclosure-review permission only. */
   statisticsSharing?: { enabled: boolean; noticeVersion: string; updatedAt: string };
+  /** Separate permission reserved for a future public release. Never inferred from statisticsSharing. */
+  publicationSharing?: { enabled: boolean; noticeVersion: string; updatedAt: string };
   employmentStarts?: Record<string, import("./employment-month").EmploymentStart>;
   employmentStartMonth?: string | null;
   userId: string;

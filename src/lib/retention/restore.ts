@@ -24,12 +24,14 @@ export async function reconcileRestoredCopy(pool: Pool, deletions: DeletionRecor
     // Restored cookies, sign-in links, withdrawals and activity cannot be trusted as current.
     await client.query('DELETE FROM "session"');
     await client.query('DELETE FROM verification');
-    await client.query(`UPDATE truckpay_documents SET payload=jsonb_set(payload,'{statisticsSharing}',
-      '{"enabled":false,"noticeVersion":"restore-reconfirmation-required"}'::jsonb),updated_at=now() WHERE kind='profile'`);
+    await client.query(`UPDATE truckpay_documents SET payload=jsonb_set(
+      jsonb_set(payload,'{statisticsSharing}','{"enabled":false,"noticeVersion":"restore-reconfirmation-required"}'::jsonb),
+      '{publicationSharing}','{"enabled":false,"noticeVersion":"restore-reconfirmation-required"}'::jsonb
+    ),updated_at=now() WHERE kind='profile'`);
     await client.query(`DELETE FROM truckpay_retention`);
     await client.query(`INSERT INTO truckpay_retention(user_id) SELECT id FROM "user"`);
     await client.query("COMMIT");
-    return { reconciledDeletions: deletions.length, sessionsInvalidated: true, statisticsRequireNewPermission: true };
+    return { reconciledDeletions: deletions.length, sessionsInvalidated: true, statisticsRequireNewPermission: true, publicationRequiresNewPermission: true };
   } catch (error) { await client.query("ROLLBACK"); throw error; }
   finally { client.release(); }
 }
