@@ -34,14 +34,6 @@ export function CompanyPayStatsPanel({ stats: initialStats }: { stats: CompanyPa
   const { locale } = useT();
   const sampleLabel = (drivers: number, slips: number) => locale === "es" ? `${drivers} ${drivers === 1 ? "conductor" : "conductores"} · ${slips} ${slips === 1 ? "nómina" : "nóminas"}` : `${drivers} ${drivers === 1 ? "driver" : "drivers"} · ${slips} payslips`;
   const publishedSlices = stats.slices.filter((slice) => slice.published);
-  if (stats.publicationStatus === "paused") return (
-    <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
-      <h2 className="font-heading text-xl font-semibold">{locale === "es" ? "Estadísticas salariales en pausa" : "Salary statistics paused"}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">{locale === "es" ? "Estamos revisando las protecciones de privacidad antes de publicar cifras. El catálogo y el análisis privado de tus nóminas siguen disponibles." : "We are reviewing privacy protections before publishing figures. The directory and your private payslip analysis remain available."}</p>
-    </section>
-  );
-
-
   return (
     <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
       <div className="flex flex-wrap items-center gap-2">
@@ -50,7 +42,7 @@ export function CompanyPayStatsPanel({ stats: initialStats }: { stats: CompanyPa
         <Badge variant="secondary">{tr("Confidence")}{" "}{tr(PAY_CONFIDENCE_LABELS[stats.confidence])}</Badge>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">{stats.driverCount > 0 ? sampleLabel(stats.driverCount, stats.verifiedPayslipCount) : (locale === "es" ? "Todavía no hay aportaciones válidas" : "No qualifying contributions yet")}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{locale === "es" ? "Las estadísticas públicas solo estarán disponibles tras la revisión de las protecciones de privacidad." : tr(stats.disclaimer)}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{locale === "es" ? "Medianas de las aportaciones autorizadas, disponibles desde un conductor. Una muestra pequeña no representa el salario habitual de la empresa." : tr(stats.disclaimer)}</p>
       <p className="mt-2 text-xs text-muted-foreground">{locale === "es" ? "Antigüedad declarada, calculada a fecha de cada nómina. Se indica cuántos conductores aportan datos en cada tramo." : "Self-declared tenure, calculated at each payslip date. Each band shows how many drivers contributed."}</p>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         {stats.bands.map((band) => (

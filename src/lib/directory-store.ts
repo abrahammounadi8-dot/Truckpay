@@ -1,13 +1,17 @@
 import "server-only";
 import { companyPayStats } from "./payroll/company-stats";
 import { resolveEmployer } from "./payroll/employer";
+import { publicStatisticsSource } from "./payroll/public-statistics-source";
+import { eligibleDirectoryEmployers } from "./payroll/directory-eligibility";
+import { addRegisteredEmployers } from "./directory-companies";
 import { fleet } from "./data";
 
-// Do not disclose a new employer's presence through private payroll during the publication pause.
-export async function listDirectoryCompanies() { return fleet; }
 export async function listDirectoryWithPayStats() {
-  const companies = await listDirectoryCompanies();
+  const { payslips, profiles } = await publicStatisticsSource();
+  const companies = addRegisteredEmployers(fleet, eligibleDirectoryEmployers(payslips, profiles));
+  const asOf = new Date().toISOString().slice(0, 10);
   const payStats = Object.fromEntries(companies.map(company => [company.slug,
-    companyPayStats(resolveEmployer(company.name).employerSlug ?? company.slug, [], [], "")]));
+    companyPayStats(resolveEmployer(company.name).employerSlug ?? company.slug, payslips, profiles, asOf)]));
   return { companies, payStats };
 }
+export async function listDirectoryCompanies() { return (await listDirectoryWithPayStats()).companies; }

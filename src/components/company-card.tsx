@@ -34,7 +34,7 @@ export function CompanyCard({ company }: { company: Company }) {
             {company.name}
           </Link>
           <p className="text-xs text-muted-foreground">{company.headquarters}</p>
-          {payroll ? (<p className="mt-1.5 text-xs text-muted-foreground">{salaryBands.length ? (locale === "es" ? "Salarios de nóminas por antigüedad" : "Payslip pay by tenure") : (locale === "es" ? "Estadísticas salariales en pausa" : "Salary statistics paused")}</p>) : stats.count > 0 ? (
+          {payroll ? (<p className="mt-1.5 text-xs text-muted-foreground">{salaryBands.length ? (locale === "es" ? "Salarios de nóminas por antigüedad" : "Payslip pay by tenure") : (locale === "es" ? "Sin aportaciones autorizadas" : "No authorised contributions")}</p>) : stats.count > 0 ? (
             <p className="mt-1.5 text-xs text-muted-foreground">
               {tr("Saved slips: {n}", { n: stats.count })}
             </p>
@@ -52,7 +52,7 @@ export function CompanyCard({ company }: { company: Company }) {
           </div>)}
           <p className="text-xs text-muted-foreground">{locale === "es" ? "Mediana del neto. Antigüedad calculada hasta la fecha de cada nómina a partir del inicio declarado; no representa el sueldo de toda la empresa." : "Median net pay. Tenure uses the declared start and each payslip date; this is not a company-wide salary."}</p>
         </div>}
-        {payroll && !salaryBands.length && <p className="text-sm text-muted-foreground">{locale === "es" ? "La empresa está en el directorio. Las estadísticas salariales están en pausa mientras revisamos las protecciones de privacidad." : "The company is listed. Salary statistics are paused while we review privacy protections."}</p>}
+        {payroll && !salaryBands.length && <p className="text-sm text-muted-foreground">{locale === "es" ? "La empresa está en el directorio. Las cifras estarán disponibles desde la primera aportación válida y autorizada." : "The company is listed. Figures are available from the first qualifying, authorised contribution."}</p>}
         {!payroll && stats.count > 0 && <PayGapBar stats={stats} />}
         <div className="flex flex-wrap gap-1 border-t border-dashed border-border pt-3">
           {company.equipment.map((item) => (

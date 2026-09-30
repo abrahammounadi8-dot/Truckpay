@@ -5,10 +5,10 @@ import { calculateCompanyPayStats as companyPayStats } from "./company-stats";
 import { parsePayslipInput, toStoredPayslip } from "./parse";
 import { toStoredProfile } from "./profile";
 import type { Payslip, EmploymentProfile } from "./types";
-import { STATISTICS_NOTICE_VERSION } from "./statistics-sharing";
+import { ACTIVE_PUBLICATION_NOTICE_VERSION } from "./publication-consent";
 const dates = ["2024-12-20", "2024-12-27", "2025-01-03"];
 function slips(user: string, gross = 500): Payslip[] { return dates.map(paymentDate => toStoredPayslip(user, parsePayslipInput({employerName:"Synthetic Firm",paymentDate,payFrequency:"weekly",grossPay:gross,netPay:gross-100,basicRate:20,deductions:[],allowances:[]}).input!)); }
-function profile(user: string, startMonth: string): EmploymentProfile { return {...toStoredProfile(user,{employerName:"Synthetic Firm",employerSlug:"synthetic-firm"},"2026-09-25"),statisticsSharing:{enabled:true,noticeVersion:STATISTICS_NOTICE_VERSION,updatedAt:"2026-09-28"},employmentStarts:{"synthetic-firm":{employerName:"Synthetic Firm",startMonth,source:"user_declared",updatedAt:""}}}; }
+function profile(user: string, startMonth: string): EmploymentProfile { return {...toStoredProfile(user,{employerName:"Synthetic Firm",employerSlug:"synthetic-firm"},"2026-09-25"),publicationSharing:{enabled:true,noticeVersion:ACTIVE_PUBLICATION_NOTICE_VERSION,updatedAt:"2026-09-28"},employmentStarts:{"synthetic-firm":{employerName:"Synthetic Firm",startMonth,source:"user_declared",updatedAt:""}}}; }
 it("assigns each old payslip to its historical band and counts one driver across bands", () => {
  const s=slips("a"),p=profile("a","2024-01");const result=companyPayStats("synthetic-firm",s,[p],"2035-01-01");
  assert.equal(result.driverCount,1);assert.equal(result.verifiedPayslipCount,3);
@@ -60,26 +60,28 @@ it("personal summary takes real net, preserving distinct original gross",()=>{
 import { companyPayStats as protectedStats } from "./company-stats";
 it("excludes absent, outdated and withdrawn permission without changing private analysis",()=>{
  const records=slips("private",987), p=profile("private","2024-07");
- for(const choice of [undefined,{...p.statisticsSharing!,enabled:false},{...p.statisticsSharing!,noticeVersion:"old"}]) {
-  const privateProfile={...p,statisticsSharing:choice};
+ for(const choice of [undefined,{...p.publicationSharing!,enabled:false},{...p.publicationSharing!,noticeVersion:"tenure-review-2026-09-29"}]) {
+  const privateProfile={...p,publicationSharing:choice};
   const result=protectedStats("synthetic-firm",records,[privateProfile],"2026-09-28");
   assert.equal(result.driverCount,0);
   assert.ok(result.bands.every(b=>b.netByFrequency.length===0));
   assert.equal(analyseLatestSet(records,privateProfile).status,"verified");
  }
 });
-it("public output is identical for empty, single-driver and large consented datasets", () => {
+it("public output includes even one authorised account and excludes withdrawals", () => {
  const empty=protectedStats("synthetic-firm",[],[],"2026-09-29");
  for(const count of [1,9,10,30]) {
   const users=Array.from({length:count},(_,i)=>"driver-"+i);
   const records=users.flatMap(u=>slips(u,987));
   const profiles=users.map(u=>profile(u,"2024-07"));
   const result=protectedStats("synthetic-firm",records,profiles,"2026-09-29");
-  assert.deepEqual(result,empty);
-  assert.equal(result.publicationStatus,"paused");
-  assert.ok(result.bands.every(b=>!b.published && b.netByFrequency.length===0));
+  assert.equal(result.driverCount,count);
+  assert.equal(result.verifiedPayslipCount,count*3);
+  assert.equal(result.publicationStatus,"active");
+  assert.equal(result.bands[0].netByFrequency[0].medianNet,887);
+  assert.ok(!JSON.stringify(result).includes("driver-0"));
   assert.equal(analyseLatestSet(slips(users[0],987),profiles[0]).ownNetByFrequency[0].medianNet,887);
-  assert.deepEqual(protectedStats("synthetic-firm",records,profiles.map(p=>({...p,statisticsSharing:undefined})),"2026-09-29"),empty);
+  assert.deepEqual(protectedStats("synthetic-firm",records,profiles.map(p=>({...p,publicationSharing:undefined})),"2026-09-29"),empty);
  }
 });
 it("does not publish an incomplete first contribution",()=>{

@@ -116,7 +116,7 @@ for(const ext of ['.ts','.tsx'])require.extensions[ext]=(module,filename)=>modul
    const response=await companyRoute.GET(new Request(origin+'/api/companies/'+company.slug+'/stats'),{params:Promise.resolve({slug:company.slug})});
    assert.match(response.headers.get('cache-control'),/no-store/);
    const {stats}=await response.json();
-   assert.equal(stats.publicationStatus,'paused');
+   assert.equal(stats.publicationStatus,'active');
    assert.equal(stats.driverCount,0);assert.equal(stats.verifiedPayslipCount,0);assert.deepEqual(stats.slices,[]);
    assert.ok(stats.bands.every(b=>!b.published && !b.netByFrequency.length));
   }

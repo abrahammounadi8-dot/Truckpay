@@ -131,7 +131,7 @@ it("a successful internal review never unlocks the real public statistics functi
   const input = fixture(30);
   assert.equal(preparePublicationReview(input).status, "review_required");
   const output = companyPayStats(input.employerSlug, [...input.payslips], [...input.profiles], input.frozenAt);
-  assert.equal(output.publicationStatus, "paused"); assert.equal(output.driverCount, 0);
+  assert.equal(output.publicationStatus, "active"); assert.equal(output.driverCount, 0);
   assert.equal(output.verifiedPayslipCount, 0); assert.deepEqual(output.slices, []);
   assert.ok(output.bands.every(b => !b.published && b.netByFrequency.length === 0));
 });

@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { getProfile } from "@/lib/payroll/profile-store";
-import { sharesStatistics } from "@/lib/payroll/statistics-sharing";
+import { hasPublicPublicationConsent } from "@/lib/payroll/publication-consent";
 import { readUserId } from "@/lib/payroll/session";
 import { AccountPanel } from "@/components/account-panel";
 import { localAuthEnabled, verifiedAccountId } from "@/lib/auth/config";
@@ -13,6 +13,6 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const enabled = localAuthEnabled() && delivery.mode !== "invalid";
   const session = enabled ? await (await getLocalAuth()).api.getSession({ headers: await headers() }) : null;
   const id = verifiedAccountId(session) ? await readUserId() : null;
-  const sharing = id ? sharesStatistics(await getProfile(id)) : false;
+  const sharing = id ? hasPublicPublicationConsent(await getProfile(id)) : false;
   return <AccountPanel sharesStatistics={sharing} callbackURL={callbackURL} delivery={delivery} enabled={enabled} email={id ? session!.user.email : null} failed={Boolean((await searchParams).error)} />;
 }

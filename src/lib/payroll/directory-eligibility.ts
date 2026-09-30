@@ -1,10 +1,10 @@
 import type { Payslip, EmploymentProfile } from "./types";
 import { comparisonAccess } from "./access-state";
-import { sharesStatistics } from "./statistics-sharing";
+import { hasPublicPublicationConsent } from "./publication-consent";
 /** Each account must qualify independently for each employer. Only identity leaves this function. */
 export function eligibleDirectoryEmployers(slips: Payslip[], profiles: EmploymentProfile[]) {
   const groups = new Map<string, Payslip[]>();
-  const contributors = new Set(profiles.filter(sharesStatistics).map(profile => profile.userId));
+  const contributors = new Set(profiles.filter(hasPublicPublicationConsent).map(profile => profile.userId));
   for (const slip of slips) {
     if (!contributors.has(slip.userId)) continue;
     if (!slip.employerName?.trim() || !slip.employerSlug) continue;

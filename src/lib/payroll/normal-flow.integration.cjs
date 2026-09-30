@@ -47,7 +47,7 @@ async function login(alias){
  saved=await (await slips.GET(get())).json();assert.equal(saved.readyForAnalysis,true);assert.equal(saved.payslips.length,3);assert.equal(Object.keys(consecutiveOnboarding(saved.payslips).gaps).length,0);
  const result=await analysis.GET(get());assert.equal(result.status,200);const body=await result.json();assert.equal(body.analysis.ownNetByFrequency[0].medianNet,450);assert.equal(body.profile.tenureMonths,32);assert.equal(body.profile.tenureBand,'1_3');
  const companies=(await (await directory.GET()).json()).companies;assert.equal(companies.filter(c=>c.slug==='stateline-transport-ltd').length,0);
- let publicStats=await companyStats();assert.equal(publicStats.publicationStatus,'paused');assert.equal(publicStats.driverCount,0);assert.equal(publicStats.verifiedPayslipCount,0);assert.deepEqual(publicStats.bands[1].netByFrequency,[]);
+ let publicStats=await companyStats();assert.equal(publicStats.publicationStatus,'active');assert.equal(publicStats.driverCount,0);assert.equal(publicStats.verifiedPayslipCount,0);assert.deepEqual(publicStats.bands[1].netByFrequency,[]);
  identity='normal-b';assert.equal((await (await slips.GET(get())).json()).payslips.length,0);assert.equal((await employment.GET(new Request('http://localhost/api/employment-start?employer=Stateline%20Transport%20Ltd'))).status,200);assert.equal((await analysis.GET(get())).status,403);identity='normal-a';
  assert.equal((await employment.PUT(req({employerName:first.employerName,startMonth:'2020-01'},'PUT'))).status,200);
  publicStats=await companyStats();assert.equal(publicStats.driverCount,0);assert.equal(publicStats.bands[1].driverCount,0);assert.equal(publicStats.bands[3].driverCount,0);assert.deepEqual(publicStats.bands[3].netByFrequency,[]);assert.equal((await (await analysis.GET(get())).json()).profile.tenureBand,'5_plus');
@@ -83,6 +83,21 @@ async function login(alias){
  assert.equal((await bStats()).driverCount,0);assert.equal((await bStats()).verifiedPayslipCount,0);
  assert.equal((await store.listPayslipsForUser(actualUser)).length,7,'all A and B history retained without reupload');
  assert.equal((await companyStats()).driverCount,0,'A remains independent');
+ // Public routes expose one consenting account, never one driver per document.
+ const sharing=api('publication-sharing');
+ const {ACTIVE_PUBLICATION_NOTICE_VERSION}=require(path.join(root,'lib/payroll/publication-consent.ts'));
+ assert.equal((await sharing.PUT(req({enabled:true,noticeVersion:'tenure-review-2026-09-29'},'PUT'))).status,400);
+ assert.equal((await sharing.PUT(req({enabled:true,noticeVersion:ACTIVE_PUBLICATION_NOTICE_VERSION},'PUT'))).status,200);
+ const publicResponse=await stats.GET(get(),{params:Promise.resolve({slug:'stateline-transport-ltd'})});
+ assert.equal(publicResponse.status,200);assert.equal(publicResponse.headers.get('cache-control'),'no-store');
+ const published=(await publicResponse.json()).stats;
+ assert.equal(published.driverCount,1);assert.equal(published.verifiedPayslipCount,4);
+ assert.equal(published.bands[3].netByFrequency[0].medianNet,450);
+ assert.ok(!JSON.stringify(published).includes(actualUser));
+ assert.ok((await (await directory.GET()).json()).companies.some(c=>c.slug==='stateline-transport-ltd'));
+ assert.equal((await sharing.PUT(req({enabled:false},'PUT'))).status,200);
+ assert.equal((await stats.GET(get(),{params:Promise.resolve({slug:'stateline-transport-ltd'})})).status,404);
+ assert.ok(!(await (await directory.GET()).json()).companies.some(c=>c.slug==='stateline-transport-ltd'));
  const disk=fs.readFileSync(path.join(temp,'data/payslips.json'),'utf8');assert.ok(!disk.includes('%PDF'));assert.ok(!disk.includes('amountReceipt'));assert.ok(!disk.includes('password'));
  fs.writeFileSync(path.join(temp,'normal-flow-demo.md'),[
  '# Demostración aislada de TruckPay',
@@ -100,14 +115,14 @@ async function login(alias){
  '| Continuidad | 3 y 17: bloqueado con brecha; añadir 10: 3/3 y análisis desbloqueado |',
  '| Persistencia | Historial recargado desde disco; cuenta B no accede al de A |',
  '| Empresa | La empresa privada no se añade al catálogo |',
- '| Estadística | Análisis privado: neto450, bruto600; publicación pausada |',
+ '| Estadística | Análisis privado: neto450, bruto600; publicación sin autorización excluida |',
  '| Corrección | Inicio corregido a2020 recalcula tramo5+ sin duplicar conductor |',
  '| Continuación | Cuarta nómina conserva historial y acceso |',
  '| Exclusiones | Datos manuales de prueba no suman a estadísticas |',
  '',
  'Ejecutado mediante handlers reales y SQLite/archivos temporales aislados. Solo se adapta el contexto de cabeceras de Next; no se suplanta la identidad ni se desactiva autenticación. Entrega de correo simulada, sin envío externo. No es una navegación completa por navegador; estilos y controles visuales se revisan por separado. No se tocaron datos reales.',
  ].join('\n'));
- console.log('PASS normal account integration: simulated .test email -> captured magic link -> real verified session -> real PDF extraction -> amount receipt -> rejected tampering -> mandatory employment month -> gap block -> 3-period unlock -> disk reload -> private analysis -> private employer withheld -> public statistics paused -> historical correction -> fourth slip/history; separate account isolated. No real records or email accessed.');
+ console.log('PASS normal account integration: simulated .test email -> captured magic link -> real verified session -> real PDF extraction -> amount receipt -> rejected tampering -> mandatory employment month -> gap block -> 3-period unlock -> disk reload -> private analysis -> private employer withheld -> public statistics require opt-in -> historical correction -> fourth slip/history; separate account isolated. No real records or email accessed.');
  console.log('Evidence file: '+path.join(temp,'normal-flow-demo.md'));
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>{process.chdir(originalCwd)});
 
