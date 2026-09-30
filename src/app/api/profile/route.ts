@@ -45,7 +45,7 @@ export async function PUT(request: Request) {
   if (parsed.input.employerSlug && !employmentStartFor(await getProfile(userId), parsed.input.employerSlug)) return privateJson({ error: "Guarda primero el mes y año de inicio en esta empresa." }, { status: 422 });
   try {
     const input = parsed.input;
-    const profile = await updateProfile(userId, current => ({ ...toStoredProfile(userId, { ...input, tenureSource: "user_declared" }, asOf), employmentStarts: current?.employmentStarts, statisticsSharing: current?.statisticsSharing }));
+    const profile = await updateProfile(userId, current => ({ ...toStoredProfile(userId, { ...input, tenureSource: "user_declared" }, asOf), employmentStarts: current?.employmentStarts, statisticsSharing: current?.statisticsSharing, publicationSharing: current?.publicationSharing }));
     return privateJson({ profile: stripUser(profile) });
   } catch {
     return privateJson({ error: "Could not save" }, { status: 503 });
