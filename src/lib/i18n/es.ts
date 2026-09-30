@@ -21,7 +21,7 @@ export const es: Messages = {
     privacy: "Privacidad",
     faq: "Preguntas",
     companies: "Empresas",
-    directory: "Directorio de transportistas",
+    directory: "Empresas",
     gaps: "Brechas declaradas por conductores",
     compare: "Comparar lado a lado",
     publicSlip: "Publicar una nómina",
@@ -58,7 +58,7 @@ export const es: Messages = {
     gapsDetail: "Ordenado por cotización semanal frente al neto, solo con nóminas que los conductores presentaron aquí.",
     hauliersDetail: "Estos ficheros muestran lo que las empresas publican de sí mismas. El sueldo aparece cuando lo presentan los conductores.",
     fullRanking: "Ranking completo",
-    openDirectory: "Abrir directorio",
+    openDirectory: "Ver empresas",
     step1Title: "MyTruckPay",
     step1Body: "Introduce cada nómina nueva. Tres nóminas únicas, con fechas y periodos, abren el análisis verificado. Una nómina no se asume como una semana.",
     step2Title: "MyTruckPay Empresas",
@@ -68,7 +68,7 @@ export const es: Messages = {
     checkPayslip: "Revisar una nómina",
   },
   access: {
-    locked: "{have} de {need} nóminas distintas para el análisis verificado. El directorio de empresas sigue siendo público.",
+    locked: "{have} de {need} nóminas distintas para el análisis verificado. La sección Empresas sigue siendo pública.",
     unlocked: "El análisis de nómina verificado está desbloqueado en este navegador.",
     howItWorks: "Cómo funciona MyTruckPay",
     openAnalysis: "Abrir análisis",
@@ -211,7 +211,7 @@ export const es: Messages = {
   },
   companies: {
     kicker: "MyTruckPay Empresas · Irlanda",
-    title: "Directorio de transportistas",
+    title: "Empresas",
     lead: "Datos públicos del sitio del operador. El sueldo se separa: los recibos declarados por conductores no son lo mismo que las medianas verificadas con nómina de MyTruckPay. MyTruckPay no inventa el sueldo de una empresa.",
     search: "Buscar",
     searchPlaceholder: "Transportista, condado o ruta",
@@ -275,7 +275,7 @@ export const es: Messages = {
   },
   notFound: {
     title: "Ese transportista no está en el tablero",
-    body: "Falta el fichero de la empresa, o el enlace está caducado. Empieza por el directorio.",
+    body: "Falta el fichero de la empresa, o el enlace está caducado. Empieza por Empresas.",
     browse: "Ver transportistas",
   },
 };

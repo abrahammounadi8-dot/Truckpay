@@ -25,14 +25,14 @@ const equipmentLabels = {
   specialized: "companies.specialized",
 } as const;
 
-type SortKey = "name" | "reports" | "pay" | "county";
+type SortKey = "recent" | "name" | "reports" | "pay" | "county";
 
 export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string }) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const { reports, companies } = useAppStore();
   const [query, setQuery] = useState(initialQuery);
   const [equipment, setEquipment] = useState<Equipment | "all">("all");
-  const [sort, setSort] = useState<SortKey>("name");
+  const [sort, setSort] = useState<SortKey>("recent");
 
   const results = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -47,6 +47,7 @@ export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string 
       return matchesQuery && matchesEquipment;
     });
 
+    if (sort === "recent") return filtered;
     return [...filtered].sort((a, b) => {
       const statsA = companyStats(a.slug, reports);
       const statsB = companyStats(b.slug, reports);
@@ -92,6 +93,7 @@ export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string 
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="recent">{locale === "es" ? "Publicaciones recientes" : "Recent publications"}</SelectItem>
               <SelectItem value="name">{t("companies.sortName")}</SelectItem>
               <SelectItem value="county">{t("companies.sortCounty")}</SelectItem>
               <SelectItem value="reports">{t("companies.sortReports")}</SelectItem>

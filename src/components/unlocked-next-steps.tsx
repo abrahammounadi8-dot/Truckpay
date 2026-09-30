@@ -6,7 +6,7 @@ import { useT } from "./language-provider";
 import type { Locale } from "@/lib/i18n";
 
 const copy: Record<Locale, [string, string, string, string, string]> = {
-  es: ["Tu siguiente paso", "Directorio de empresas", "Revisa tu historial, consulta el análisis y sigue añadiendo nóminas.", "Explora transportistas y consulta sus datos salariales disponibles.", "Ver mi resumen"],
+  es: ["Tu siguiente paso", "Empresas", "Revisa tu historial, consulta el análisis y sigue añadiendo nóminas.", "Explora transportistas y consulta sus datos salariales disponibles.", "Ver mi resumen"],
   en: ["Your next step", "Company directory", "Review your history, open your analysis and keep adding payslips.", "Explore hauliers and view their available pay data.", "View my summary"],
   de: ["Dein nächster Schritt", "Firmenverzeichnis", "Prüfe deinen Verlauf, öffne die Analyse und füge weitere Abrechnungen hinzu.", "Entdecke Transportunternehmen und ihre verfügbaren Lohndaten.", "Meine Analyse öffnen"],
   pl: ["Twój następny krok", "Katalog firm", "Sprawdź historię i analizę oraz dodawaj kolejne paski wypłaty.", "Przeglądaj przewoźników i dostępne dane o wynagrodzeniach.", "Zobacz moją analizę"],
