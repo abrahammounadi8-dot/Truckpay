@@ -60,7 +60,7 @@ export function SiteHeader({ showTruck = true, demoView, hidePrimaryLinks = fals
                     : "text-primary-foreground/70 hover:bg-primary-foreground/8 hover:text-primary-foreground",
                 )}
               >
-                {link.href === "/companies" && locale === "es" ? "Directorio de empresas" : t(link.key)}
+                {t(link.key)}
               </Link>
             );
           })}

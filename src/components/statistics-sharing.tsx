@@ -27,7 +27,7 @@ export function StatisticsSharing({ initialEnabled }: { initialEnabled: boolean 
     } catch { setStatus(es ? "No se pudo guardar. Inténtalo de nuevo." : "Could not save. Please retry."); }
     finally { setPending(false); }
   }
-  return <section className="space-y-3 rounded-lg border p-4">
+  return <section id="publication" className="scroll-mt-24 space-y-3 rounded-lg border p-4">
     <h2 className="text-xl font-semibold">{es ? "Participar en estadísticas públicas" : "Join public statistics"}</h2>
     <p>{es ? "El catálogo es de libre acceso. Aportar tus datos es opcional y no afecta al análisis de tus propias nóminas." : "The catalogue is freely accessible. Contributing is optional and does not affect your private payslip analysis."}</p>
     <StatisticsReviewNotice spanish={es} />
