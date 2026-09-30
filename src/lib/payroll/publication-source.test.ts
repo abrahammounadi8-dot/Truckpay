@@ -11,7 +11,7 @@ it("loads only stored reviewed identities; withdrawals, edits and profile deleti
   const connection = { query: async (sql: string, params?: unknown[]) => db.query<Record<string, unknown>>(sql, params), release: () => {} };
   const pool: ReviewPool = { connect: async () => connection };
   try {
-    const migrations = await Promise.all(["001-documents.sql", "003-publication-review.sql", "004-publication-source.sql"].map(n => readFile(new URL(`../persistence/migrations/${n}`, import.meta.url), "utf8")));
+    const migrations = await Promise.all(["001-documents.sql", "003-publication-review.sql", "004-publication-source.sql", "005-publication-identity-controls.sql"].map(n => readFile(new URL(`../persistence/migrations/${n}`, import.meta.url), "utf8")));
     for (const sql of migrations) await db.exec(sql);
     const users = await seedPublicationDatabase(connection);
     const review = await prepareStoredPublicationReview(pool, request);
@@ -40,7 +40,7 @@ it("missing, revoked and ambiguous stored person reviews cannot silently become 
   const connection = { query: async (sql: string, params?: unknown[]) => db.query<Record<string, unknown>>(sql, params), release: () => {} };
   const pool: ReviewPool = { connect: async () => connection };
   try {
-    for (const n of ["001-documents.sql", "003-publication-review.sql", "004-publication-source.sql"]) await db.exec(await readFile(new URL(`../persistence/migrations/${n}`, import.meta.url), "utf8"));
+    for (const n of ["001-documents.sql", "003-publication-review.sql", "004-publication-source.sql", "005-publication-identity-controls.sql"]) await db.exec(await readFile(new URL(`../persistence/migrations/${n}`, import.meta.url), "utf8"));
     const users = await seedPublicationDatabase(connection);
     await db.query("UPDATE truckpay_publication_identities SET revoked_at=now() WHERE user_id=ANY($1::uuid[])", [users.slice(0, 2)]);
     assert.equal((await prepareStoredPublicationReview(pool, request)).status, "blocked");
