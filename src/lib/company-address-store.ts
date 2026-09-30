@@ -23,9 +23,11 @@ export async function addPublicAddresses(companies: Company[]): Promise<Company[
     while (index < companies.length) {
       const position = index++;
       const company = companies[position];
-      const publicAddress = reviewedCompanyAddress(company.name) ?? await lookup(company.name);
+      // Address/cache availability must never prevent access to salary statistics.
+      const publicAddress = reviewedCompanyAddress(company.name) ?? await lookup(company.name).catch(() => null);
       if (publicAddress) result[position] = { ...company, publicAddress };
     }
   }));
   return result;
 }
+
