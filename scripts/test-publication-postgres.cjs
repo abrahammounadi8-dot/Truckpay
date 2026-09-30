@@ -13,7 +13,7 @@ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
  const pool=new Pool({connectionString:url.href,max:6,options:'-c statement_timeout=12000 -c lock_timeout=10000'});
  const deadline=setTimeout(()=>{console.error('PostgreSQL concurrency test timed out.');process.exit(1)},60000);
  try {
-  for(const n of ['001-documents.sql','003-publication-review.sql','004-publication-source.sql'])await pool.query(fs.readFileSync(path.join(root,'src/lib/persistence/migrations',n),'utf8'));
+  for(const n of ['001-documents.sql','003-publication-review.sql','004-publication-source.sql','005-publication-identity-controls.sql'])await pool.query(fs.readFileSync(path.join(root,'src/lib/persistence/migrations',n),'utf8'));
   async function seed(){await pool.query('TRUNCATE truckpay_documents, truckpay_publication_identities, truckpay_publication_review_people, truckpay_publication_reviews');return seedPublicationDatabase(pool)}
   async function blocked(pid){for(let i=0;i<100;i++){const r=await pool.query('SELECT cardinality(pg_blocking_pids($1)) AS n',[pid]);if(r.rows[0].n>0)return;await pause(30)}throw Error('Expected database lock was not observed.')}
   let users=await seed(),review=await prepareStoredPublicationReview(pool,request);

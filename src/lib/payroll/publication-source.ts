@@ -12,7 +12,7 @@ export type PublicationRequest = { employerSlug: string; period: PublicationPeri
 export async function loadPublicationSource(connection: ReviewConnection, request: PublicationRequest): Promise<Omit<PublicationInput, "history">> {
   if (!fleet.some(c => c.slug === request.employerSlug)) throw new Error("Employer is not in the public catalogue.");
   const identities = await connection.query(`SELECT user_id::text, person_key::text FROM truckpay_publication_identities
-    WHERE revoked_at IS NULL AND reviewed_at <= $1::timestamptz ORDER BY user_id`, [request.frozenAt]);
+    WHERE review_status = 'approved' AND person_key IS NOT NULL AND revoked_at IS NULL AND reviewed_at <= $1::timestamptz ORDER BY user_id`, [request.frozenAt]);
   const users = identities.rows.map(r => String(r.user_id));
   const result = await connection.query(`SELECT kind, user_id::text, payload FROM truckpay_documents
     WHERE user_id = ANY($1::uuid[]) AND (kind = 'profile' OR payload->>'employerSlug' = $2)

@@ -18,7 +18,7 @@ for(const ext of ['.ts','.tsx'])require.extensions[ext]=(module,filename)=>modul
  const auth=await createLocalAuth({database:new DatabaseSync(':memory:'),secret:randomBytes(48).toString('hex'),baseURL:origin,deliver:async message=>mail.push(message)});
  const db=new PGlite();
  await db.exec(fs.readFileSync(root+'/src/lib/persistence/migrations/001-documents.sql','utf8'));
- for(const name of ['003-publication-review.sql','004-publication-source.sql'])await db.exec(fs.readFileSync(root+'/src/lib/persistence/migrations/'+name,'utf8'));
+ for(const name of ['003-publication-review.sql','004-publication-source.sql','005-publication-identity-controls.sql'])await db.exec(fs.readFileSync(root+'/src/lib/persistence/migrations/'+name,'utf8'));
  const adapter={query:async(sql,params)=>{const r=await db.query(sql,params);return {rows:r.rows,rowCount:r.affectedRows??null};}};
  adapter.connect=async()=>({...adapter,release:()=>{}});
  let requestHeaders=new Headers();
