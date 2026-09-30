@@ -193,7 +193,11 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   const companies = useMemo(() => {
     const merged = new Map<string, Company>();
-    for (const company of [...registeredCompanies, ...reportCompanies(reports)]) merged.set(companyNameKey(company.name), company);
+    for (const company of [...registeredCompanies, ...reportCompanies(reports)]) {
+      const key = companyNameKey(company.name);
+      // Keep public addresses and publication order supplied by the server.
+      if (!merged.has(key)) merged.set(key, company);
+    }
     return [...merged.values()];
   }, [reports, registeredCompanies]);
 
@@ -210,3 +214,4 @@ export function useAppStore() {
   if (!ctx) throw new Error("useAppStore must be used inside AppStoreProvider");
   return ctx;
 }
+
