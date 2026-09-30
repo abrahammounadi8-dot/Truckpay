@@ -4,7 +4,7 @@ Fecha: 29 de septiembre de 2026. Seguimiento: issue #7.
 
 ## Estado comprobado
 
-La publicación de estadísticas salariales permanece pausada por código, sin variable que permita activarla. `companyPayStats` devuelve un resultado vacío independiente de las nóminas y perfiles. El directorio público usa el catálogo estático. La API privada sigue requiriendo sesión verificada y conserva el análisis del titular.
+Actualización del 30 de septiembre: la decisión de permitir publicación desde un participante sustituye la pausa descrita en este documento histórico. Véase `public-single-contributor.md`. Las reglas siguientes siguen describiendo el proceso de revisión interna, separado de la publicación con permiso explícito.
 
 El calculador interno `calculateCompanyPayStats` conserva las reglas históricas, incluido un mínimo de un conductor. Sus pruebas verifican cálculos, **no autorización para publicar**. Ninguna ruta pública debe llamarlo directamente.
 

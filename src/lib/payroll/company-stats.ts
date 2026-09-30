@@ -1,3 +1,4 @@
+import { hasPublicPublicationConsent } from "./publication-consent";
 import { payConfidence } from "@/lib/payroll/confidence";
 import { consecutiveOnboarding } from "./onboarding";
 import { employmentStartFor, validateEmploymentStart, profileAtPayslip } from "@/lib/payroll/employment-month";
@@ -53,7 +54,7 @@ export type ContextualSlice = {
 };
 
 export type CompanyPayStats = {
-  publicationStatus?: "paused";
+  publicationStatus?: "active";
   driverCount: number;
   verifiedPayslipCount: number;
   employerSlug: string;
@@ -293,18 +294,10 @@ function emptyProfile(userId: string, employerSlug: string): Profile {
   };
 }
 
-/** Launch gate: never derive public output from payroll until disclosure controls are reviewed.
- * Keep the private calculator above unchanged. Re-enabling publication requires a code review,
- * including current consent, per-metric distinct contributors and protection across releases.
- */
-export function companyPayStats(...args: Parameters<typeof calculateCompanyPayStats>): CompanyPayStats {
-  const employerSlug = args[0];
-  const empty = calculateCompanyPayStats(employerSlug, [], [], "");
-  return {
-    ...empty,
-    publicationStatus: "paused",
-    headline: "Public salary statistics are temporarily unavailable.",
-    disclaimer: "Public salary statistics are paused while privacy protections are reviewed. Private payslip analysis remains available.",
-    bands: empty.bands.map(band => ({ ...band, sampleNote: "Public salary statistics are temporarily unavailable." })),
-  };
+/** Public output uses only accounts with current, explicit publication permission. */
+export function companyPayStats(employerSlug: string, payslips: Payslip[], profiles: Profile[], asOf: string): CompanyPayStats {
+  const allowed = profiles.filter(profile => hasPublicPublicationConsent(profile)
+    && profiles.filter(other => other.userId === profile.userId).length === 1);
+  const users = new Set(allowed.map(profile => profile.userId));
+  return { ...calculateCompanyPayStats(employerSlug, payslips.filter(slip => users.has(slip.userId)), allowed, asOf), publicationStatus: "active" };
 }

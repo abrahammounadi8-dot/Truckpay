@@ -2,6 +2,7 @@ import { comparisonAccess } from "@/lib/payroll/access-state";
 import { analyseLatestSet } from "@/lib/payroll/analysis";
 import { compareLatestToRecent } from "@/lib/payroll/change";
 import { companyPayStats } from "@/lib/payroll/company-stats";
+import { publicStatisticsSource } from "@/lib/payroll/public-statistics-source";
 import type { PayFactor } from "@/lib/payroll/explain";
 import { toPublicPayslip } from "@/lib/payroll/format";
 import { employmentStartFor, profileAtPayslip, payslipTenureDate, validateEmploymentStart } from "@/lib/payroll/employment-month";
@@ -30,7 +31,8 @@ export async function GET(request: Request) {
   const analysis = analyseLatestSet(slips, profile);
 
   const employerSlug = reference?.employerSlug ?? analysis.latest.find((slip) => slip.employerSlug)?.employerSlug ?? null;
-  const company = employerSlug ? companyPayStats(employerSlug, [], [], asOf) : null;
+  const publicSource = await publicStatisticsSource();
+  const company = employerSlug ? companyPayStats(employerSlug, publicSource.payslips, publicSource.profiles, asOf) : null;
   const band = company && profile?.tenureBand ? company.bands.find((item) => item.band === profile.tenureBand) ?? null : null;
 
   const factors: PayFactor[] = analysis.status === "verified" && band != null ? analysis.ownNetByFrequency.flatMap(own => {

@@ -32,7 +32,7 @@ it("internal review permission never counts as public publication permission", (
   assert.equal(hasPublicPublicationConsent(value), false);
 });
 
-it("a stored publication choice remains disabled while no public notice is active", () => {
+it("a draft publication choice never enables the active notice", () => {
   const value: EmploymentProfile = {
     ...profile,
     publicationSharing: { enabled: true, noticeVersion: "draft-notice", updatedAt: "2026-09-30T08:00:00.000Z" },
