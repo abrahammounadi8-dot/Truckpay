@@ -30,6 +30,9 @@ function required(value: string | undefined, label: string): string {
  * reservation.
  */
 export async function reviewPublicationIdentity(pool: ReviewPool, request: IdentityReviewRequest): Promise<IdentityReviewResult> {
+  if (!["approve", "link", "conflict", "unverified", "revoke"].includes(request.action)) {
+    throw new Error("Valid identity review action is required.");
+  }
   const userId = required(request.userId, "userId");
   const reviewerReference = required(request.reviewerReference, "reviewerReference");
   const reason = request.reason?.trim() || null;
@@ -69,7 +72,9 @@ export async function reviewPublicationIdentity(pool: ReviewPool, request: Ident
       status = request.action === "conflict" ? "conflict" : request.action === "unverified" ? "unverified" : "approved";
       if (request.action === "link") personKey = required(request.personKey, "personKey");
       else if (request.action === "approve") personKey = existing?.person_key ? String(existing.person_key) : randomUUID();
-      else personKey = null;
+      // Eligibility is controlled by review_status. Keep an established key even
+      // while excluded so a later approval cannot bypass cohort history.
+      else personKey = existing?.person_key ? String(existing.person_key) : null;
 
       await connection.query(
         `INSERT INTO truckpay_publication_identities
