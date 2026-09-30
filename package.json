@@ -14,7 +14,8 @@
     "db:migrate": "node scripts/migrate-db.mjs",
     "db:import": "tsx scripts/import-payroll.ts",
     "test:accounts": "node scripts/test-account-routes.cjs",
-    "test:flow": "node src/lib/payroll/normal-flow.integration.cjs"
+    "test:flow": "node src/lib/payroll/normal-flow.integration.cjs",
+    "identity:review": "tsx scripts/review-publication-identity.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
