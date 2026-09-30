@@ -38,6 +38,7 @@ export function CompanyPayStatsPanel({ stats: initialStats }: { stats: CompanyPa
     <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
       <h2 className="font-heading text-xl font-semibold">{locale === "es" ? "Estadísticas salariales en pausa" : "Salary statistics paused"}</h2>
       <p className="mt-2 text-sm text-muted-foreground">{locale === "es" ? "Estamos revisando las protecciones de privacidad antes de publicar cifras. El catálogo y el análisis privado de tus nóminas siguen disponibles." : "We are reviewing privacy protections before publishing figures. The directory and your private payslip analysis remain available."}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{locale === "es" ? "Aunque hayas autorizado la revisión interna en Mi cuenta, tu aportación todavía no aparece aquí. Ese permiso no activa la publicación pública." : "Even if you allowed internal review in My account, your contribution does not appear here yet. That permission does not enable public publication."}</p>
     </section>
   );
 
