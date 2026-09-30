@@ -29,11 +29,11 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://mytruckpay.com"),
   title: {
-    default: "MyTruckPay — Irish haulage payslips",
+    default: "MyTruckPay — Driver payslips",
     template: "%s · MyTruckPay",
   },
   description:
-    "MyTruckPay is for drivers in Ireland: check haulage payslips in private. PAYE, PRSI and USC. A payment is not assumed to be one week. Not the US TruckPay job-board app.",
+    "Understand your pay, keep your payslip history together and explore available salary data from transport companies with MyTruckPay.",
   applicationName: "MyTruckPay",
   alternates: { canonical: "https://mytruckpay.com" },
   openGraph: {
@@ -41,14 +41,14 @@ export const metadata: Metadata = {
     locale: "en_IE",
     url: "https://mytruckpay.com",
     siteName: "MyTruckPay",
-    title: "MyTruckPay — Irish haulage payslips",
+    title: "MyTruckPay — Driver payslips",
     description:
-      "Private Irish haulage payslip checks. Ireland only. mytruckpay.com",
+      "Understand your pay and keep your payslip history together. mytruckpay.com",
   },
   twitter: {
     card: "summary",
-    title: "MyTruckPay — Irish haulage payslips",
-    description: "Check Irish haulage payslips in private. mytruckpay.com",
+    title: "MyTruckPay — Driver payslips",
+    description: "Check your payslips in private. mytruckpay.com",
   },
   icons: { icon: "/favicon.svg" },
 };

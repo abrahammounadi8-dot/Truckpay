@@ -12,7 +12,7 @@ export function WelcomeBoard({ access }: { access: Access }) {
   return <div>
     <section className="bg-primary text-primary-foreground">
       <div className="mx-auto max-w-5xl px-5 py-14 sm:py-20">
-        <p className="text-sm tracking-widest text-accent uppercase">{text("Para conductores de transporte en Irlanda", "For haulage drivers in Ireland")}</p>
+        <p className="text-sm tracking-widest text-accent uppercase">{text("Para profesionales del transporte", "For transport professionals")}</p>
         <h1 className="mt-5 max-w-3xl text-5xl font-semibold leading-tight sm:text-6xl">{text("Tus nóminas claras. Tus opciones también.", "Understand your pay. Know your options.")}</h1>
         <p className="mt-5 max-w-2xl text-lg leading-8">{text("Lleva el registro de tus nóminas durante el año, consulta tus ingresos y deducciones y detecta diferencias que convenga revisar. Con tres nóminas consecutivas de igual frecuencia de la misma empresa desbloqueas el análisis verificado. El directorio de transportistas es público.", "Keep your payslips throughout the year, review earnings and deductions, and spot differences worth checking. Three consecutive payslips of the same frequency from the same employer unlock verified analysis. The haulier directory stays public.")}</p>
         <div className="mt-8 flex flex-wrap gap-4"><Link className={action} href="/payslips/new">{access.have ? text("Añadir otra nómina", "Add another payslip") : text("Añadir mi primera nómina", "Add my first payslip")}</Link><Link href="/payslips" className="inline-flex items-center underline">{text("Ir a Mis nóminas", "Go to My payslips")}</Link></div>

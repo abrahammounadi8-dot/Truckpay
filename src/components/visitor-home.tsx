@@ -19,9 +19,9 @@ export function VisitorHome() {
   <SiteHeader visitor />
   <div className="mx-auto max-w-6xl px-5 pb-8 pt-7 sm:px-8 sm:pb-12 sm:pt-20">
    <section className="max-w-3xl">
-    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{es?"Para conductores en Irlanda":"For drivers in Ireland"}</p>
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{es?"Para conductores":"For drivers"}</p>
     <h1 className="mt-4 font-heading text-[2.6rem] font-semibold leading-[1.03] tracking-tight sm:text-7xl">{es?"Tus nóminas, más claras.":"Make sense of your payslips."}</h1>
-    <p className="mt-4 max-w-2xl text-base leading-7 sm:mt-6 sm:text-lg sm:leading-8 text-muted-foreground">{es?"Entiende lo que cobras, reúne tu historial y compara los datos salariales disponibles de empresas de transporte en Irlanda.":"Understand your pay, keep your history together and compare available pay data from haulage companies in Ireland."}</p>
+    <p className="mt-4 max-w-2xl text-base leading-7 sm:mt-6 sm:text-lg sm:leading-8 text-muted-foreground">{es?"Entiende lo que cobras, reúne tu historial y compara los datos salariales disponibles de empresas de transporte.":"Understand your pay, keep your history together and compare available pay data from haulage companies."}</p>
     <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8 sm:gap-5">
      <Link href="/account" className="inline-flex min-h-12 w-full items-center justify-center gap-4 sm:w-auto rounded-xl bg-accent px-7 py-3 text-base font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent/85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">{es?"Empezar":"Get started"}<ArrowRight className="size-5" aria-hidden="true"/></Link>
      <Link href="/demo" className="inline-flex min-h-11 w-full items-center justify-center gap-2 sm:w-auto text-sm font-medium underline underline-offset-4">{es?"Ver una demo":"Try the demo"}</Link>

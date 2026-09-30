@@ -13,7 +13,7 @@ export function SignedInHome() {
  return <div className="min-h-screen bg-background text-foreground">
   <SiteHeader hidePrimaryLinks />
   <div className="mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-8 sm:py-14">
-   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">MyTruckPay · Ireland</p>
+   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">MyTruckPay</p>
    <h1 className="mt-2 font-heading text-[2rem] leading-tight font-semibold sm:text-5xl">{es?"¿Qué quieres hacer hoy?":"What would you like to do today?"}</h1>
    <p className="mt-2 text-sm text-muted-foreground sm:text-base">{es?"Elige una opción para continuar.":"Choose an option to continue."}</p>
    <nav aria-label={es?"Funciones principales":"Main actions"} className="mt-5 space-y-3 sm:mt-10 sm:space-y-5">

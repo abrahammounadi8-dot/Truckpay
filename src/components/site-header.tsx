@@ -44,9 +44,6 @@ export function SiteHeader({ showTruck = true, demoView, hidePrimaryLinks = fals
             <span className="text-[0.6rem] leading-none font-bold tracking-wide text-[#e2b14a]">MTP</span>
             <span className="font-heading text-lg leading-none font-semibold tracking-tight sm:text-xl">MyTruckPay</span>
           </span>
-          <span className="hidden text-xs font-normal italic tracking-wide text-accent sm:inline">
-            Ireland
-          </span>
         </Link>
         <nav className="hidden items-center gap-0.5 md:flex">
           {navigationLinks.map((link) => {

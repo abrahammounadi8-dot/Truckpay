@@ -7,9 +7,9 @@ export function SiteJsonLd() {
         "@id": "https://mytruckpay.com/#website",
         url: "https://mytruckpay.com/",
         name: "MyTruckPay",
-        alternateName: ["mytruckpay", "MyTruckPay Ireland"],
+        alternateName: ["mytruckpay"],
         description:
-          "Irish haulage payslip checks. PAYE, PRSI, USC. Not the US TruckPay job-board at truckpay.com.",
+          "Private payslip checks and available salary data for transport drivers.",
         inLanguage: ["en-IE", "es", "pl", "pt", "lt", "ro", "ru"],
         publisher: { "@id": "https://mytruckpay.com/#org" },
         potentialAction: {
@@ -24,7 +24,6 @@ export function SiteJsonLd() {
         name: "MyTruckPay",
         url: "https://mytruckpay.com/",
         logo: "https://mytruckpay.com/favicon.svg",
-        areaServed: { "@type": "Country", name: "Ireland" },
         knowsAbout: [
           "Irish haulage payslips",
           "PAYE",
