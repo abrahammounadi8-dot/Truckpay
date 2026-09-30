@@ -1,4 +1,5 @@
 import { readUserId } from "@/lib/payroll/session";
+import { redirect } from "next/navigation";
 import { getProfile } from "@/lib/payroll/profile-store";
 import { hasPublicPublicationConsent } from "@/lib/payroll/publication-consent";
 import type { Metadata } from "next";
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 
 export default async function PayslipsPage() {
   const userId = await readUserId();
+  if (!userId) redirect("/account?next=%2Fpayslips");
   const publicationEnabled = userId ? hasPublicPublicationConsent(await getProfile(userId)) : false;
   return <PayslipsWorkspace publicationEnabled={publicationEnabled} />;
 }

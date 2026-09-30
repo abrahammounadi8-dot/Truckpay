@@ -1,52 +1,39 @@
 "use client";
-
 import Link from "next/link";
 import { useState } from "react";
-import { PayslipList } from "@/components/payslip-list";
-import { WipeSession } from "@/components/wipe-session";
-import { useT } from "@/components/language-provider";
-import { buttonVariants } from "@/components/ui/button";
+import { PayslipList } from "./payslip-list";
+import { WipeSession } from "./wipe-session";
+import { useT } from "./language-provider";
+import { buttonVariants } from "./ui/button";
 import { cn } from "@/lib/utils";
 
 export function PayslipsWorkspace({ publicationEnabled = false }: { publicationEnabled?: boolean }) {
   const { t, locale } = useT();
-  const [unlocked, setUnlocked] = useState(false);
+  const es = locale === "es";
   const [hasPayslips, setHasPayslips] = useState(false);
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <p className="text-[0.72rem] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-        {t("payslips.kicker")}
-      </p>
-      <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{t("payslips.title")}</h1>
-
-        </div>
-        {hasPayslips && <Link href="/payslips/new" className={cn(buttonVariants(), "bg-accent text-accent-foreground hover:bg-accent/90")}>
-          {t("nav.addPayslip")}
-        </Link>}
-      </div>
-      {hasPayslips && <section aria-labelledby="publication-title" className="mt-6 rounded-xl border border-accent/50 bg-accent/10 p-5">
-        <h2 id="publication-title" className="font-heading text-xl font-semibold">{publicationEnabled ? (locale === "es" ? "Ya compartes estadísticas en Empresas" : "You are sharing statistics in Companies") : (locale === "es" ? "¿Quieres que tus datos aparezcan en la lista de empresas?" : "Want your data to appear in Companies?")}</h2>
-        <p className="mt-2 text-sm leading-6">{publicationEnabled ? (locale === "es" ? "Tus aportaciones válidas ayudan a otros conductores a comparar salarios. Puedes gestionar tu permiso cuando quieras." : "Your qualifying contributions help other drivers compare pay. You can manage your permission at any time.") : (locale === "es" ? "Comparte las estadísticas de tus nóminas para ayudar a otros conductores a comparar salarios. Participar es opcional: revisa qué se publica antes de activar." : "Share statistics from your payslips to help other drivers compare pay. Participation is optional: review what is published before enabling it.")}</p>
-        <Link href="/account#publication" className={cn(buttonVariants(), "mt-4 bg-accent text-accent-foreground hover:bg-accent/90")}>{publicationEnabled ? (locale === "es" ? "Gestionar publicación" : "Manage publication") : (locale === "es" ? "Revisar y activar" : "Review and enable")}</Link>
-      </section>}
-      {!unlocked && <section aria-label={locale === "es" ? "Cómo funciona MyTruckPay" : "How MyTruckPay works"} className="mt-6 grid gap-4 rounded-xl border border-accent/40 bg-accent/10 p-5 sm:grid-cols-2">
-        <div><h2 className="font-heading text-xl font-semibold">{locale === "es" ? "1. Completa tu resumen" : "1. Complete your summary"}</h2><p className="mt-2 text-sm leading-6">{locale === "es" ? "Añade tres nóminas de períodos consecutivos, de la misma empresa y con la misma frecuencia. Indica una vez el mes y año en que empezaste allí." : "Add three consecutive payslips from the same employer and pay frequency. Enter your start month and year once for that employer."}</p></div>
-        <div><h2 className="font-heading text-xl font-semibold">{locale === "es" ? "2. Conserva tu historial" : "2. Keep your history"}</h2><p className="mt-2 text-sm leading-6">{locale === "es" ? "Después sigue guardando nóminas de tu empresa actual o de empresas anteriores. Cada empresa mantiene su historial; el grupo de tres no mezcla empresas." : "Then keep saving payslips from your current and previous employers. Each employer has its own history; never mix employers in a set of three."}</p></div>
-        <p className="text-xs text-muted-foreground sm:col-span-2">{locale === "es" ? "La empresa aparece en Empresas cuando autorizas la publicación y completas tres nóminas válidas con su antigüedad." : "The employer appears in Companies when you allow publication and complete three qualifying payslips with employment tenure."}</p>
-      </section>}
-      <div id="summary" className="mt-8 scroll-mt-48">
-        <PayslipList onHasPayslipsChange={setHasPayslips} onAccessChange={setUnlocked} />
-      </div>
-      <p className="mt-6 text-sm">
-        <Link href="/profile" className="underline">
-          {t("payslips.profile")}
-        </Link>
-      </p>
-      <div className="mt-10 border-t border-border pt-6">
-        <WipeSession />
-      </div>
+  const publication = <section aria-labelledby="publication-title" className="rounded-xl border border-accent/50 bg-accent/10 p-4 sm:p-5">
+    <p className="text-xs font-semibold uppercase tracking-wide">{es ? "Opcional · Estadísticas públicas" : "Optional · Public statistics"}</p>
+    <h2 id="publication-title" className="mt-2 font-heading text-xl font-semibold">{publicationEnabled ? (es ? "Publicación autorizada" : "Publication authorised") : (es ? "¿Quieres aparecer en la lista de empresas?" : "Want to contribute to Companies?")}</h2>
+    <p className="mt-2 text-sm leading-6">{es ? "Tu nombre, correo y documentos no se publican. Las estadísticas requieren tu autorización y tres nóminas válidas consecutivas de la misma empresa, con tu mes de inicio indicado." : "Your name, email and documents are not published. Statistics require your permission and three qualifying consecutive payslips from the same employer, with your start month entered."}</p>
+    <Link href="/account#publication" className={cn(buttonVariants({variant:"outline"}), "mt-3 min-h-11 h-auto w-full whitespace-normal px-4 py-2 text-center sm:w-auto")}>{publicationEnabled ? (es ? "Gestionar permiso" : "Manage permission") : (es ? "Revisar y activar" : "Review and enable")}</Link>
+  </section>;
+  return <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
+    <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t("payslips.kicker")}</p>
+    <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{t("payslips.title")}</h1>
+      <Link href="/payslips/new" className={cn(buttonVariants(), "min-h-12 h-auto whitespace-normal bg-accent px-4 py-3 text-center text-accent-foreground hover:bg-accent/90")}>{hasPayslips ? t("nav.addPayslip") : (es ? "Subir mi primera nómina" : "Upload my first payslip")}</Link>
     </div>
-  );
+    <p className="mt-3 text-sm text-muted-foreground">{es ? "Guarda cada nómina por separado. Compartir estadísticas es opcional." : "Save each payslip individually. Sharing statistics is optional."}</p>
+    <details className="mt-4 rounded-xl border border-border p-4 text-sm leading-6">
+      <summary className="cursor-pointer font-semibold">{es ? "Cómo empezar · 3 pasos" : "Getting started · 3 steps"}</summary>
+      <ol className="mt-3 list-decimal space-y-2 pl-5">
+        <li>{es ? "Sube una nómina, revisa los datos e indica cuándo empezaste en la empresa." : "Upload a payslip, review its details and enter when you started at the employer."}</li>
+        <li>{es ? "Completa tres períodos consecutivos de la misma empresa y frecuencia para abrir tu análisis." : "Complete three consecutive periods from the same employer and pay frequency to unlock your analysis."}</li>
+        <li>{es ? "Si quieres contribuir a Empresas, revisa y activa el permiso de publicación." : "If you want to contribute to Companies, review and enable publication permission."}</li>
+      </ol>
+    </details>
+    <div id="summary" className="mt-5 scroll-mt-24"><PayslipList onHasPayslipsChange={setHasPayslips} afterProgress={publication} /></div>
+    <p className="mt-6 text-sm"><Link href="/profile" className="inline-flex min-h-11 items-center underline">{t("payslips.profile")}</Link></p>
+    <div className="mt-10 border-t border-border pt-6"><WipeSession /></div>
+  </div>;
 }

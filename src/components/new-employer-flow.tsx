@@ -47,7 +47,7 @@ export function NewEmployerFlow({ defaultEmployer }: { defaultEmployer?: string 
  }
  const employmentStartFields = <>
    <label htmlFor="new-employer-start" className="block text-sm font-medium">{es?"Mes y año en que empezaste (obligatorio)":"Start month and year (required)"}</label>
-   <input id="new-employer-start" type="month" value={month} max={new Date().toISOString().slice(0,7)} disabled={busy} onChange={e=>setMonth(e.target.value)} className="min-h-11 rounded-lg border border-border bg-background p-3 text-base"/>
+   <input id="new-employer-start" type="month" value={month} max={new Date().toISOString().slice(0,7)} disabled={busy} onChange={e=>setMonth(e.target.value)} className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-background p-3 text-base"/>
  </>;
  return <div className="space-y-6">
   <section ref={summaryRef} tabIndex={-1} className="outline-none scroll-mt-28 rounded-2xl border border-accent/40 bg-accent/10 p-5">
@@ -57,6 +57,7 @@ export function NewEmployerFlow({ defaultEmployer }: { defaultEmployer?: string 
    {notice && <p role="status" className="mt-3 rounded-lg bg-card p-3 text-sm">{notice}</p>}
    {error && <p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
    <progress className="mt-4 h-2 w-full accent-amber-500" value={visibleCount} max={3} aria-label={es?"Nóminas preparadas":"Prepared payslips"}/>
+   <p role="status" className="mt-2 text-sm font-semibold">{visibleCount < 3 ? (es ? `Pendientes de preparar: ${3-visibleCount}. Todavía no se han guardado.` : `${3-visibleCount} left to prepare. Not saved yet.`) : (es ? "Tres nóminas preparadas. Confirma y guarda para terminar." : "Three payslips prepared. Confirm and save to finish.")}</p>
    {items.length > 0 && <ul className="mt-4 space-y-2">{items.map((item,index)=><li key={index} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-card p-3 text-sm"><span>{String(item.employerName)} · {String(item.paymentDate)}</span><button type="button" disabled={busy} className="underline" onClick={()=>{setItems(items.filter((_,i)=>i!==index));setError(null);}}>{es?"Quitar":"Remove"}</button></li>)}</ul>}
   </section>
   {!needsDetails && <section className="space-y-3 rounded-2xl border border-border bg-card p-5">
@@ -64,7 +65,7 @@ export function NewEmployerFlow({ defaultEmployer }: { defaultEmployer?: string 
    <input id="new-employer-name" value={employer} readOnly={items.length > 0} disabled={busy} onChange={e=>setCompanyName(e.target.value)} placeholder={es?"Se completa al leer la nómina":"Filled from your payslip"} className="min-h-11 w-full rounded-lg border border-border bg-background p-3 text-base"/>
    {employmentStartFields}
    <p className="text-sm text-muted-foreground">{es?"Al confirmar, comprobaremos la continuidad de las tres nóminas y mostraremos el resumen de esta empresa.":"On confirmation, we check the three consecutive periods and display this employer’s summary."}</p>
-   {items.length === 3 && <Button type="button" disabled={busy || !month} onClick={save} className="bg-accent text-accent-foreground hover:bg-accent/90">{busy?"…":es?"Confirmar y guardar las tres nóminas":"Confirm and save three payslips"}</Button>}
+   {items.length === 3 && <Button type="button" disabled={busy || !month} onClick={save} className="min-h-12 h-auto w-full whitespace-normal bg-accent px-4 py-3 text-center text-accent-foreground hover:bg-accent/90">{busy?"…":es?"Confirmar y guardar las tres nóminas":"Confirm and save three payslips"}</Button>}
   </section>}
   {items.length < 3 && <PayslipForm key={step} defaultEmployer={employer} defaultPayFrequency={groupFrequency} initialFile={queue[0]} onReadingChange={setReading} maxImports={3-items.length} onImportFiles={files=>{setQueue(files.slice(0,3-items.length));setNeedsDetails(false);setNotice(null);setStep(value=>value+1);}} onPrepared={add} autoPrepare onNeedsDetails={setNeedsDetails} employmentStartFields={employmentStartFields} onProcessed={message=>{setNotice(message);setProcessed(value=>value+1);}}/>}
 
