@@ -28,7 +28,6 @@ export function EntryHeader() {
         {[43, 223, 288].map(x => <g key={x}><circle cx={x} cy="60" r="10" fill="#1E2A3A" stroke="#E2B14A" strokeWidth="3" /><circle cx={x} cy="60" r="3" fill="#ffffff" /></g>)}
       </svg>
     </Link>
-    <span className="mtp-country">Ireland</span>
     </div>
     <div className="mtp-header-account"><AccountLink /></div>
     </div><LanguageSwitcher />
