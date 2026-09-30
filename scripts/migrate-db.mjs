@@ -10,6 +10,7 @@ try {
   await client.query(await readFile(new URL("../src/lib/persistence/migrations/002-retention.sql", import.meta.url), "utf8"));
   await client.query(await readFile(new URL("../src/lib/persistence/migrations/003-publication-review.sql", import.meta.url), "utf8"));
   await client.query(await readFile(new URL("../src/lib/persistence/migrations/004-publication-source.sql", import.meta.url), "utf8"));
+  await client.query(await readFile(new URL("../src/lib/persistence/migrations/005-publication-identity-controls.sql", import.meta.url), "utf8"));
   await client.query("COMMIT");
   console.log("Truckpay database migration complete.");
 } catch {
