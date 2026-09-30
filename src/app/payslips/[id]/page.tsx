@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { toPublicPayslip } from "@/lib/payroll/format";
 import { reconcilePayslip } from "@/lib/payroll/reconcile";
 import { detectPayslipAnomalies } from "@/lib/payroll/anomalies";
-import { readUserId } from "@/lib/payroll/session";
+import { requireAccount } from "@/lib/payroll/session";
 import { hydratePayslip } from "@/lib/payroll/process";
 import { getPayslipForUser, listPayslipsForUser } from "@/lib/payroll/store";
 import { cn } from "@/lib/utils";
@@ -22,12 +22,7 @@ export default async function PayslipPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const userId = await readUserId();
-  if (!userId) {
-    return (
-      <MissingSlip message="This slip is not on this device. Open My payslips first so MyTruckPay can attach a private id." />
-    );
-  }
+  const userId = await requireAccount();
 
   const payslipRaw = await getPayslipForUser(userId, id);
   if (!payslipRaw) {
