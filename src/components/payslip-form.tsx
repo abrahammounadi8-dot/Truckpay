@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { frequencyMessageKey, type Locale } from "@/lib/i18n";
 import type { PayFrequency } from "@/lib/payroll/types";
+import { extractionError } from "@/lib/payroll/extraction-error";
 
 import { EmploymentStartField } from "./employment-start-field";
 import { draftFromExtraction, emptyForm, emptyLine, type FormState, type Line } from "@/lib/payroll/form-draft";
@@ -130,6 +131,9 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoPreviewRef = useRef<string | null>(null);
   const fileReadLock = useRef(false);
+  const lastAttemptFile = useRef<File | null>(null);
+  const [readFailed, setReadFailed] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   function replacePhotoPreview(file: File | undefined) {
     if (photoPreviewRef.current) {
@@ -172,14 +176,9 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
 
   async function onPickFile(file: File | undefined, password?: string) {
     if (!file || fileReadLock.current || pending) return;
-    if (password === undefined) {
-      onDraftRead?.(null);
-      setMissingEssentials(null);
-      onNeedsDetails?.(false);
-      setAmountReceipt(null); setCanEditAmounts(false);
-      setLockedFile(null); setPasswordStatus(null); setShowReview(false);
-      setFileNote(null); setUnreadFile(false);
-    }
+    lastAttemptFile.current = file;
+    setReadFailed(false);
+    setSessionExpired(false);
     let processingNotice: string | null = null;
     fileReadLock.current = true;
     setReadingFile(true);
@@ -194,8 +193,9 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
         method: "POST",
         credentials: "same-origin",
         body,
+        signal: AbortSignal.timeout(45000),
       });
-      const data = (await res.json()) as {
+      const data = (await res.json().catch(() => ({}))) as {
         error?: string;
         kind?: string;
         amountReceipt?: string;
@@ -208,15 +208,23 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
         deductions?: { rawLabel: string; amount: number }[];
         allowances?: { rawLabel: string; amount: number }[];
       };
-      if (!res.ok) throw new Error(data.error ?? t("form.readError"));
-      if (data.kind === "unsupported") throw new Error(data.message ?? t("form.readError"));
+      if (!res.ok) {
+        setSessionExpired(res.status === 401);
+        throw new Error(extractionError(res.status, data.error, locale === "es"));
+      }
+      if (data.kind === "unsupported") throw new Error(extractionError(200, data.message, locale === "es"));
       if (data.passwordStatus) {
         processingNotice = locale === "es" ? "Este PDF necesita contraseña. Introdúcela en el apartado de carga para poder contarlo." : "This PDF needs a password. Enter it in the upload section before it can count.";
-        setLockedFile(file); setPasswordStatus(data.passwordStatus); setShowReview(false);
-        setFileLabel(data.fileLabel ?? file.name); setFileNote(null); setUnreadFile(false);
-        replacePhotoPreview(undefined);
+        setLockedFile(file); setPasswordStatus(data.passwordStatus);
         return;
       }
+      if (typeof data.fields?.netPay !== "number" || !Number.isFinite(data.fields.netPay) || !data.amountReceipt) {
+        throw new Error(locale === "es" ? "No se pudo leer el neto. Usa el PDF original con texto seleccionable; una foto o un PDF escaneado puede no ser legible." : "Net pay could not be read. Use the original PDF with selectable text; a photo or scanned PDF may not be readable.");
+      }
+      // Commit the replacement only after a usable extraction. Failed attempts preserve the draft and its receipt.
+      onDraftRead?.(null);
+      setMissingEssentials(null); onNeedsDetails?.(false);
+      setFileNote(null); setUnreadFile(false);
       setLockedFile(null); setPasswordStatus(null);
       replacePhotoPreview(file);
       setFileLabel(data.fileLabel ?? file.name);
@@ -247,8 +255,10 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
       }
       if (!autoPrepare && fieldCount > 0) onDraftRead?.({ employerName: typeof data.fields?.employerName === "string" ? data.fields.employerName : defaultEmployer });
     } catch (err) {
-      processingNotice = err instanceof Error ? err.message : t("form.readError");
+      processingNotice = err instanceof Error && err.name !== "TypeError" && err.name !== "TimeoutError" ? err.message : extractionError(0, undefined, locale === "es");
+      processingNotice += locale === "es" ? " Lo que ya tenías preparado se conserva mientras sigas en esta página." : "Your previously prepared data is kept while you stay on this page.";
       setError(processingNotice);
+      setReadFailed(true);
     } finally {
       if (passwordRef.current) passwordRef.current.value = "";
       fileReadLock.current = false;
@@ -291,6 +301,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
       return;
     }
     setPending(true);
+    setReadFailed(false);
     setError(null);
     try {
       const res = await fetch("/api/payslips", {
@@ -332,6 +343,11 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
 
   return (
     <form onSubmit={onSubmit} autoComplete="off" className="space-y-8">
+      {error && <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+        <p>{tr(error)}</p>
+        {sessionExpired && <a href="/account" target="_blank" rel="noopener noreferrer" className="mt-2 flex min-h-11 items-center underline">{locale === "es" ? "Iniciar sesión en otra pestaña y volver aquí" : "Sign in in another tab, then return here"}</a>}
+        {readFailed && <Button type="button" variant="outline" className="mt-3 min-h-11" disabled={readingFile || pending} onClick={() => void onPickFile(lastAttemptFile.current ?? undefined)}>{locale === "es" ? "Reintentar lectura" : "Retry reading"}</Button>}
+      </div>}
       {missingEssentials && <section className="space-y-4 rounded-xl border border-accent bg-accent/10 p-5">
         <h2 className="font-heading text-xl font-semibold">{locale === "es" ? "Solo falta completar esto" : "Just these details are missing"}</h2>
         <p className="text-sm">{locale === "es" ? "El neto ya se ha leído. Copia los datos que falten de esta nómina; la fecha de pago es distinta del inicio en la empresa." : "Net pay has been read. Copy missing details from this payslip; payment date is different from your employment start."}</p>
@@ -400,6 +416,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
       </section>
 
       {lockedFile && passwordStatus && <div className="rounded-xl border border-accent bg-accent/10 p-5 space-y-3">
+        <p className="break-words text-sm">{locale === "es" ? "PDF pendiente de abrir: " : "PDF waiting to be opened: "}{lockedFile.name}</p>
         <label htmlFor="pdf-password" className="block text-sm font-medium">{passwordCopy[locale][0]}</label>
         {passwordStatus === "incorrect" && <p role="alert" className="text-sm text-destructive">{passwordCopy[locale][1]}</p>}
         <Input ref={passwordRef} id="pdf-password" type="password" autoComplete="off" disabled={readingFile} onKeyDown={event => {
@@ -599,7 +616,6 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
       </details>
       </fieldset>}
       {showReview && !amountReceipt && <p role="status" className="text-sm">{locale === "es" ? "Vuelve a seleccionar el documento para comprobar los importes antes de guardar." : "Select the document again to check its amounts before saving."}</p>}
-      {error ? <p className="text-sm text-destructive">{tr(error)}</p> : null}
       {showReview && <Button type="submit" disabled={pending || readingFile || !amountReceipt || (!onPrepared && !employmentReady)} className="bg-accent text-accent-foreground hover:bg-accent/90">
         {pending ? t("form.checking") : onPrepared ? (locale === "es" ? "Revisado · continuar" : "Reviewed · continue") : copy.save}
       </Button>}
