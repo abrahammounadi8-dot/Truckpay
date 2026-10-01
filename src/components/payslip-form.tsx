@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { frequencyMessageKey, type Locale } from "@/lib/i18n";
 import type { PayFrequency } from "@/lib/payroll/types";
 import { extractionError } from "@/lib/payroll/extraction-error";
+import { filesForImport, preferredEmployer } from "@/lib/payroll/import-policy";
 
 import { EmploymentStartField } from "./employment-start-field";
 import { draftFromExtraction, emptyForm, emptyLine, type FormState, type Line } from "@/lib/payroll/form-draft";
@@ -134,6 +135,9 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
   const lastAttemptFile = useRef<File | null>(null);
   const [readFailed, setReadFailed] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const employerOverride = useRef<string | undefined>(undefined);
+  const [queuedFiles, setQueuedFiles] = useState<File[]>([]);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
   function replacePhotoPreview(file: File | undefined) {
     if (photoPreviewRef.current) {
@@ -159,6 +163,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
 
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
+    if (key === "employerName") employerOverride.current = String(value);
     setForm((prev) => ({ ...prev, [key]: value }));
     if (key === "employerName" && showReview) onDraftRead?.({ employerName: String(value) });
   }
@@ -169,9 +174,11 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
     extractedAllowances: { rawLabel: string; amount: number }[],
   ) {
     const draft = draftFromExtraction(fields, extractedDeductions, extractedAllowances, defaultPayFrequency);
-    setForm({ ...draft.form, employerName: draft.form.employerName || defaultEmployer });
+    draft.form.employerName = preferredEmployer(employerOverride.current ?? defaultEmployer, draft.form.employerName);
+    setForm(draft.form);
     setDeductions(draft.deductions);
     setAllowances(draft.allowances);
+    return draft;
   }
 
   async function onPickFile(file: File | undefined, password?: string) {
@@ -235,10 +242,9 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
       setShowReview(fieldCount > 0 && !autoPrepare);
       setAmountReceipt(data.amountReceipt ?? null);
       setCanEditAmounts(data.canEditAmounts === true);
-      applyExtracted(data.fields ?? {}, data.deductions ?? [], data.allowances ?? []);
+      const draft = applyExtracted(data.fields ?? {}, data.deductions ?? [], data.allowances ?? []);
       if (autoPrepare && onPrepared && fieldCount > 0) {
-        const draft = draftFromExtraction(data.fields ?? {}, data.deductions ?? [], data.allowances ?? [], defaultPayFrequency);
-        const employerName = draft.form.employerName || defaultEmployer;
+        const employerName = draft.form.employerName;
         if (draft.form.netPay === "" || !Number.isFinite(Number(draft.form.netPay)) || !data.amountReceipt) {
           throw new Error(locale === "es" ? "No se ha podido leer el neto. Prueba una copia más clara del PDF." : "Net pay could not be read. Try a clearer copy of the PDF.");
         }
@@ -253,7 +259,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
           onPrepared({ ...draft.form, employerName, amountReceipt: data.amountReceipt, deductions: packed(draft.deductions), allowances: packed(draft.allowances) });
         }
       }
-      if (!autoPrepare && fieldCount > 0) onDraftRead?.({ employerName: typeof data.fields?.employerName === "string" ? data.fields.employerName : defaultEmployer });
+      if (!autoPrepare && fieldCount > 0) onDraftRead?.({ employerName: draft.form.employerName });
     } catch (err) {
       processingNotice = err instanceof Error && err.name !== "TypeError" && err.name !== "TimeoutError" ? err.message : extractionError(0, undefined, locale === "es");
       processingNotice += locale === "es" ? " Lo que ya tenías preparado se conserva mientras sigas en esta página." : "Your previously prepared data is kept while you stay on this page.";
@@ -269,9 +275,30 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
   }
 
   const initialFileRead = useRef<File | null>(null);
+  function pickFiles(files: ArrayLike<File>) {
+    if (fileReadLock.current || pending) return;
+    let selected: File[];
+    try {
+      selected = filesForImport(files, onImportFiles ? (maxImports ?? 3) : 20);
+    } catch (err) {
+      const limit = err instanceof Error ? err.message : "20";
+      setError(locale === "es" ? `Elige como máximo ${limit} archivos cada vez. No se ha descartado ningún archivo de la cola anterior.` : `Choose at most ${limit} files at a time. No files from the previous queue were discarded.`);
+      return;
+    }
+    if (!selected.length) return;
+    setSavedNotice(null);
+    if (onImportFiles) {
+      onImportFiles(selected);
+    } else {
+      setQueuedFiles(selected.slice(1));
+      void onPickFile(selected[0]);
+    }
+  }
+  const pickFilesRef = useRef(pickFiles);
   const onPickFileRef = useRef(onPickFile);
   useEffect(() => {
     onPickFileRef.current = onPickFile;
+    pickFilesRef.current = pickFiles;
   });
 
   useEffect(() => {
@@ -284,8 +311,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
     const el = fileInputRef.current;
     if (!el) return;
     const onChange = () => {
-      const file = el.files?.[0];
-      if (file) void onPickFileRef.current(file);
+      if (el.files) pickFilesRef.current(el.files);
       el.value = "";
     };
     el.addEventListener("change", onChange);
@@ -331,6 +357,20 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
       sessionStorage.removeItem(DRAFT_KEY);
       replacePhotoPreview(undefined);
       window.dispatchEvent(new Event("truckpay-payslips-changed"));
+      if (queuedFiles.length) {
+        const [nextFile, ...remaining] = queuedFiles;
+        setQueuedFiles(remaining);
+        setSavedNotice(locale === "es" ? "Nómina guardada. Revisa la siguiente antes de guardarla." : "Payslip saved. Review the next one before saving it.");
+        setShowReview(false);
+        setAmountReceipt(null);
+        setFileLabel(nextFile.name);
+        setEmploymentReady(false);
+        setForm({ ...emptyForm });
+        setDeductions([emptyLine()]);
+        setAllowances([emptyLine()]);
+        await onPickFile(nextFile);
+        return;
+      }
       const next = "/payslips";
       router.push(next);
       router.refresh();
@@ -343,6 +383,8 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
 
   return (
     <form onSubmit={onSubmit} autoComplete="off" className="space-y-8">
+      {savedNotice && <p role="status" className="rounded-xl bg-accent/10 p-4 text-sm">{savedNotice}</p>}
+      {queuedFiles.length > 0 && <p role="status" className="text-sm">{locale === "es" ? `${queuedFiles.length} nóminas pendientes después de esta. Se revisan y guardan por separado.` : `${queuedFiles.length} payslips queued after this one. Review and save each separately.`}</p>}
       {error && <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
         <p>{tr(error)}</p>
         {sessionExpired && <a href="/account" target="_blank" rel="noopener noreferrer" className="mt-2 flex min-h-11 items-center underline">{locale === "es" ? "Iniciar sesión en otra pestaña y volver aquí" : "Sign in in another tab, then return here"}</a>}
@@ -357,7 +399,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
         {employmentStartFields}
         <Button type="submit" disabled={readingFile || pending || !form.employerName.trim() || !form.paymentDate || !["weekly", "fortnightly", "monthly"].includes(form.payFrequency)} className="bg-accent text-accent-foreground hover:bg-accent/90">{locale === "es" ? "Añadir al contador" : "Add to the counter"}</Button>
       </section>}
-      <GmailImport onImport={onPickFile} onImportFiles={onImportFiles} maxSelections={maxImports} disabled={readingFile || pending} />
+      <GmailImport onImport={async file => pickFiles([file])} onImportFiles={pickFiles} maxSelections={maxImports ?? 20} disabled={readingFile || pending} />
       <section
         className={`rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
           dragging ? "border-accent bg-accent/10" : "border-foreground/20 bg-card"
@@ -374,7 +416,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
         onDrop={(event) => {
           event.preventDefault();
           setDragging(false);
-          void onPickFile(event.dataTransfer.files[0]);
+          pickFiles(event.dataTransfer.files);
         }}
       >
         {photoPreview ? (
@@ -390,6 +432,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
         <h2 className="font-heading mt-3 text-2xl font-semibold">{t("form.putHere")}</h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
           {t("form.putHereHelp")}
+          <span className="mt-2 block">{locale === "es" ? "Puedes seleccionar varias nóminas juntas. Cada archivo conserva sus propios importes y fechas." : "You can select several payslips together. Each file keeps its own amounts and dates."}</span>
           <span className="mt-2 block">{locale === "es" ? "Puedes elegir el PDF desde Archivos del móvil. Si no está protegido, se leerá directamente; solo pediremos contraseña si hace falta." : "Choose a PDF from Files on your phone. Unprotected PDFs are read directly; a password is only requested when needed."}</span>
         </p>
         <label className="mt-4 inline-flex cursor-pointer flex-col items-center gap-2 rounded-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
@@ -401,6 +444,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
             id="payslip-file"
             name="payslip-file"
             type="file"
+            multiple
             accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp"
             disabled={readingFile || pending}
             className="sr-only"
