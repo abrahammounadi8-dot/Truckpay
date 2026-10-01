@@ -24,7 +24,7 @@ export function CompanyCard({ company }: { company: Company }) {
   const stats = companyStats(company.slug, reports);
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+    <article className={cn("flex h-full flex-col overflow-hidden rounded-2xl bg-card shadow-sm ring-1 transition-shadow hover:shadow-md", selected ? "ring-2 ring-accent" : "ring-foreground/10")}>
       <div className="flex items-start gap-3 px-5 pt-5">
         <CompanyMark company={company} />
         <div className="min-w-0 flex-1">
@@ -50,7 +50,7 @@ export function CompanyCard({ company }: { company: Company }) {
         {salaryBands.length > 0 && <div className="space-y-3">
           {salaryBands.map(band => <div key={band.band} className="rounded-lg bg-accent/10 p-3">
             <p className="text-sm font-semibold">{tenureBandLabel(band.band, locale === "es")}</p><p className="text-xs text-muted-foreground">{band.driverCount} {locale === "es" ? (band.driverCount === 1 ? "conductor" : "conductores") : (band.driverCount === 1 ? "driver" : "drivers")} · {band.verifiedPayslipCount} {locale === "es" ? "nóminas" : "payslips"}</p>
-            {band.netByFrequency.map(group => <p key={group.frequency} className="mt-1 flex flex-wrap justify-between gap-2 text-sm"><span>{locale === "es" ? "Neto" : "Net"} · {group.frequency === "weekly" ? (locale === "es" ? "semanal" : "weekly") : group.frequency === "fortnightly" ? (locale === "es" ? "cada dos semanas" : "every two weeks") : group.frequency === "monthly" ? (locale === "es" ? "mensual" : "monthly") : group.frequency}</span><strong className="font-mono">{formatEuroMaybe(group.medianNet)}</strong></p>)}
+            {band.netByFrequency.map(group => <p key={group.frequency} className="mt-1 flex flex-wrap justify-between gap-2 text-sm"><span>{locale === "es" ? "Neto" : "Net"} · {group.frequency === "weekly" ? (locale === "es" ? "semanal" : "weekly") : group.frequency === "fortnightly" ? (locale === "es" ? "cada dos semanas" : "every two weeks") : group.frequency === "monthly" ? (locale === "es" ? "mensual" : "monthly") : group.frequency}</span><strong className="font-heading text-2xl tabular-nums">{formatEuroMaybe(group.medianNet)}</strong></p>)}
           </div>)}
           <p className="text-xs text-muted-foreground">{locale === "es" ? "Mediana del neto. Antigüedad calculada hasta la fecha de cada nómina a partir del inicio declarado; no representa el sueldo de toda la empresa." : "Median net pay. Tenure uses the declared start and each payslip date; this is not a company-wide salary."}</p>
         </div>}
@@ -71,7 +71,7 @@ export function CompanyCard({ company }: { company: Company }) {
       </div>
       <div className="flex gap-2 border-t border-border bg-muted/40 px-5 py-3">
         <Link href={`/companies/${company.slug}`} className={cn(buttonVariants({ size: "sm" }), "flex-1")}>{tr("Open file")}</Link>
-        <Button size="sm" variant={selected ? "secondary" : "outline"} onClick={() => toggleCompare(company.slug)}>
+        <Button size="sm" variant={selected ? "secondary" : "outline"} aria-pressed={selected} className="min-h-11" onClick={() => toggleCompare(company.slug)}>
           {selected ? tr("In compare") : tr("Compare")}
         </Button>
       </div>
