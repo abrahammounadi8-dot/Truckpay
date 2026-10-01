@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { cookies, headers } from "next/headers";
+import { Analytics } from "@vercel/analytics/next";
 import { LanguageProvider } from "@/components/language-provider";
 import { SiteJsonLd } from "@/components/site-json-ld";
 import { LOCALE_COOKIE, localeFromRequest, localeMeta } from "@/lib/i18n";
@@ -72,6 +73,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <LanguageProvider initialLocale={locale}>
           <ApplicationFrame>{children}</ApplicationFrame>
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   );
