@@ -13,6 +13,9 @@ export class OpinionsRepository {
  async mine(userId: string) {
    return (await this.db.query(`SELECT ${ownColumns} FROM truckpay_opinions WHERE user_id=$1 ORDER BY updated_at DESC LIMIT 100`,[userId])).rows as unknown as OpinionRecord[];
  }
+ async companies() {
+   return (await this.db.query("SELECT DISTINCT ON (company_slug) company_slug AS slug,company_name AS name FROM truckpay_opinions WHERE kind='company' AND status='approved' ORDER BY company_slug,updated_at DESC")).rows as unknown as {slug:string;name:string}[];
+ }
  async published(company: string) {
    const result = await this.db.query(`SELECT id,rating,body,updated_at FROM truckpay_opinions WHERE kind='company' AND status='approved' AND company_slug=$1 ORDER BY updated_at DESC LIMIT 50`,[company]);
    const aggregate = await this.db.query(`SELECT count(*)::int AS count,round(avg(rating),1)::float8 AS average FROM truckpay_opinions WHERE kind='company' AND status='approved' AND company_slug=$1`,[company]);
