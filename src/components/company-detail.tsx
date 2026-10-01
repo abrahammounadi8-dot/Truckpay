@@ -1,5 +1,5 @@
 "use client";
-import { useUiCopy } from "@/components/language-provider";
+import { useUiCopy, useT } from "@/components/language-provider";
 
 import { useMemo } from "react";
 import Link from "next/link";
@@ -25,6 +25,7 @@ export function CompanyDetail({
   payStats: CompanyPayStats;
 }) {
   const tr = useUiCopy();
+  const { locale } = useT();
   const { reports, compareSlugs, toggleCompare } = useAppStore();
   const stats = useMemo(() => companyStats(company.slug, reports), [company.slug, reports]);
   const slips = useMemo(() => reportsFor(reports, company.slug), [reports, company.slug]);
@@ -32,6 +33,7 @@ export function CompanyDetail({
 
   return (
     <div>
+      <div className="mx-auto max-w-6xl px-4 py-3"><Link href={`/opinions?company=${encodeURIComponent(company.slug)}`} className="inline-flex min-h-11 items-center rounded-lg border border-primary px-4 text-sm font-semibold">{locale === 'es' ? 'Opiniones de conductores · leer y compartir' : 'Driver reviews · read and share'}</Link></div>
       <div className="bg-primary text-primary-foreground">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <Link
