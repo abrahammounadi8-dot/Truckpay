@@ -19,7 +19,7 @@ export default async function ComparePage({
     <div className="mx-auto max-w-6xl px-4 py-10">
       <PageIntro kicker="compare.kicker" title="compare.title" lead="compare.lead" />
       <div className="mt-8">
-        <CompareTable ids={list} />
+        <CompareTable ids={list} hasQuery={ids !== undefined} />
       </div>
     </div>
   );

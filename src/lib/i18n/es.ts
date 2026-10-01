@@ -243,7 +243,7 @@ export const es: Messages = {
   compare: {
     kicker: "Lado a lado",
     title: "Comparar",
-    lead: "Sede, equipo y rutas en una línea. El neto declarado por conductores solo aparece si han publicado recibos. Eso no es sueldo de empresa verificado con nómina.",
+    lead: "Compara empresas lado a lado. Consulta el salario neto de las aportaciones autorizadas con la misma antigüedad y frecuencia de pago.",
     comparing: "Comparando {names}",
     clear: "Limpiar",
     open: "Abrir comparación",

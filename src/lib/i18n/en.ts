@@ -520,7 +520,7 @@ export const en: Messages = {
   compare: {
     kicker: "Side by side",
     title: "Compare",
-    lead: "HQ, equipment and lanes sit on one line. Driver-reported take-home appears only if drivers have filed public stubs. That is not payroll-verified company pay.",
+    lead: "Compare employers side by side. View net pay from authorised contributions with matching tenure and pay frequency.",
     comparing: "Comparing {names}",
     clear: "Clear",
     open: "Open compare",

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { XIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
@@ -11,6 +12,8 @@ import { cn } from "@/lib/utils";
 
 export function CompareDock() {
   const { t } = useT();
+  const pathname = usePathname();
+  const router = useRouter();
   const { companies, compareSlugs, toggleCompare, clearCompare, ready } = useAppStore();
   const selected = useMemo(
     () => compareSlugs.map((slug) => companies.find((company) => company.slug === slug)).filter(Boolean),
@@ -18,6 +21,15 @@ export function CompareDock() {
   );
 
   if (!ready || selected.length === 0) return null;
+
+  function remove(slug: string) {
+    toggleCompare(slug);
+    if (pathname === "/compare") router.replace(`/compare?ids=${compareSlugs.filter(item => item !== slug).join(",")}`);
+  }
+  function clear() {
+    clearCompare();
+    if (pathname === "/compare") router.replace("/compare?ids=");
+  }
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-3">
@@ -33,13 +45,14 @@ export function CompareDock() {
               key={company!.slug}
               size="xs"
               variant="secondary"
-              onClick={() => toggleCompare(company!.slug)}
+              className="min-h-11"
+              onClick={() => remove(company!.slug)}
             >
               {company!.shortName}
               <XIcon />
             </Button>
           ))}
-          <Button size="xs" variant="ghost" className="text-primary-foreground" onClick={clearCompare}>
+          <Button size="xs" variant="ghost" className="min-h-11 text-primary-foreground" onClick={clear}>
             {t("compare.clear")}
           </Button>
           <Link

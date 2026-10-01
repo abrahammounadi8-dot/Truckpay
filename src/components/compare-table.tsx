@@ -18,7 +18,7 @@ import type { TenureBand } from "@/lib/payroll/types";
 
 const bands: TenureBand[] = ["0_1", "1_3", "3_5", "5_plus"];
 
-export function CompareTable({ ids }: { ids: string[] }) {
+export function CompareTable({ ids, hasQuery = ids.length > 0 }: { ids: string[]; hasQuery?: boolean }) {
   const tr = useUiCopy();
   const { locale } = useT();
   const es = locale === "es";
@@ -27,7 +27,7 @@ export function CompareTable({ ids }: { ids: string[] }) {
   const [band, setBand] = useState<TenureBand>("0_1");
   const [frequency, setFrequency] = useState("weekly");
   const querySlugs = [...new Set(ids.filter(id => companies.some(company => company.slug === id)))];
-  const slugs = (ids.length ? querySlugs : compareSlugs).slice(0, 3);
+  const slugs = (hasQuery ? querySlugs : compareSlugs).slice(0, 3);
   const selected = slugs.flatMap(slug => {
     const company = companies.find(item => item.slug === slug);
     return company ? [company] : [];
@@ -67,7 +67,7 @@ export function CompareTable({ ids }: { ids: string[] }) {
       {records.map(({ company, net }) => <article key={company.slug} className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <div className="flex items-start gap-3 p-5"><CompanyMark company={company} size="lg" /><div className="min-w-0 flex-1"><Link href={`/companies/${company.slug}`} className="font-heading text-xl font-semibold hover:underline">{company.name}</Link><p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="size-3 shrink-0" aria-hidden="true" />{company.headquarters}</p></div><button type="button" onClick={() => remove(company.slug)} aria-label={`${tr("Remove")} ${company.name}`} className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"><X className="size-4" aria-hidden="true" /></button></div>
         <div className="mx-5 rounded-xl bg-accent/15 p-5"><p className="text-xs font-semibold uppercase tracking-wide">{es ? "Salario neto · mediana" : "Net pay · median"}</p><p className={cn("mt-3 font-heading font-semibold tabular-nums", net ? "text-4xl" : "text-xl text-muted-foreground")}>{net ? formatEuroMaybe(net.medianNet) : missing}</p><p className="mt-2 text-sm text-muted-foreground">{netFrequencyLabel(frequency, es)} · {tenureBandLabel(band, es)}</p></div>
-        <div className="flex-1 p-5"><div className="flex flex-wrap gap-3 text-xs text-muted-foreground"><span className="inline-flex items-center gap-1.5"><Users className="size-4" aria-hidden="true" />{net?.driverCount ?? 0} {es ? "conductores" : "drivers"}</span><span className="inline-flex items-center gap-1.5"><FileText className="size-4" aria-hidden="true" />{net?.payslipCount ?? 0} {es ? "nóminas" : "payslips"}</span></div><div className="mt-4 flex flex-wrap gap-1.5">{company.equipment.map(item => <Badge key={item} variant="outline">{tr(equipmentLabels[item])}</Badge>)}</div></div>
+        <div className="flex-1 p-5"><div className="flex flex-wrap gap-3 text-xs text-muted-foreground"><span className="inline-flex items-center gap-1.5"><Users className="size-4" aria-hidden="true" />{net?.driverCount ?? 0} {es ? (net?.driverCount === 1 ? "conductor" : "conductores") : (net?.driverCount === 1 ? "driver" : "drivers")}</span><span className="inline-flex items-center gap-1.5"><FileText className="size-4" aria-hidden="true" />{net?.payslipCount ?? 0} {es ? "nóminas" : "payslips"}</span></div><div className="mt-4 flex flex-wrap gap-1.5">{company.equipment.map(item => <Badge key={item} variant="outline">{tr(equipmentLabels[item])}</Badge>)}</div></div>
         <Link href={`/companies/${company.slug}`} className="flex min-h-12 items-center justify-between border-t border-border bg-muted/40 px-5 py-3 text-sm font-semibold hover:bg-muted">{es ? "Ver empresa y datos" : "View employer and data"}<ArrowRight className="size-4" aria-hidden="true" /></Link>
       </article>)}
       {selected.length === 1 && <Link href="/companies" className="flex min-h-60 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border p-8 text-center hover:border-accent hover:bg-accent/5"><ArrowLeftRight className="mb-4 size-10 text-muted-foreground" aria-hidden="true" /><span className="font-heading text-xl font-semibold">{es ? "Añade otra empresa" : "Add another employer"}</span><span className="mt-2 text-sm text-muted-foreground">{es ? "Elige con quién quieres comparar" : "Choose who to compare with"}</span></Link>}
@@ -81,8 +81,8 @@ export function CompareTable({ ids }: { ids: string[] }) {
             {label: es ? "Neto · mediana" : "Net pay · median", values: records.map(({net}) => net ? formatEuroMaybe(net.medianNet) : missing)},
             {label: es ? "Conductores que aportan datos" : "Contributing drivers", values: records.map(({net}) => net?.driverCount ?? missing)},
             {label: es ? "Nóminas de esta muestra" : "Payslips in this sample", values: records.map(({net}) => net?.payslipCount ?? missing)},
-            {label: tr("Headquarters"), values: selected.map(company => company.headquarters)},
-            {label: tr("County"), values: selected.map(company => company.county)},
+            {label: tr("Headquarters"), values: selected.map(company => company.headquarters || missing)},
+            {label: tr("County"), values: selected.map(company => company.county || missing)},
             {label: tr("Equipment"), values: selected.map(company => company.equipment.map(item => tr(equipmentLabels[item])).join(", ") || missing)},
             {label: tr("Lanes"), values: selected.map(company => company.operations.map(item => tr(operationLabels[item])).join(", ") || missing)},
           ].map((row, index) => <tr key={row.label} className={cn("border-b border-border/60 last:border-0", index % 2 === 0 && "bg-muted/30")}><th scope="row" className="px-5 py-4 text-left font-medium text-muted-foreground">{row.label}</th>{row.values.map((value, i) => <td key={selected[i].slug} className={cn("px-5 py-4", index === 0 && "font-semibold tabular-nums")}>{value}</td>)}</tr>)}
