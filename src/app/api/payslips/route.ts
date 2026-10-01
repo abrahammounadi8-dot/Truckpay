@@ -21,6 +21,10 @@ export async function GET(request: Request) {
   const access = comparisonAccess(payslips, profile);
   return privateJson({
     payslips: payslips.map(toPublicPayslip),
+    profileEmployers: Array.from(new Map([
+      ...Object.entries(profile?.employmentStarts ?? {}).map(([slug, entry]) => [slug, { slug, name: entry.employerName || slug }] as const),
+      ...(profile?.employerSlug ? [[profile.employerSlug, { slug: profile.employerSlug, name: profile.employerName || profile.employerSlug }] as const] : []),
+    ]).values()),
     required: access.required,
     have: access.have,
     readyForAnalysis: access.unlocked,

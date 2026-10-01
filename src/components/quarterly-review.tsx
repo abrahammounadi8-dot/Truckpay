@@ -7,7 +7,7 @@ import { groupPayslipsByEmployer } from '@/lib/payroll/history';
 import { change, comparable, metricValue, quarterlyCalendar, reviewWindow, type ReviewMetric, type ReviewSlip } from '@/lib/payroll/quarterly';
 import { frequencyMessageKey } from '@/lib/i18n';
 
-export function QuarterlyReview({ slips }: { slips: ReviewSlip[] }) {
+export function QuarterlyReview({ slips, profileEmployers = [] }: { slips: ReviewSlip[]; profileEmployers?: {slug:string;name:string}[] }) {
   const { locale, t } = useT();
   const es = locale === 'es';
   const copy = (a: string, b: string) => es ? a : b;
@@ -25,8 +25,18 @@ export function QuarterlyReview({ slips }: { slips: ReviewSlip[] }) {
     }
     return [...partitions].map(([key, records]) => ({ key: group.key + key, label: `${group.label ?? t('detail.employerMissing')} · ${records[0].countryCode} · ${records[0].currency} · ${t(frequencyMessageKey(records[0].payFrequency))}`, records }));
   });
+  for (const employer of profileEmployers) {
+    if (!slips.some(s => s.employerSlug === employer.slug || (!s.employerSlug && s.employerName?.trim().toLowerCase() === employer.name.trim().toLowerCase()))) {
+      groups.push({ key: 'profile:' + employer.slug, label: employer.name, records: [] });
+    }
+  }
+  const selector = (key: string) => <label className="block min-w-0 text-sm font-medium">{copy('Empresa y tipo de cobro', 'Employer and pay frequency')}<select className="mt-1 min-h-12 w-full rounded-lg border bg-background p-2" value={key} onChange={e => { setSelection(e.target.value); setSelectedId(''); }}>{groups.map(g => <option key={g.key} value={g.key}>{g.label}{g.records.length ? '' : copy(' · Sin nóminas', ' · No payslips')}</option>)}</select></label>;
   const group = groups.find(g => g.key === selection) ?? groups[0];
   if (!group) return null;
+  if (!group.records.length) return <section aria-labelledby="quarterly-title" className="overflow-hidden rounded-2xl border bg-card shadow-md">
+    <div className="border-b-4 border-accent bg-primary p-5 text-primary-foreground"><h2 id="quarterly-title" className="font-heading text-3xl font-semibold">{copy('Tu revisión trimestral', 'Your quarterly review')}</h2></div>
+    <div className="space-y-4 p-5">{selector(group.key)}<h3 className="font-semibold">{copy('Sin nóminas para revisar', 'No payslips to review')}</h3><p className="text-sm">{copy('Esta empresa está en tu perfil laboral. Añade sus nóminas para ver la evolución de tus cobros.', 'This employer is in your employment profile. Add their payslips to see your pay history.')}</p><Link href="/payslips/new" className="inline-flex min-h-12 items-center rounded-lg bg-primary px-4 font-semibold text-primary-foreground">{copy('Añadir nóminas', 'Add payslips')}</Link></div>
+  </section>;
   const records = reviewWindow(group.records, months, today);
   const latest = records.at(-1);
   const previous = records.at(-2);
@@ -56,7 +66,7 @@ export function QuarterlyReview({ slips }: { slips: ReviewSlip[] }) {
     </div>
     <div className="space-y-5 p-4 sm:p-6">
       <div className="grid gap-3 sm:grid-cols-3">
-        <label className="min-w-0 text-sm font-medium">{copy('Empresa y tipo de cobro', 'Employer and pay frequency')}<select className="mt-1 min-h-12 w-full rounded-lg border bg-background p-2" value={group.key} onChange={e => { setSelection(e.target.value); setSelectedId(''); }}>{groups.map(g => <option key={g.key} value={g.key}>{g.label}</option>)}</select></label>
+        {selector(group.key)}
         <label className="text-sm font-medium">{copy('Período', 'Period')}<select className="mt-1 min-h-12 w-full rounded-lg border bg-background p-2" value={months} onChange={e => setMonths(Number(e.target.value))}>{[3, 6, 12].map(n => <option key={n} value={n}>{n} {copy('meses', 'months')}</option>)}</select></label>
         <label className="text-sm font-medium">{copy('Qué quieres ver', 'What to view')}<select className="mt-1 min-h-12 w-full rounded-lg border bg-background p-2" value={metric} onChange={e => setMetric(e.target.value as ReviewMetric)}>{Object.entries(labels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
       </div>
