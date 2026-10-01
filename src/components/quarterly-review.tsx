@@ -94,6 +94,3 @@ export function QuarterlyReview({ slips }: { slips: ReviewSlip[] }) {
     </div>
   </section>;
 }
-
-
-
