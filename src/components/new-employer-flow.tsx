@@ -62,7 +62,8 @@ export function NewEmployerFlow({ defaultEmployer }: { defaultEmployer?: string 
   </section>
   {!needsDetails && <section className="space-y-3 rounded-2xl border border-border bg-card p-5">
    <label htmlFor="new-employer-name" className="block text-sm font-medium">{es?"Nombre de empresa":"Company name"}</label>
-   <input id="new-employer-name" value={employer} readOnly={items.length > 0} disabled={busy} onChange={e=>setCompanyName(e.target.value)} placeholder={es?"Se completa al leer la nómina":"Filled from your payslip"} className="min-h-11 w-full rounded-lg border border-border bg-background p-3 text-base"/>
+   <input id="new-employer-name" value={employer} disabled={busy || reading} onChange={e=>{const name=e.target.value;setCompanyName(name);setItems(previous=>previous.map(item=>({...item,employerName:name})));setError(null);}} placeholder={es?"Escribe la empresa para la que trabajas":"Enter the company you work for"} className="min-h-11 w-full rounded-lg border border-border bg-background p-3 text-base"/>
+   <p className="text-sm text-muted-foreground">{es?"El nombre que escribas prevalece sobre el leído de la nómina y se aplica a las tres nóminas de este grupo.":"The name you enter takes precedence over the payslip suggestion and applies to all three payslips in this set."}</p>
    {employmentStartFields}
    <p className="text-sm text-muted-foreground">{es?"Al confirmar, comprobaremos la continuidad de las tres nóminas y mostraremos el resumen de esta empresa.":"On confirmation, we check the three consecutive periods and display this employer’s summary."}</p>
    {items.length === 3 && <Button type="button" disabled={busy || !month} onClick={save} className="min-h-12 h-auto w-full whitespace-normal bg-accent px-4 py-3 text-center text-accent-foreground hover:bg-accent/90">{busy?"…":es?"Confirmar y guardar las tres nóminas":"Confirm and save three payslips"}</Button>}
