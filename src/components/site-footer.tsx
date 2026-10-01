@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useT } from "@/components/language-provider";
 
 export function SiteFooter() {
-  const { t } = useT();
+  const { t, locale } = useT();
 
   return (
     <footer className="mt-auto bg-primary text-primary-foreground">
@@ -18,6 +18,7 @@ export function SiteFooter() {
             {t("footer.myTruckPay")}
           </p>
           <div className="mt-3 flex flex-col gap-2 text-primary-foreground/75">
+            <Link href="/opinions?tab=platform" className="hover:text-primary-foreground">{locale === 'es' ? 'Mejorar MyTruckPay' : 'Improve MyTruckPay'}</Link>
             <Link href="/payslips" className="hover:text-primary-foreground">
               {t("footer.privatePayslips")}
             </Link>
