@@ -2,6 +2,7 @@
 
 import { consecutiveOnboarding } from "@/lib/payroll/onboarding";
 import { AnalysisBoard } from "./analysis-board";
+import { QuarterlyReview } from "./quarterly-review";
 import { PayslipGapNotice } from "./payslip-gap-notice";
 import { EmploymentStartField } from "./employment-start-field";
 import { PayslipProgress } from "./payslip-progress";
@@ -105,6 +106,7 @@ export function PayslipList({ onHasPayslipsChange, onAccessChange, afterProgress
   return (
     <div className="space-y-4">
       <PersonalPayslipSummary slips={slips} companyCount={groups.length} />
+      <QuarterlyReview slips={slips} />
       <PayslipProgress have={result.have} required={result.required} unlocked={result.readyForAnalysis} savedCount={slips.length} paymentGap={paymentGap} needsDetails={slips.length > result.have && !result.readyForAnalysis} />
       {afterProgress}
       <h2 id="employer-history" className="scroll-mt-24 font-heading text-2xl font-semibold">{h[0]}</h2>
