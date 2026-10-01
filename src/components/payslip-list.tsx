@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 type PublicPayslip = Omit<Payslip, "userId">;
 
-type PayslipResponse = { payslips: PublicPayslip[]; have: number; required: number; readyForAnalysis: boolean };
+type PayslipResponse = { profileEmployers?: {slug:string;name:string}[]; payslips: PublicPayslip[]; have: number; required: number; readyForAnalysis: boolean };
 
 function PersonalPayslipSummary({ slips, companyCount }: { slips: PublicPayslip[]; companyCount: number }) {
   const { locale, t } = useT();
@@ -81,7 +81,7 @@ export function PayslipList({ onHasPayslipsChange, onAccessChange, afterProgress
   }
   if (slips.length === 0) {
     return (
-      <div className="space-y-4"><PayslipProgress have={0} required={result.required} unlocked={false} />{afterProgress}<div className="rounded-xl border border-dashed border-border bg-card px-4 py-6 text-center">
+      <div className="space-y-4"><QuarterlyReview slips={[]} profileEmployers={result.profileEmployers} /><PayslipProgress have={0} required={result.required} unlocked={false} />{afterProgress}<div className="rounded-xl border border-dashed border-border bg-card px-4 py-6 text-center">
         <p className="font-heading text-xl font-semibold">{t("payslips.emptyTitle")}</p>
         <p className="mt-2 text-sm text-muted-foreground">{t("payslips.emptyBody")}</p>
         <Link href="/payslips/new" className={cn(buttonVariants(), "mt-5 inline-flex bg-accent text-accent-foreground hover:bg-accent/90")}>
@@ -106,7 +106,7 @@ export function PayslipList({ onHasPayslipsChange, onAccessChange, afterProgress
   return (
     <div className="space-y-4">
       <PersonalPayslipSummary slips={slips} companyCount={groups.length} />
-      <QuarterlyReview slips={slips} />
+      <QuarterlyReview slips={slips} profileEmployers={result.profileEmployers} />
       <PayslipProgress have={result.have} required={result.required} unlocked={result.readyForAnalysis} savedCount={slips.length} paymentGap={paymentGap} needsDetails={slips.length > result.have && !result.readyForAnalysis} />
       {afterProgress}
       <h2 id="employer-history" className="scroll-mt-24 font-heading text-2xl font-semibold">{h[0]}</h2>
