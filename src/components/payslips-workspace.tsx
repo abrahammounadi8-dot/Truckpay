@@ -11,11 +11,13 @@ export function PayslipsWorkspace({ publicationEnabled = false }: { publicationE
   const { t, locale } = useT();
   const es = locale === "es";
   const [hasPayslips, setHasPayslips] = useState(false);
-  const publication = <section aria-labelledby="publication-title" className="rounded-xl border border-accent/50 bg-accent/10 p-4 sm:p-5">
-    <p className="text-xs font-semibold uppercase tracking-wide">{es ? "Opcional · Estadísticas públicas" : "Optional · Public statistics"}</p>
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const publication = <section aria-labelledby="publication-title" className={cn("rounded-xl p-4 transition-colors sm:p-5", analysisComplete ? "border-2 border-accent bg-accent/20 shadow-md ring-2 ring-accent/30" : "border border-accent/50 bg-accent/10")}>
+    <p className={cn("inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide", analysisComplete && "bg-accent text-accent-foreground")}>{es ? "Opcional · Estadísticas públicas" : "Optional · Public statistics"}</p>
+    {analysisComplete && <p role="status" className="mt-3 font-semibold">{es ? "Análisis completado. Puedes revisar aquí tu participación voluntaria." : "Analysis complete. You can review your optional contribution here."}</p>}
     <h2 id="publication-title" className="mt-2 font-heading text-xl font-semibold">{publicationEnabled ? (es ? "Publicación autorizada" : "Publication authorised") : (es ? "¿Quieres aparecer en la lista de empresas?" : "Want to contribute to Companies?")}</h2>
     <p className="mt-2 text-sm leading-6">{es ? "Tu nombre, correo y documentos no se publican. Las estadísticas requieren tu autorización y tres nóminas válidas consecutivas de la misma empresa, con tu mes de inicio indicado." : "Your name, email and documents are not published. Statistics require your permission and three qualifying consecutive payslips from the same employer, with your start month entered."}</p>
-    <Link href="/account#publication" className={cn(buttonVariants({variant:"outline"}), "mt-3 min-h-11 h-auto w-full whitespace-normal px-4 py-2 text-center sm:w-auto")}>{publicationEnabled ? (es ? "Gestionar permiso" : "Manage permission") : (es ? "Revisar y activar" : "Review and enable")}</Link>
+    <Link href="/account#publication" className={cn(buttonVariants({variant: analysisComplete ? "default" : "outline"}), "mt-3 min-h-11 h-auto w-full whitespace-normal px-4 py-2 text-center sm:w-auto", analysisComplete && "bg-accent text-accent-foreground hover:bg-accent/90")}>{publicationEnabled ? (es ? "Gestionar permiso" : "Manage permission") : (es ? "Revisar y activar" : "Review and enable")}</Link>
   </section>;
   return <div className="mx-auto max-w-3xl px-4 py-6 sm:py-10">
     <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t("payslips.kicker")}</p>
@@ -32,7 +34,7 @@ export function PayslipsWorkspace({ publicationEnabled = false }: { publicationE
         <li>{es ? "Si quieres contribuir a Empresas, revisa y activa el permiso de publicación." : "If you want to contribute to Companies, review and enable publication permission."}</li>
       </ol>
     </details>
-    <div id="summary" className="mt-5 scroll-mt-24"><PayslipList onHasPayslipsChange={setHasPayslips} afterProgress={publication} /></div>
+    <div id="summary" className="mt-5 scroll-mt-24"><PayslipList onHasPayslipsChange={setHasPayslips} onAccessChange={setAnalysisComplete} afterProgress={publication} /></div>
     <p className="mt-6 text-sm"><Link href="/profile" className="inline-flex min-h-11 items-center underline">{t("payslips.profile")}</Link></p>
     <div className="mt-10 border-t border-border pt-6"><WipeSession /></div>
   </div>;
