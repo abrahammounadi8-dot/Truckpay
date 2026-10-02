@@ -7,6 +7,7 @@ import { LOCALE_COOKIE, localeFromRequest, localeMeta } from "@/lib/i18n";
 import "./globals.css";
 import "./entry.css";
 import { ApplicationFrame } from "@/components/application-frame";
+import { SiteAnalytics } from "@/components/site-analytics";
 
 const sans = IBM_Plex_Sans({
   variable: "--font-sans-family",
@@ -72,6 +73,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <LanguageProvider initialLocale={locale}>
           <ApplicationFrame>{children}</ApplicationFrame>
         </LanguageProvider>
+        <SiteAnalytics />
       </body>
     </html>
   );
