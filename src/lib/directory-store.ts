@@ -1,5 +1,5 @@
 import "server-only";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { MARKET_COOKIE, marketFrom } from "./markets";
 import { spanishCompanies } from "./spanish-companies";
 import { addPublicAddresses } from "./company-address-store";
@@ -12,7 +12,7 @@ import { fleet } from "./data";
 import { recentPublicationCompanies } from "./payroll/recent-publications";
 
 export async function listDirectoryWithPayStats() {
-  const market = marketFrom((await cookies()).get(MARKET_COOKIE)?.value);
+  const market = marketFrom((await headers()).get("cookie")?.split(";").map(part => part.trim()).find(part => part.startsWith(`${MARKET_COOKIE}=`))?.slice(MARKET_COOKIE.length + 1));
   const source = await publicStatisticsSource();
   const payslips = source.payslips.filter(slip => slip.countryCode === market && slip.currency === "EUR");
   const profiles = source.profiles.filter(profile => profile.countryCode === market);
