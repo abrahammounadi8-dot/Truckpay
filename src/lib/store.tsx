@@ -1,4 +1,6 @@
 "use client";
+import { useMarket } from "@/components/market-provider";
+import { belongsToMarket } from "./markets";
 import type { CompanyPayStats } from "./payroll/company-stats";
 import { companyNameKey } from "./directory-companies";
 
@@ -122,6 +124,7 @@ function mergeReports(server: DriverReport[], local: DriverReport[]): DriverRepo
 }
 
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
+  const market = useMarket();
   const [payStats, setPayStats] = useState<Record<string, CompanyPayStats>>({});
   const [registeredCompanies, setRegisteredCompanies] = useState<Company[]>([]);
   useEffect(() => {
@@ -133,7 +136,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener("focus", load);
     return () => { cancelled = true; window.removeEventListener("truckpay-payslips-changed", load); window.removeEventListener("truckpay-employment-changed", load); window.removeEventListener("focus", load); };
   }, []);
-  const reports = useSyncExternalStore(subscribe, getReports, getServerEmptyReports);
+  const allReports = useSyncExternalStore(subscribe, getReports, getServerEmptyReports);
+  const reports = useMemo(() => allReports.filter(report => belongsToMarket(report, market)), [allReports, market]);
   const compareSlugs = useSyncExternalStore(subscribe, getCompare, getServerEmptyCompare);
   const ready = useSyncExternalStore(
     subscribe,
@@ -193,13 +197,13 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
 
   const companies = useMemo(() => {
     const merged = new Map<string, Company>();
-    for (const company of [...registeredCompanies, ...reportCompanies(reports)]) {
-      const key = companyNameKey(company.name);
+    for (const company of [...registeredCompanies, ...reportCompanies(reports, market).filter(company => belongsToMarket(company, market))]) {
+      const key = `${company.countryCode ?? "IE"}:${companyNameKey(company.name)}`;
       // Keep public addresses and publication order supplied by the server.
       if (!merged.has(key)) merged.set(key, company);
     }
     return [...merged.values()];
-  }, [reports, registeredCompanies]);
+  }, [reports, registeredCompanies, market]);
 
   const value = useMemo(
     () => ({ companies, payStats, reports, compareSlugs, submitReport, toggleCompare, clearCompare, ready }),

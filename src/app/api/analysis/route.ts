@@ -32,7 +32,7 @@ export async function GET(request: Request) {
 
   const employerSlug = reference?.employerSlug ?? analysis.latest.find((slip) => slip.employerSlug)?.employerSlug ?? null;
   const publicSource = await publicStatisticsSource();
-  const company = employerSlug ? companyPayStats(employerSlug, publicSource.payslips, publicSource.profiles, asOf) : null;
+  const company = employerSlug ? companyPayStats(employerSlug, publicSource.payslips.filter(slip => slip.countryCode === reference?.countryCode && slip.currency === reference?.currency), publicSource.profiles.filter(profile => profile.countryCode === reference?.countryCode), asOf) : null;
   const band = company && profile?.tenureBand ? company.bands.find((item) => item.band === profile.tenureBand) ?? null : null;
 
   const factors: PayFactor[] = analysis.status === "verified" && band != null ? analysis.ownNetByFrequency.flatMap(own => {

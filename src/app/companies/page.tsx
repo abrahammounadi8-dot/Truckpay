@@ -3,9 +3,9 @@ import { PageIntro } from "@/components/page-intro";
 import { CompanyDirectory } from "@/components/company-directory";
 
 export const metadata: Metadata = {
-  title: "Irish haulier directory",
+  title: "Transport company directory",
   description:
-    "Browse Irish haulage firms. Driver-reported stubs and payroll-verified medians are labelled separately. No invented company salary.",
+    "Browse transport companies by country. Driver-reported stubs and payroll-verified medians are labelled separately. No invented company salary.",
 };
 
 export default async function CompaniesPage({

@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { marketFrom, isMarket } from "./markets";
+import { spanishCompanies } from "./spanish-companies";
 import { fleet } from "@/lib/data";
 import type { DriverReport, Equipment, Operation, PayType } from "@/lib/types";
 
@@ -7,6 +9,7 @@ const EQUIPMENT: Equipment[] = ["curtain", "reefer", "flatbed", "tanker", "speci
 const OPERATIONS: Operation[] = ["domestic", "uk", "europe"];
 
 export type ReportInput = {
+  countryCode?: "IE" | "ES";
   companySlug: string;
   companyName?: string;
   role: string;
@@ -26,16 +29,19 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
     return { error: "Send a JSON wage slip." };
   }
   const body = raw as Record<string, unknown>;
+  if (body.countryCode !== undefined && !isMarket(body.countryCode)) return { error: "Unsupported country." };
+  const countryCode = marketFrom(body.countryCode);
+  const catalogue = countryCode === "IE" ? fleet : spanishCompanies;
   const submittedName = asString(body.companyName).replace(/\s+/g, " ");
   if (submittedName.length > 120) return { error: "Company name must be 120 characters or fewer." };
-  const legacyCompany = fleet.find(company => company.slug === asString(body.companySlug));
+  const legacyCompany = catalogue.find(company => company.slug === asString(body.companySlug));
   const companyName = submittedName || legacyCompany?.name || "";
   if (!companyName) return { error: "Enter the company name." };
   const identity = companyName.normalize("NFKC").toLowerCase();
-  const known = fleet.find(company => [company.name, company.shortName, company.slug]
+  const known = catalogue.find(company => [company.name, company.shortName, company.slug]
     .some(name => name.normalize("NFKC").toLowerCase() === identity));
   // Names outside the directory cannot collide with curated companies or other alphabets.
-  const companySlug = known?.slug ?? ("reported-" + createHash("sha256").update(identity).digest("hex"));
+  const companySlug = known?.slug ?? ("reported-" + createHash("sha256").update(countryCode === "IE" ? identity : `${countryCode}:${identity}`).digest("hex"));
 
   const weeklyPay = Number(body.weeklyPay);
   if (!Number.isFinite(weeklyPay) || weeklyPay <= 0 || weeklyPay > 20000) {
@@ -65,6 +71,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
 
   return {
     report: {
+      countryCode,
       companySlug,
       companyName,
       role: asString(body.role).slice(0, 80) || "HGV driver",
