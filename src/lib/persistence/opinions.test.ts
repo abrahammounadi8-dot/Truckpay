@@ -85,3 +85,29 @@ test('moderation of an old revision cannot publish newer text',async()=>{
   assert.equal(result.rows.length,0);assert.equal((await f.repository.published('example')).count,0);
  }finally{await f.db.close();}
 });
+
+import { resolveOpinionCompany } from '../opinions/company';
+test('new company names are bounded, resolve known names, and avoid punctuation collisions',()=>{
+ const base={...input(),companySlug:null,companyName:' New Transport ',consent:true,consentVersion:OPINION_CONSENT,experienceConfirmed:true};
+ const parsed=parseOpinion(base)!;assert.equal(parsed.companyName,'New Transport');
+ for(const name of ['', 'A', 'x'.repeat(121), 'Bad\nName'])assert.equal(parseOpinion({...base,companyName:name}),null);
+ assert.equal(resolveOpinionCompany({...parsed,companyName:' EXAMPLE '},[{slug:'example',name:'Example'}])?.slug,'example');
+ const one=resolveOpinionCompany(parsed,[])!;
+ assert.equal(one.slug,resolveOpinionCompany({...parsed,companyName:'NEW   TRANSPORT'},[])?.slug);
+ assert.notEqual(resolveOpinionCompany({...parsed,companyName:'A & B'},[])?.slug,resolveOpinionCompany({...parsed,companyName:'A-B'},[])?.slug);
+ assert.equal(resolveOpinionCompany({...parsed,companySlug:'unknown'},[]),null);
+});
+test('new companies are searchable publicly only after review and remain editable by their owner',async()=>{
+ const f=await fixture();try{
+  const company=resolveOpinionCompany({...input(),companySlug:null,companyName:'New Transport'},[])!;
+  const review=input({companySlug:company.slug});
+  await f.repository.save(alice,review,company.name);
+  assert.deepEqual(await f.repository.companies(),[]);
+  const own=await f.repository.mine(alice);assert.equal(own[0].company_name,company.name);
+  await f.db.query("UPDATE truckpay_opinions SET status='approved' WHERE id=$1",[review.id]);
+  assert.deepEqual(await f.repository.companies(),[company]);
+  await f.repository.save(alice,input({companySlug:company.slug,body:'Updated experience at the new company.'}),company.name);
+  assert.deepEqual(await f.repository.companies(),[]);
+  assert.equal((await f.repository.mine(alice)).length,1);
+ }finally{await f.db.close();}
+});
