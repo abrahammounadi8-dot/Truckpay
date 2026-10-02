@@ -17,7 +17,7 @@ export async function listDirectoryWithPayStats() {
   const payslips = source.payslips.filter(slip => slip.countryCode === market && slip.currency === "EUR");
   const profiles = source.profiles.filter(profile => profile.countryCode === market);
   const catalogue = market === "IE" ? fleet : spanishCompanies;
-  const companies = recentPublicationCompanies(addRegisteredEmployers(catalogue, eligibleDirectoryEmployers(payslips, profiles)), payslips, profiles, new Date().toISOString());
+  const companies = recentPublicationCompanies(addRegisteredEmployers(catalogue, eligibleDirectoryEmployers(payslips, profiles), market), payslips, profiles, new Date().toISOString());
   const asOf = new Date().toISOString().slice(0, 10);
   const payStats = Object.fromEntries(companies.map(company => [company.slug,
     companyPayStats(resolveEmployer(company.name).employerSlug ?? company.slug, payslips, profiles, asOf)]));

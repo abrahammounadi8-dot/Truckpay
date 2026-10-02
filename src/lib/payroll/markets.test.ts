@@ -1,3 +1,4 @@
+import { addRegisteredEmployers } from "../directory-companies";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { belongsToMarket, marketFrom } from "../markets";
@@ -24,4 +25,9 @@ test("Spanish catalogue matching cannot resolve an Irish company and rejects uns
   assert.equal(parseReportInput({ ...input, companyName: "Primafrio", countryCode: "ES" }).report?.companySlug, "es-primafrio");
   assert.notEqual(parseReportInput({ ...input, companyName: "Nolan", countryCode: "ES" }).report?.companySlug, "nolan");
   assert.ok(parseReportInput({ ...input, countryCode: "GB" }).error);
+});
+
+test("registered employers have distinct public identities in each market", () => {
+  const employers = [{ employerName: "Same Transport" }];
+  assert.notEqual(addRegisteredEmployers([], employers, "IE")[0].slug, addRegisteredEmployers([], employers, "ES")[0].slug);
 });
