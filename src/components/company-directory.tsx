@@ -1,5 +1,7 @@
 "use client";
 
+import { useMarket } from "./market-provider";
+import { marketName } from "@/lib/markets";
 import { useMemo, useState } from "react";
 import { useT } from "@/components/language-provider";
 import { CompanyCard } from "@/components/company-card";
@@ -29,6 +31,7 @@ type SortKey = "recent" | "name" | "reports" | "pay" | "county";
 
 export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string }) {
   const { t, locale } = useT();
+  const market = useMarket();
   const { reports, companies } = useAppStore();
   const [query, setQuery] = useState(initialQuery);
   const [equipment, setEquipment] = useState<Equipment | "all">("all");
@@ -60,6 +63,7 @@ export function CompanyDirectory({ initialQuery = "" }: { initialQuery?: string 
 
   return (
     <div className="space-y-6">
+      <section className="rounded-xl bg-primary p-5 text-primary-foreground"><h2 className="font-heading text-2xl font-semibold">MyTruckPay · {marketName(market, locale === "es")}</h2><p className="mt-2 text-sm">{locale === "es" ? "Empresas y comparaciones de este país. Los salarios se muestran cuando hay aportaciones verificadas y autorizadas." : "Companies and comparisons for this country. Salaries appear when verified, authorised contributions are available."}</p>{market === "ES" && <p className="mt-2 text-sm text-accent">{locale === "es" ? "Catálogo inicial de España. Datos salariales insuficientes; la validación de nóminas españolas está en preparación." : "Initial Spanish directory. Insufficient salary data; Spanish payslip validation is in preparation."}</p>}</section>
       <aside className="rounded-xl border border-accent/40 bg-accent/10 p-4 text-sm leading-6">
         <p className="font-semibold">{locale === "es" ? "Tu nombre, correo y documentos de nómina no se publican" : "Your name, email and payslip documents are not published"}</p>
         <p className="mt-1">{locale === "es" ? "Solo se muestran las estadísticas salariales que hayas autorizado. Puedes gestionar o retirar tu permiso en Mi cuenta." : "Only salary statistics you have authorised are shown. You can manage or withdraw your permission in My account."}</p>

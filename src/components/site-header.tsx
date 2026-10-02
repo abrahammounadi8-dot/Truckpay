@@ -6,6 +6,7 @@ import { AccountLink } from "./account-link";
 import { usePathname } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { MenuIcon, XIcon } from "lucide-react";
+import { MarketSwitcher } from "./market-switcher";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useT } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
@@ -103,6 +104,7 @@ export function SiteHeader({ showTruck = true, demoView, hidePrimaryLinks = fals
           </div>
         </nav>
       ) : null}
+      {!demo && <MarketSwitcher />}
       <LanguageSwitcher />
       {demo && <aside className="border-t border-amber-300 bg-amber-100 px-5 py-3 text-slate-900" aria-label={demoCopy[locale][0]}>
         <div className="mx-auto max-w-6xl"><strong className="block text-sm">{demoCopy[locale][0]}</strong><p className="mt-1 text-sm">{historyCopy[locale][11]}</p></div>

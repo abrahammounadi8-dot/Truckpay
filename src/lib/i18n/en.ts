@@ -487,7 +487,7 @@ export const en: Messages = {
     notCalculated: "Not calculated",
   },
   companies: {
-    kicker: "MyTruckPay Companies · Ireland",
+    kicker: "MyTruckPay Companies",
     title: "Companies",
     lead: "Public facts from the operator’s own site. Pay intelligence is split: driver-reported stubs are not the same as payroll-verified medians from MyTruckPay. MyTruckPay will not invent a company salary.",
     search: "Search",
@@ -526,7 +526,7 @@ export const en: Messages = {
     open: "Open compare",
   },
   rankings: {
-    kicker: "Driver reported · Ireland",
+    kicker: "Driver reported",
     title: "Pay gap rankings",
     lead: "Ranked only when a driver filed both take-home and the weekly figure they were quoted. This is driver-reported evidence, not payroll-verified medians. MyTruckPay does not invent either number.",
   },

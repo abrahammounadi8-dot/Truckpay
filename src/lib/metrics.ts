@@ -72,7 +72,7 @@ export const equipmentLabels: Record<Company["equipment"][number], string> = {
 };
 
 export const operationLabels: Record<Company["operations"][number], string> = {
-  domestic: "Island of Ireland",
+  domestic: "Domestic",
   uk: "UK",
   europe: "Europe",
 };

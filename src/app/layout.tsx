@@ -7,6 +7,8 @@ import { LOCALE_COOKIE, localeFromRequest, localeMeta } from "@/lib/i18n";
 import "./globals.css";
 import "./entry.css";
 import { ApplicationFrame } from "@/components/application-frame";
+import { MarketProvider } from "@/components/market-provider";
+import { MARKET_COOKIE, marketFrom } from "@/lib/markets";
 import { SiteAnalytics } from "@/components/site-analytics";
 
 const sans = IBM_Plex_Sans({
@@ -71,7 +73,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <SiteJsonLd />
         <LanguageProvider initialLocale={locale}>
-          <ApplicationFrame>{children}</ApplicationFrame>
+          <MarketProvider market={marketFrom(cookieStore.get(MARKET_COOKIE)?.value)}><ApplicationFrame>{children}</ApplicationFrame></MarketProvider>
         </LanguageProvider>
         <SiteAnalytics />
       </body>

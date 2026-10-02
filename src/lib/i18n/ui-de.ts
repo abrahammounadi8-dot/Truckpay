@@ -35,6 +35,7 @@ export const uiGerman: Record<string, string> = {
   "Specialized": "Spezialtransport",
   "Specialised": "Spezialtransport",
   "Island of Ireland": "Insel Irland",
+  "Domestic": "Inland",
   "UK": "Vereinigtes Königreich",
   "Europe": "Europa",
   "Hourly": "Stundenlohn",

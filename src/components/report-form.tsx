@@ -1,4 +1,5 @@
 "use client";
+import { useMarket } from "./market-provider";
 import { useUiCopy } from "@/components/language-provider";
 
 import { useState } from "react";
@@ -15,6 +16,7 @@ const operations: Operation[] = ["domestic", "uk", "europe"];
 
 export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
   const tr = useUiCopy();
+  const market = useMarket();
   const router = useRouter();
   const { submitReport, companies } = useAppStore();
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +44,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
     setError(null);
     try {
       const saved = await submitReport({
+        countryCode: market,
         companySlug: "",
         companyName: form.companyName,
         role: form.role,

@@ -2,8 +2,11 @@
 import Link from "next/link";
 import { ArrowRight, FileText, CalendarDays, ChartNoAxesCombined, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "./site-header";
+import { useMarket } from "./market-provider";
+import { marketName } from "@/lib/markets";
 import { useT } from "./language-provider";
 export function VisitorHome() {
+ const market = useMarket();
  const {locale} = useT(); const es = locale === "es";
  const steps = es ? [
   ["Añade tres nóminas", "Importa desde Gmail o sube tres PDF de períodos consecutivos de la misma empresa."],
@@ -19,7 +22,8 @@ export function VisitorHome() {
   <SiteHeader visitor />
   <div className="mx-auto max-w-6xl px-5 pb-8 pt-7 sm:px-8 sm:pb-12 sm:pt-20">
    <section className="max-w-3xl">
-    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{es?"Para conductores":"For drivers"}</p>
+    {market === "ES" && <aside className="mb-5 rounded-xl border border-accent/40 bg-accent/10 p-4 text-sm"><p>{es ? "España: explora el catálogo de empresas. Los salarios aparecerán cuando existan datos verificados. El análisis automático de nóminas españolas todavía está en preparación." : "Spain: explore the company directory. Salaries will appear when verified data is available. Automatic Spanish payslip analysis is still in preparation."}</p><Link href="/companies" className="mt-3 inline-flex min-h-11 items-center font-semibold underline">{es ? "Ver empresas de España" : "Browse Spanish companies"}</Link></aside>}
+    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{`MyTruckPay · ${marketName(market, es)}`}</p>
     <h1 className="mt-4 font-heading text-[2.6rem] font-semibold leading-[1.03] tracking-tight sm:text-7xl">{es?"Tus nóminas, más claras.":"Make sense of your payslips."}</h1>
     <p className="mt-4 max-w-2xl text-base leading-7 sm:mt-6 sm:text-lg sm:leading-8 text-muted-foreground">{es?"Entiende lo que cobras, reúne tu historial y compara los datos salariales disponibles de empresas de transporte.":"Understand your pay, keep your history together and compare available pay data from haulage companies."}</p>
     <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8 sm:gap-5">

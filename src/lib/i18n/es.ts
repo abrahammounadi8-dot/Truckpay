@@ -210,7 +210,7 @@ export const es: Messages = {
     notCalculated: "No calculado",
   },
   companies: {
-    kicker: "MyTruckPay Empresas · Irlanda",
+    kicker: "MyTruckPay Empresas",
     title: "Empresas",
     lead: "Datos públicos del sitio del operador. El sueldo se separa: los recibos declarados por conductores no son lo mismo que las medianas verificadas con nómina de MyTruckPay. MyTruckPay no inventa el sueldo de una empresa.",
     search: "Buscar",
@@ -249,7 +249,7 @@ export const es: Messages = {
     open: "Abrir comparación",
   },
   rankings: {
-    kicker: "Declarado por conductores · Irlanda",
+    kicker: "Declarado por conductores",
     title: "Ranking de brecha salarial",
     lead: "Solo se ordena cuando un conductor presentó el neto y la cifra semanal que le cotizaron. Es evidencia declarada, no medianas verificadas con nómina. MyTruckPay no inventa ninguna cifra.",
   },
