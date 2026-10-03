@@ -1,3 +1,4 @@
+import { moderateOpinion } from './moderation';
 import type { Queryable } from '../persistence/documents';
 import { OPINION_CONSENT, type OpinionInput } from './input';
 export interface OpinionDatabase extends Queryable {
@@ -9,7 +10,15 @@ export type OpinionRecord = {
 };
 const ownColumns = 'id,kind,company_slug,company_name,category,rating,body,status,updated_at';
 export class OpinionsRepository {
- constructor(private readonly db: OpinionDatabase) {}
+ constructor(private readonly db: OpinionDatabase, private readonly automaticModeration = Boolean(process.env.MTP_OPINION_MODERATOR_IDS?.trim())) {}
+ async queue() {
+   const result=await this.db.query("SELECT id,revision,company_name,rating,body,status,updated_at FROM truckpay_opinions WHERE kind='company' AND status='pending' ORDER BY updated_at LIMIT 100");
+   return (result.rows as unknown as (OpinionRecord & {revision:string})[]).map(row=>({...row,reason:moderateOpinion(row.body).reason}));
+ }
+ async review(id: string, revision: string, status: 'approved'|'rejected') {
+   const result=await this.db.query("UPDATE truckpay_opinions SET status=$3 WHERE id=$1 AND revision=$2::uuid AND kind='company' AND status='pending' RETURNING id,status",[id,revision,status]);
+   return result.rows[0] ?? null;
+ }
  async mine(userId: string) {
    return (await this.db.query(`SELECT ${ownColumns} FROM truckpay_opinions WHERE user_id=$1 ORDER BY updated_at DESC LIMIT 100`,[userId])).rows as unknown as OpinionRecord[];
  }
@@ -29,16 +38,17 @@ export class OpinionsRepository {
      if (input.kind === 'platform' && prior.rows.length) {
        const old=prior.rows[0];
        if(old.kind!=='platform'||old.body!==input.body||old.category!==input.category||old.rating!==input.rating)throw new Error('ID_CONFLICT');
-       await client.query('COMMIT'); return { saved: true };
+       await client.query('COMMIT'); return { saved: true, status: 'received' };
      }
      const recent = await client.query("SELECT count(*)::int AS n FROM truckpay_opinions WHERE user_id=$1 AND created_at>now()-interval '1 day'",[userId]);
      if (Number(recent.rows[0]?.n) >= 10) throw new Error('DAILY_LIMIT');
+     const status = input.kind === 'company' ? (this.automaticModeration ? moderateOpinion(input.body).status : 'pending') : 'received';
      const conflict = input.kind === 'company'
-       ? `ON CONFLICT (user_id,company_slug) WHERE kind='company' DO UPDATE SET rating=EXCLUDED.rating,body=EXCLUDED.body,status='pending',consent_version=EXCLUDED.consent_version,updated_at=now(),revision=gen_random_uuid()` : '';
+       ? `ON CONFLICT (user_id,company_slug) WHERE kind='company' DO UPDATE SET rating=EXCLUDED.rating,body=EXCLUDED.body,status=EXCLUDED.status,consent_version=EXCLUDED.consent_version,updated_at=now(),revision=gen_random_uuid()` : '';
      await client.query(`INSERT INTO truckpay_opinions(id,user_id,kind,company_slug,company_name,category,rating,body,status,consent_version)
        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ${conflict}`,
-       [input.id,userId,input.kind,input.companySlug,companyName,input.category,input.rating,input.body,input.kind==='company'?'pending':'received',OPINION_CONSENT]);
-     await client.query('COMMIT'); return { saved: true };
+       [input.id,userId,input.kind,input.companySlug,companyName,input.category,input.rating,input.body,status,OPINION_CONSENT]);
+     await client.query('COMMIT'); return { saved: true, status };
    } catch (error) { await client.query('ROLLBACK'); throw error; }
    finally { client.release(); }
  }

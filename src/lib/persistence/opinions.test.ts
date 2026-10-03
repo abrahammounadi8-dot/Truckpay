@@ -23,12 +23,12 @@ async function fixture(){
  await db.exec(migration);
  await db.query('INSERT INTO "user" VALUES($1),($2)',[alice,bob]);
  const query=async(sql:string,values?:unknown[])=>{const r=await db.query<Record<string,unknown>>(sql,values);return{rows:r.rows,rowCount:r.affectedRows??r.rows.length};};
- const repository=new OpinionsRepository({query,connect:async()=>({query,release(){}})});
+ const repository=new OpinionsRepository({query,connect:async()=>({query,release(){}})},true);
  return{db,repository,migration};
 }
 test('company reviews stay private until approved; public output excludes identity and feedback',async()=>{
  const f=await fixture();try{
-  const review=input();await f.repository.save(alice,review,'Example');
+  const review=input({body:'They promised one salary but paid something else.'});await f.repository.save(alice,review,'Example');
   await f.repository.save(bob,input({kind:'platform',companySlug:null,category:'idea'}),null);
   assert.equal((await f.repository.published('example')).count,0);
   assert.equal((await f.repository.mine(alice)).length,1);
@@ -78,10 +78,31 @@ test('migration is repeatable and account deletion removes public and private co
 });
 test('moderation of an old revision cannot publish newer text',async()=>{
  const f=await fixture();try{
-  const review=input();await f.repository.save(alice,review,'Example');
+  const review=input({body:'They promised one salary but paid something else.'});await f.repository.save(alice,review,'Example');
   const old=(await f.db.query<{revision:string}>('SELECT revision FROM truckpay_opinions WHERE id=$1',[review.id])).rows[0].revision;
   await f.repository.save(alice,input({body:'This is the updated review that must be checked again.'}),'Example');
   const result=await f.db.query("UPDATE truckpay_opinions SET status='approved' WHERE id=$1 AND revision=$2 AND status='pending' RETURNING id",[review.id,old]);
   assert.equal(result.rows.length,0);assert.equal((await f.repository.published('example')).count,0);
+ }finally{await f.db.close();}
+});
+test('automatic publication returns real status and sensitive edits withdraw it',async()=>{
+ const f=await fixture();try{
+  const review=input();const result=await f.repository.save(alice,review,'Example');
+  assert.equal(result.status,'approved');assert.equal((await f.repository.published('example')).count,1);
+  await f.repository.save(alice,input({body:'They promised one salary but paid something else.'}),'Example');
+  assert.equal((await f.repository.published('example')).count,0);
+  const queue=await f.repository.queue();assert.equal(queue.length,1);assert.equal(queue[0].reason,'sensitive_claim');assert.ok(!('user_id' in queue[0]));
+  assert.equal(await f.repository.review(String(queue[0].id),randomUUID(),'approved'),null);
+  assert.ok(await f.repository.review(String(queue[0].id),String(queue[0].revision),'approved'));
+  assert.equal((await f.repository.published('example')).count,1);
+  assert.equal(await f.repository.review(String(queue[0].id),String(queue[0].revision),'rejected'),null);
+ }finally{await f.db.close();}
+});
+test('unconfigured rollout retains manual review instead of enabling automatic publication',async()=>{
+ const f=await fixture();try{
+  const query=async(sql:string,values?:unknown[])=>{const result=await f.db.query<Record<string,unknown>>(sql,values);return {rows:result.rows,rowCount:result.affectedRows??result.rows.length};};
+  const disabled=new OpinionsRepository({query,connect:async()=>({query,release(){}})},false);
+  assert.equal((await disabled.save(alice,input(),'Example')).status,'pending');
+  assert.equal((await disabled.published('example')).count,0);
  }finally{await f.db.close();}
 });

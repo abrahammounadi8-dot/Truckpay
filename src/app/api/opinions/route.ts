@@ -29,8 +29,8 @@ export async function POST(request: Request) {
    const input=parseOpinion(raw); if(!input) return privateJson({error:'Check the form and consent.'},{status:400});
    const company=input.kind==='company'?(await listDirectoryCompanies()).find(c=>c.slug===input.companySlug):null;
    if(input.kind==='company'&&!company) return privateJson({error:'Company not found.'},{status:400});
-   await new OpinionsRepository(database()).save(identity,input,company?.name??null);
-   return privateJson({saved:true,status:input.kind==='company'?'pending':'received'},{status:201});
+   const result=await new OpinionsRepository(database()).save(identity,input,company?.name??null);
+   return privateJson({saved:true,status:result.status},{status:201});
  } catch(error) { const limited=error instanceof Error&&error.message==='DAILY_LIMIT'; return privateJson({error:limited?'Daily submission limit reached.':'Could not save your contribution.'},{status:limited?429:503}); }
 }
 export async function DELETE(request: Request) {

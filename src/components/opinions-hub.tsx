@@ -85,7 +85,8 @@ function OpinionForm({kind,company,current,onSaved}:{kind:'company'|'platform';c
   try {
    const r=await fetch('/api/opinions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,kind,companySlug:company,category,rating:rating?Number(rating):null,body,consent,consentVersion:OPINION_CONSENT,experienceConfirmed:experience})});
    if(!r.ok)throw Error(r.status===401?'auth':r.status===429?'limit':'save');
-   setMessage(kind==='company'?c('Opinión guardada y pendiente de revisión. Aún no es pública.','Review saved and awaiting moderation. It is not public yet.'):c('Gracias. Tu mensaje privado ha llegado a MyTruckPay.','Thank you. MyTruckPay has received your private message.'));
+   const result=await r.json();
+   setMessage(kind==='company'?(result.status==='approved'?c('Opinión publicada.','Review published.'):result.status==='rejected'?c('No publicada: revisa el contenido y vuelve a enviarlo.','Not published: revise the content and resubmit.'):c('Opinión guardada y pendiente de revisión. Aún no es pública.','Review saved and awaiting moderation. It is not public yet.')):c('Gracias. Tu mensaje privado ha llegado a MyTruckPay.','Thank you. MyTruckPay has received your private message.'));
    setSubmissionId('');setConsent(false);if(kind==='platform'){setBody('');setRating('');}onSaved();
   }catch(e){setError(true);const reason=e instanceof Error?e.message:'';setMessage(reason==='auth'?c('Tu sesión ha terminado. Vuelve a entrar para enviar el mensaje.','Your session expired. Sign in again to submit.'):reason==='limit'?c('Has alcanzado el límite de envíos. Inténtalo más tarde.','Submission limit reached. Try again later.'):c('No se pudo confirmar el envío. Tu texto sigue aquí para reintentarlo.','We could not confirm submission. Your text is still here so you can retry.'));}finally{setBusy(false);}
  }
