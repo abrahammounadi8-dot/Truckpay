@@ -12,7 +12,7 @@ export async function GET(
 ) {
   const { slug } = await context.params;
   const { companies, payStats } = await listDirectoryWithPayStats();
-  const company = companies.find(company => company.slug === slug || resolveEmployer(company.name).employerSlug === slug);
+  const company = companies.find(company => company.slug === slug || resolveEmployer(company.name, company.countryCode).employerSlug === slug);
   if (!company) {
     return Response.json({ error: "Unknown haulier." }, { status: 404 });
   }

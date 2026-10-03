@@ -3,6 +3,9 @@ import type { PayFrequency } from "./types";
 export type Line = { key: string; rawLabel: string; amount: string };
 
 export type FormState = {
+  paidMiles: string;
+  ratePerMile: string;
+  mileagePay: string;
   employerName: string;
   paymentDate: string;
   payPeriodStart: string;
@@ -28,6 +31,7 @@ export type FormState = {
 };
 
 export const emptyForm: FormState = {
+  paidMiles: "", ratePerMile: "", mileagePay: "",
   employerName: "",
   paymentDate: "",
   payPeriodStart: "",

@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import type { Payslip, PayslipInput } from "@/lib/payroll/types";
 
 export function payslipContentHash(input: {
+  countryCode?: string;
+  currency?: string;
   employerSlug: string | null;
   employerName?: string | null;
   paymentDate: string;
@@ -27,11 +29,12 @@ export function payslipContentHash(input: {
     input.weekNumber == null ? "" : String(input.weekNumber),
     num(input.holidayPay ?? null),
   ].join("|");
-  return createHash("sha256").update(payload).digest("hex");
+  return createHash("sha256").update(payload + (input.countryCode && input.countryCode !== "IE" ? `|${input.countryCode}|${input.currency ?? "USD"}` : "")).digest("hex");
 }
 
 export function hashFromInput(input: PayslipInput): string {
   return payslipContentHash({
+    countryCode: input.countryCode, currency: input.currency,
     employerSlug: input.employerSlug ?? null,
     employerName: input.employerName ?? null,
     paymentDate: input.paymentDate,

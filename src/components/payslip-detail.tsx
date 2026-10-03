@@ -1,4 +1,5 @@
 "use client";
+import { PayrollMoneyProvider, usePayrollMoney } from "./payroll-money-provider";
 import { EmploymentStartField } from "./employment-start-field";
 import { useUiCopy } from "@/components/language-provider";
 
@@ -9,7 +10,7 @@ import { useT } from "@/components/language-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { employerLabel } from "@/lib/payroll/employer";
-import { formatEuro, formatEuroMaybe } from "@/lib/payroll/format";
+import { formatPayrollMoney } from "@/lib/payroll/format";
 import { frequencyMessageKey } from "@/lib/i18n";
 import { classifyWorkWeek } from "@/lib/payroll/week";
 import {
@@ -26,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 type PublicPayslip = Omit<Payslip, "userId">;
 
-export function PayslipDetail({
+function PayslipDetailContent({
   slip,
   findings,
   anomalies = [],
@@ -35,6 +36,7 @@ export function PayslipDetail({
   findings: Finding[];
   anomalies?: Anomaly[];
 }) {
+  const { formatEuro, formatEuroMaybe } = usePayrollMoney();
   const tr = useUiCopy();
   const router = useRouter();
   const { t } = useT();
@@ -87,7 +89,7 @@ export function PayslipDetail({
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       {slip.manualAmountAudit && <p role="status" className="rounded-lg border border-amber-500 p-3">Importes modificados manualmente para una prueba local. No verificados por el documento ni incluidos en el análisis verificado.</p>}
-      <EmploymentStartField employerName={slip.employerName ?? slip.employerSlug ?? ""} asOf={slip.payPeriodEnd || slip.paymentDate} />
+      <EmploymentStartField countryCode={slip.countryCode === "US" ? "US" : "IE"} employerName={slip.employerName ?? slip.employerSlug ?? ""} asOf={slip.payPeriodEnd || slip.paymentDate} />
       <WeekBanner slip={slip} />
 
       <div className="stub-paper rounded-xl p-5 ring-1 ring-foreground/10">
@@ -119,19 +121,20 @@ export function PayslipDetail({
           <ProvenanceItem label={t("form.overtimeRate")} field={slip.provenance?.overtimeRate} fallback={formatEuroMaybe(slip.overtimeRate)} money />
           <Item label={t("detail.overtimePay")} value={formatEuroMaybe(slip.overtimePay)} />
           <ProvenanceItem label={t("form.holidayPay")} field={slip.provenance?.holidayPay} fallback={formatEuroMaybe(slip.holidayPay ?? null)} money />
-          <ProvenanceItem label={tr("Tax (PAYE lines)")} field={slip.provenance?.tax} fallback="—" money />
-          <ProvenanceItem label="PRSI" field={slip.provenance?.prsi} fallback="—" money />
-          <ProvenanceItem label="USC" field={slip.provenance?.usc} fallback="—" money />
+          {slip.countryCode === "IE" && <ProvenanceItem label={tr("Tax (PAYE lines)")} field={slip.provenance?.tax} fallback="—" money />}
+          {slip.countryCode === "IE" && <ProvenanceItem label="PRSI" field={slip.provenance?.prsi} fallback="—" money />}
+          {slip.countryCode === "IE" && <ProvenanceItem label="USC" field={slip.provenance?.usc} fallback="—" money />}
           <ProvenanceItem label={tr("Pension")} field={slip.provenance?.pension} fallback="—" money />
           <Item label={tr("Cumulative gross")} value={formatEuroMaybe(slip.cumulativeGross)} />
           <Item label={tr("Cumulative tax")} value={formatEuroMaybe(slip.cumulativeTax)} />
-          <Item label={tr("Cumulative PRSI")} value={formatEuroMaybe(slip.cumulativePrsi ?? null)} />
-          <Item label={tr("Cumulative USC")} value={formatEuroMaybe(slip.cumulativeUsc ?? null)} />
+          {slip.countryCode === "IE" && <Item label={tr("Cumulative PRSI")} value={formatEuroMaybe(slip.cumulativePrsi ?? null)} />}
+          {slip.countryCode === "IE" && <Item label={tr("Cumulative USC")} value={formatEuroMaybe(slip.cumulativeUsc ?? null)} />}
           <Item label={tr("Cumulative pension")} value={formatEuroMaybe(slip.cumulativePension ?? null)} />
-          <Item label={tr("YTD insurable weeks")} value={n(slip.totalInsurableWeeks)} />
+          {slip.countryCode === "IE" && <Item label={tr("YTD insurable weeks")} value={n(slip.totalInsurableWeeks)} />}
         </dl>
       </section>
 
+      {slip.countryCode === "US" && <section className="rounded-xl border p-5"><h2 className="font-heading text-xl">Mileage pay</h2><dl className="mt-3 grid gap-3 sm:grid-cols-3"><Item label="Paid miles" value={n(slip.paidMiles ?? null)} /><Item label="USD per mile" value={slip.ratePerMile == null ? "—" : `$${slip.ratePerMile.toFixed(4)}`} /><Item label="Mileage earnings" value={formatEuroMaybe(slip.mileagePay)} /></dl></section>}
       <ExpectedPay record={slip.weeklyRecord} />
 
       <Lines
@@ -212,10 +215,10 @@ export function PayslipDetail({
                 <p className="mt-2 font-mono text-xs text-muted-foreground">
                   {finding.evidence.fields.join(" · ")}
                   {finding.evidence.expected != null
-                    ? ` · ${tr("Expected")} ${evidenceValue(finding, finding.evidence.expected)}`
+                    ? ` · ${tr("Expected")} ${evidenceValue(finding, finding.evidence.expected, slip.currency)}`
                     : ""}
                   {finding.evidence.actual != null
-                    ? ` · ${tr("On slip")} ${evidenceValue(finding, finding.evidence.actual)}`
+                    ? ` · ${tr("On slip")} ${evidenceValue(finding, finding.evidence.actual, slip.currency)}`
                     : ""}
                 </p>
               </li>
@@ -264,6 +267,7 @@ function WeekBanner({ slip }: { slip: PublicPayslip }) {
 }
 
 function ExpectedPay({ record }: { record: PublicPayslip["weeklyRecord"] }) {
+  const { formatEuro, formatEuroMaybe } = usePayrollMoney();
   const tr = useUiCopy();
   const { t } = useT();
   if (!record) return null;
@@ -295,6 +299,7 @@ function ProvenanceItem({
   fallback: string;
   money?: boolean;
 }) {
+  const { formatEuro } = usePayrollMoney();
   const tr = useUiCopy();
   const display =
     field == null || field.value == null
@@ -333,6 +338,7 @@ function Lines({
   noneEntered: string;
   rows: { label: string; amount: number; meta: string }[];
 }) {
+  const { formatEuro } = usePayrollMoney();
   return (
     <section className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
       <h2 className="font-heading text-xl font-semibold">{title}</h2>
@@ -365,7 +371,11 @@ function n(value: number | null): string {
   return value == null ? "—" : String(value);
 }
 
-function evidenceValue(finding: Finding, value: number): string {
+function evidenceValue(finding: Finding, value: number, currency: string): string {
   if (finding.kind === "multi_week_payment") return String(value);
-  return formatEuro(value);
+  return formatPayrollMoney(value, currency);
+}
+
+export function PayslipDetail(props: Parameters<typeof PayslipDetailContent>[0]) {
+  return <PayrollMoneyProvider currency={props.slip.currency}><PayslipDetailContent {...props} /></PayrollMoneyProvider>;
 }

@@ -78,6 +78,7 @@ export const operationLabels: Record<Company["operations"][number], string> = {
 };
 
 export const payTypeLabels: Record<PayType, string> = {
+  mile: "Per mile",
   hourly: "Hourly",
   day: "Day rate",
   salary: "Salary",

@@ -5,6 +5,7 @@ import { execFile } from "node:child_process";
 
 import { extractFromPayslipText, type ExtractedPayslipDraft } from "@/lib/payroll/extract-text";
 
+import { extractUsPayslipText } from "./us/extract-text";
 import { extractSagePage } from "./extract-sage";
 
 
@@ -22,6 +23,7 @@ export type DocumentExtractResult = {
 };
 
 export async function extractPayslipDocument(input: {
+  countryCode?: "IE" | "US";
   bytes: Uint8Array;
   mime: string;
   filename: string;
@@ -42,7 +44,7 @@ export async function extractPayslipDocument(input: {
   if (mime === PDF || input.filename.toLowerCase().endsWith(".pdf")) {
     let draft: ExtractedPayslipDraft;
     try {
-      draft = await readPdfDraft(input.bytes, input.password);
+      draft = await readPdfDraft(input.bytes, input.password, input.countryCode);
     } catch (error) {
       if (error instanceof Error && error.message === "MULTIPLE_PAGES") return { kind: "unsupported", stored: false, fileLabel, message: "Upload one payslip page at a time. Split this PDF into separate pages before uploading.", draft: emptyDraft() };
       if (error instanceof Error && error.name === "PasswordException") {
@@ -63,7 +65,7 @@ export async function extractPayslipDocument(input: {
 
   if (IMAGES.has(mime) || /\.(jpe?g|png|webp|gif)$/i.test(input.filename)) {
     const text = await readImageText(input.bytes);
-    const draft = extractFromPayslipText(text);
+    const draft = input.countryCode === "US" ? extractUsPayslipText(text) : extractFromPayslipText(text);
     return {
       kind: "image",
       stored: false,
@@ -110,13 +112,13 @@ function guessMime(name: string): string {
   return "";
 }
 
-async function readPdfDraft(bytes: Uint8Array, password?: string): Promise<ExtractedPayslipDraft> {
+async function readPdfDraft(bytes: Uint8Array, password?: string, countryCode = "IE"): Promise<ExtractedPayslipDraft> {
   const { extractText, extractTextItems, getDocumentProxy } = await import("unpdf");
   const pdf = await getDocumentProxy(bytes, { password });
   try {
     if (pdf.numPages !== 1) throw new Error("MULTIPLE_PAGES");
     const { items } = await extractTextItems(pdf);
-    const sage = items.map(extractSagePage).filter(draft => draft !== null);
+    const sage = countryCode === "US" ? [] : items.map(extractSagePage).filter(draft => draft !== null);
     if (process.env.NODE_ENV === "development") {
       // Local diagnostic: only counts and known heading presence; never document text,
       // filenames, passwords, identities or payroll values.
@@ -131,7 +133,7 @@ async function readPdfDraft(bytes: Uint8Array, password?: string): Promise<Extra
     // Never combine distinct payslips from a multi-page file.
     if (sage.length) return items.length === 1 ? sage[0] : emptyDraft();
     const { text } = await extractText(pdf, { mergePages: true });
-    return extractFromPayslipText(text);
+    return countryCode === "US" ? extractUsPayslipText(text) : extractFromPayslipText(text);
   } finally {
     await pdf.loadingTask.destroy();
   }

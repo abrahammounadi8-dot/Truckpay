@@ -20,7 +20,7 @@ export async function listDirectoryWithPayStats() {
   const companies = recentPublicationCompanies(addRegisteredEmployers(catalogue, eligibleDirectoryEmployers(payslips, profiles), market), payslips, profiles, new Date().toISOString());
   const asOf = new Date().toISOString().slice(0, 10);
   const payStats = Object.fromEntries(companies.map(company => [company.slug,
-    companyPayStats(resolveEmployer(company.name).employerSlug ?? company.slug, payslips, profiles, asOf)]));
+    companyPayStats(resolveEmployer(company.name, market).employerSlug ?? company.slug, payslips, profiles, asOf)]));
   return { companies: market === "IE" ? (await addPublicAddresses(companies)).map(company => ({ ...company, countryCode: market })) : companies.map(company => ({ ...company, countryCode: market })), payStats };
 }
 export async function listDirectoryCompanies() { return (await listDirectoryWithPayStats()).companies; }

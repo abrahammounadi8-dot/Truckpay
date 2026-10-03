@@ -28,6 +28,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
     payType: "hourly" as PayType,
     equipment: "curtain" as Equipment,
     operation: "domestic" as Operation,
+    ratePerMile: "",
     hourlyRate: "",
     weeklyPay: "",
     kmPerWeek: "",
@@ -52,6 +53,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
         payType: form.payType,
         equipment: form.equipment,
         operation: form.operation,
+        ratePerMile: market === "US" && form.ratePerMile ? Number(form.ratePerMile) : undefined,
         hourlyRate: form.hourlyRate ? Number(form.hourlyRate) : undefined,
         weeklyPay: Number(form.weeklyPay),
         kmPerWeek: form.kmPerWeek ? Number(form.kmPerWeek) * (market === "US" ? 1.609344 : 1) : undefined,
@@ -97,7 +99,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
             value={form.payType}
             onChange={(event) => set("payType", event.target.value as PayType)}
           >
-            {payTypes.map((payType) => (
+            {(market === "US" ? [...payTypes, "mile" as const] : payTypes).map((payType) => (
               <option key={payType} value={payType}>
                 {tr(payTypeLabels[payType])}
               </option>
@@ -132,6 +134,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
         </Field>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
+        {market === "US" && form.payType === "mile" && <Field label="USD per mile — required"><Input inputMode="decimal" value={form.ratePerMile} onChange={event => set("ratePerMile", event.target.value)} required /></Field>}
         <Field label={market === "US" ? "Weekly take-home ($) — required" : tr("Weekly take-home (€) — required")}>
           <Input
             inputMode="decimal"

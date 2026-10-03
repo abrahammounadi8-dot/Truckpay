@@ -1,3 +1,4 @@
+import { classifyUsDeduction } from "./us/deductions";
 import { classifyIrishDeduction } from "@/lib/payroll/ie/deductions";
 import type { DeductionCategory, MoneyLine, StatutoryClass } from "@/lib/payroll/types";
 
@@ -12,6 +13,7 @@ export function classifyDeduction(rawLabel: string, rawAmount: number, countryCo
     return line(label, rawAmount, "UNKNOWN", "unknown", 0, true);
   }
 
+  if (countryCode === "US") return classifyUsDeduction(label, rawAmount);
   if (countryCode === "IE") {
     return classifyIrishDeduction(label, rawAmount);
   }

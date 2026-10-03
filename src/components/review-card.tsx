@@ -27,6 +27,7 @@ export function ReviewCard({ review }: { review: DriverReport }) {
         <Badge variant="secondary">{tr(equipmentLabels[review.equipment])}</Badge>
         <Badge variant="outline">{tr(operationLabels[review.operation])}</Badge>
       </div>
+      {review.countryCode === "US" && review.ratePerMile != null && <p className="mt-2 text-sm">${review.ratePerMile.toFixed(4)} / mile</p>}
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         <div>
           <dt className="text-xs text-muted-foreground">Quoted weekly</dt>

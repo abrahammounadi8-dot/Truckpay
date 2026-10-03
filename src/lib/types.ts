@@ -2,7 +2,7 @@ export type Equipment = "curtain" | "reefer" | "flatbed" | "tanker" | "specializ
 
 export type Operation = "domestic" | "uk" | "europe";
 
-export type PayType = "hourly" | "day" | "salary" | "percentage";
+export type PayType = "hourly" | "day" | "salary" | "percentage" | "mile";
 
 export type Company = {
   countryCode?: "IE" | "ES" | "US";
@@ -34,6 +34,7 @@ export type DriverReport = {
   equipment: Equipment;
   operation: Operation;
   quotedWeekly?: number;
+  ratePerMile?: number;
   hourlyRate?: number;
   weeklyPay: number;
   kmPerWeek?: number;

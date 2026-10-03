@@ -30,9 +30,12 @@ export async function POST(request: Request) {
   if (file.size > 8 * 1024 * 1024) {
     return privateJson(publicError("That file is too large (max 8 MB). The file was not stored."), { status: 413 });
   }
+  const countryCode = form.get("countryCode") ?? "IE";
+  if (countryCode !== "IE" && countryCode !== "US") return privateJson({ error: "Unsupported payroll country." }, { status: 400 });
   const password = form.get("password");
   const bytes = new Uint8Array(await file.arrayBuffer());
   const result = await extractPayslipDocument({
+    countryCode,
     bytes,
     mime: file.type,
     filename: file.name,

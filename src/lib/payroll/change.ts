@@ -32,10 +32,11 @@ export function compareLatestToRecent(slips: Payslip[]): PayChangeReport | null 
   const latest = sorted[0];
   if (!latest) return null;
   const prior = sorted.filter(
-    (slip) => slip.id !== latest.id && (!latest.employerSlug || slip.employerSlug === latest.employerSlug),
+    (slip) => slip.id !== latest.id && slip.countryCode === latest.countryCode && slip.currency === latest.currency && (!latest.employerSlug || slip.employerSlug === latest.employerSlug),
   );
   if (prior.length === 0) return null;
 
+  const euro = (value: number) => currencyMoney(value, latest.currency);
   const latestWeekly = weeklyEquivalentGross(latest);
   const priorWeeklies = prior
     .map(weeklyEquivalentGross)
@@ -171,10 +172,10 @@ export function compareLatestToRecent(slips: Payslip[]): PayChangeReport | null 
   };
 }
 
-function euro(value: number): string {
+function currencyMoney(value: number, currency: string): string {
   return new Intl.NumberFormat("en-IE", {
     style: "currency",
-    currency: "EUR",
+    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);

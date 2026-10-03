@@ -42,3 +42,15 @@ test("damaged and unlabelled PDF files return actionable failures without invent
   assert.deepEqual(empty.draft.fields,{});
   assert.match(empty.message,/original PDF/);
 });
+test("US employee PDF uses USD and month/day dates without the Irish Sage adapter", async () => {
+  const result = await extractPayslipDocument({ countryCode: "US", bytes: pdf([[
+    "TEST ONLY - NOT A REAL PAY STUB", "Employer: TEST US Carrier", "Pay Date: 03/04/2026", "Frequency: Weekly",
+    "Paid Miles: 2,500", "Rate Per Mile: $0.6255", "Mileage Pay: $1,563.75", "Gross Pay: $1,563.75", "Federal Income Tax: $100.00", "Net Pay: $1,463.75",
+  ]]), mime: "application/pdf", filename: "synthetic-us.pdf" });
+  assert.equal(result.kind, "pdf");
+  assert.equal(result.draft.fields.countryCode, "US");
+  assert.equal(result.draft.fields.currency, "USD");
+  assert.equal(result.draft.fields.paymentDate, "2026-03-04");
+  assert.equal(result.draft.fields.ratePerMile, 0.6255);
+  assert.equal(result.draft.fields.netPay, 1463.75);
+});

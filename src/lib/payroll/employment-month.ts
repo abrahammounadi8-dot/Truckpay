@@ -27,12 +27,12 @@ export function validateEmploymentStart(startMonth: unknown, employerSlug: strin
   return null;
 }
 /** Context is specific to this employer and historical payslip, never fiscal week or file count. */
-export function profileAtPayslip(profile: EmploymentProfile | null, slip: Pick<Payslip, "employerSlug" | "employerName" | "paymentDate" | "payPeriodEnd">): EmploymentProfile | null {
+export function profileAtPayslip(profile: EmploymentProfile | null, slip: Pick<Payslip, "employerSlug" | "employerName" | "paymentDate" | "payPeriodEnd"> & { countryCode?: Payslip["countryCode"] }): EmploymentProfile | null {
   if (!profile) return null;
   const start = employmentStartFor(profile, slip.employerSlug);
   const tenure = start ? monthlyTenure(start.startMonth, payslipTenureDate(slip)) : null;
   const sameEmployer = profile.employerSlug === slip.employerSlug;
-  return { ...profile, employerSlug: slip.employerSlug, employerName: slip.employerName,
+  return { ...profile, countryCode: slip.countryCode ?? profile.countryCode, employerSlug: slip.employerSlug, employerName: slip.employerName,
     employmentStartDate: null, employmentStartMonth: start?.startMonth ?? null,
     tenureMonths: tenure?.months ?? null, tenureBand: tenure?.band ?? null, tenureSource: tenure ? "user_declared" : null, tenureConfidence: tenure ? 0.4 : null,
     ...(sameEmployer ? {} : { jobType: "other", vehicleType: "unknown", timeFraction: "full_time", shiftType: "mixed", payType: "hourly", agreedBaseRate: null }),

@@ -4,7 +4,7 @@ import { spanishCompanies } from "./spanish-companies";
 import { fleet } from "@/lib/data";
 import type { DriverReport, Equipment, Operation, PayType } from "@/lib/types";
 
-const PAY_TYPES: PayType[] = ["hourly", "day", "salary", "percentage"];
+const PAY_TYPES: PayType[] = ["hourly", "day", "salary", "percentage", "mile"];
 const EQUIPMENT: Equipment[] = ["curtain", "reefer", "flatbed", "tanker", "specialized"];
 const OPERATIONS: Operation[] = ["domestic", "uk", "europe"];
 
@@ -17,6 +17,7 @@ export type ReportInput = {
   payType: PayType;
   equipment: Equipment;
   operation: Operation;
+  ratePerMile?: number;
   hourlyRate?: number;
   weeklyPay: number;
   kmPerWeek?: number;
@@ -53,6 +54,8 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
     return { error: "Hours per week has to be a real number." };
   }
 
+  const ratePerMile = optionalNumber(body.ratePerMile, 100);
+  if (ratePerMile === false || (body.payType === "mile" && (countryCode !== "US" || ratePerMile == null))) return { error: "Per-mile pay requires a US report and a USD-per-mile rate." };
   const hourlyRate = optionalNumber(body.hourlyRate, 80);
   const kmPerWeek = optionalNumber(body.kmPerWeek, 10000);
   if (hourlyRate === false || kmPerWeek === false) {
@@ -79,6 +82,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
       payType,
       equipment,
       operation,
+      ratePerMile,
       hourlyRate,
       weeklyPay: Math.round(weeklyPay),
       kmPerWeek,

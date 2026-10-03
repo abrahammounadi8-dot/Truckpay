@@ -22,8 +22,13 @@ function periodDays(start: string | null, end: string | null): number | null {
  * Neutral checks only. An anomaly is never worded as employer wrongdoing.
  */
 export function reconcilePayslip(slip: Payslip, prior: Payslip[]): Finding[] {
+  prior = prior.filter(record => record.countryCode === slip.countryCode && record.currency === slip.currency);
   const findings: Finding[] = [];
 
+  if (slip.countryCode === "US" && money(slip.paidMiles) && money(slip.ratePerMile) && money(slip.mileagePay)) {
+    const expected = product(slip.paidMiles, slip.ratePerMile);
+    if (Math.abs(expected - slip.mileagePay) > MONEY_EPS) findings.push(make(slip.id, "arithmetic_mileage", "fact", 0.95, "Paid miles × printed rate per mile differs from the printed mileage earnings. Check for adjustments or a blended rate; this is not a finding of wrongdoing.", { fields: ["paidMiles", "ratePerMile", "mileagePay"], expected, actual: slip.mileagePay, note: "Arithmetic on printed mileage figures only." }));
+  }
   pushArithmetic(findings, slip, "basic", slip.basicHours, slip.basicRate, slip.basicPay);
   pushArithmetic(findings, slip, "overtime", slip.overtimeHours, slip.overtimeRate, slip.overtimePay);
 

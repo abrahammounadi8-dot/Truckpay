@@ -1,4 +1,5 @@
 "use client";
+import { useMarket } from "./market-provider";
 import { EmploymentStartField } from "./employment-start-field";
 import { useUiCopy } from "@/components/language-provider";
 
@@ -24,6 +25,7 @@ import { payTypeLabels } from "@/lib/metrics";
 type PublicProfile = Omit<EmploymentProfile, "userId">;
 
 export function EmploymentProfileForm() {
+  const market = useMarket();
   const tr = useUiCopy();
   const [employmentReady, setEmploymentReady] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -74,6 +76,7 @@ export function EmploymentProfileForm() {
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          countryCode: market === "US" ? "US" : "IE",
           ...form,
           employerName: form.employerName || null,
 

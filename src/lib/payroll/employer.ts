@@ -12,7 +12,7 @@ export function slugifyEmployer(name: string): string {
 }
 
 /** Any printed employer name is allowed. Known directory slugs are used only when the name matches. */
-export function resolveEmployer(raw: string | null | undefined): {
+export function resolveEmployer(raw: string | null | undefined, country = "IE"): {
   employerName: string | null;
   employerSlug: string | null;
 } {
@@ -27,7 +27,7 @@ export function resolveEmployer(raw: string | null | undefined): {
   );
   return {
     employerName: name,
-    employerSlug: known ? known.slug : slugifyEmployer(name),
+    employerSlug: country === "US" ? `us-${slugifyEmployer(name)}` : known ? known.slug : slugifyEmployer(name),
   };
 }
 
