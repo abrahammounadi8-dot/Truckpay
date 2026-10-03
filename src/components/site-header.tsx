@@ -35,7 +35,7 @@ export function SiteHeader({ showTruck = true, demoView, hidePrimaryLinks = fals
   const [open, setOpen] = useState(false);
   const { t, locale } = useT();
   const demo = demoView !== undefined;
-  const navigationLinks = hidePrimaryLinks ? [] : visitor ? links.filter(link => link.href === "/companies" || link.href === "/compare") : links.filter(link => !demo || link.href !== '/opinions');
+  const navigationLinks = hidePrimaryLinks ? [] : visitor ? links.filter(link => link.href !== "/opinions") : links.filter(link => !demo || link.href !== '/opinions');
   const destination = (href: string) => demo ? `/demo?view=${href.slice(1)}` : href;
 
   return (
