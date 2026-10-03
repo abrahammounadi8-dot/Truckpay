@@ -1,3 +1,4 @@
+import { moderatorAllowed } from "@/lib/opinions/moderation";
 import { headers } from "next/headers";
 import { accountReturnPath } from "@/lib/auth/return-path";
 import { getProfile } from "@/lib/payroll/profile-store";
@@ -15,5 +16,5 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const session = enabled ? await (await getLocalAuth()).api.getSession({ headers: await headers() }) : null;
   const id = verifiedAccountId(session) ? await readUserId() : null;
   const sharing = id ? hasPublicPublicationConsent(await getProfile(id)) : false;
-  return <AccountPanel sharesStatistics={sharing} callbackURL={callbackURL} delivery={delivery} enabled={enabled} email={id ? session!.user.email : null} failed={Boolean((await searchParams).error)} />;
+  return <AccountPanel moderator={Boolean(id && moderatorAllowed(id))} sharesStatistics={sharing} callbackURL={callbackURL} delivery={delivery} enabled={enabled} email={id ? session!.user.email : null} failed={Boolean((await searchParams).error)} />;
 }
