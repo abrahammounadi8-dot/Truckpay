@@ -1,10 +1,11 @@
 "use client";
+import { useMarketMoney } from "./market-provider";
 
 import Link from "next/link";
 import { useT } from "@/components/language-provider";
 import { CompanyMark } from "@/components/company-mark";
 import { buttonVariants } from "@/components/ui/button";
-import { formatMoney, type CompanyStats } from "@/lib/metrics";
+import { type CompanyStats } from "@/lib/metrics";
 import type { Company } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ export function EmptyStub() {
 }
 
 export function SettlementStub({ company, stats }: { company: Company; stats: CompanyStats }) {
+  const formatMoney = useMarketMoney();
   const { t } = useT();
   const missing = stats.gapEuro ?? 0;
   const gap = stats.gapPercent ?? 0;

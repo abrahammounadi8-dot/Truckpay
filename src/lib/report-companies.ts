@@ -3,8 +3,8 @@ import { fleet } from "@/lib/data";
 import type { Company, DriverReport } from "@/lib/types";
 
 /** Public, driver-declared companies. No private payslips or invented company facts. */
-export function reportCompanies(reports: DriverReport[], market: "IE" | "ES" = "IE"): Company[] {
-  const companies = new Map<string, Company>((market === "IE" ? fleet : spanishCompanies).map(company => [company.slug, company]));
+export function reportCompanies(reports: DriverReport[], market: "IE" | "ES" | "US" = "IE"): Company[] {
+  const companies = new Map<string, Company>((market === "IE" ? fleet : market === "ES" ? spanishCompanies : []).map(company => [company.slug, company]));
   for (const report of reports) {
     if ((report.countryCode ?? "IE") !== market) continue;
     if (companies.has(report.companySlug) || typeof report.companyName !== "string" || !report.companyName.trim()) continue;

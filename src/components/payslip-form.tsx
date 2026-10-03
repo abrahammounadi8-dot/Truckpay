@@ -1,4 +1,5 @@
 "use client";
+import { useMarket } from "./market-provider";
 
 import { isValidElement, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -104,7 +105,7 @@ const optionalLabel: Record<Locale, string> = { es: "opcional", en: "optional", 
 
 const DRAFT_KEY = "truckpay.payslip-draft";
 
-export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unknown", onPrepared, onDraftRead, autoPrepare = false, onProcessed, onNeedsDetails, employmentStartFields, initialFile, onImportFiles, maxImports, onReadingChange }: { defaultPayFrequency?: PayFrequency; onReadingChange?: (reading: boolean) => void; initialFile?: File; onImportFiles?: (files: File[]) => void; maxImports?: number; employmentStartFields?: React.ReactNode; onNeedsDetails?: (needed: boolean) => void; defaultEmployer?: string; autoPrepare?: boolean; onProcessed?: (message: string | null) => void; onPrepared?: (payload: Record<string, unknown>) => void; onDraftRead?: (draft: { employerName: string } | null) => void }) {
+function IrishPayslipForm({ defaultEmployer = "", defaultPayFrequency = "unknown", onPrepared, onDraftRead, autoPrepare = false, onProcessed, onNeedsDetails, employmentStartFields, initialFile, onImportFiles, maxImports, onReadingChange }: { defaultPayFrequency?: PayFrequency; onReadingChange?: (reading: boolean) => void; initialFile?: File; onImportFiles?: (files: File[]) => void; maxImports?: number; employmentStartFields?: React.ReactNode; onNeedsDetails?: (needed: boolean) => void; defaultEmployer?: string; autoPrepare?: boolean; onProcessed?: (message: string | null) => void; onPrepared?: (payload: Record<string, unknown>) => void; onDraftRead?: (draft: { employerName: string } | null) => void }) {
   const router = useRouter();
   const { t, locale } = useT();
   const copy = formCopy[locale];
@@ -755,4 +756,11 @@ function LineTable({
       ))}
     </div>
   );
+}
+
+export function PayslipForm(props: Parameters<typeof IrishPayslipForm>[0]) {
+  const market = useMarket();
+  const { locale } = useT();
+  if (market === "US") return <p role="status" className="rounded-xl border p-5">{locale === "es" ? "El análisis automático de nóminas estadounidenses todavía no está disponible. No subas documentos de EE. UU. al analizador de Irlanda." : "US pay stub and settlement analysis is not available yet. Please do not upload US documents to the Irish payroll analyzer."}</p>;
+  return <IrishPayslipForm {...props} />;
 }

@@ -1,4 +1,5 @@
 "use client";
+import { useMarketMoney } from "./market-provider";
 import { useUiCopy } from "@/components/language-provider";
 
 import Link from "next/link";
@@ -7,11 +8,12 @@ import { CompanyMark } from "@/components/company-mark";
 import { PayGapBar } from "@/components/pay-gap-bar";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { companyStats, formatMoney } from "@/lib/metrics";
+import { companyStats } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function RankingsBoard() {
+  const formatMoney = useMarketMoney();
   const tr = useUiCopy();
   const { reports, companies } = useAppStore();
   const ranked = useMemo(() => {

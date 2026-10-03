@@ -51,10 +51,10 @@ export function companyStats(slug: string, reports: DriverReport[]): CompanyStat
   };
 }
 
-export function formatMoney(value: number): string {
+export function formatMoney(value: number, currency: "EUR" | "USD" = "EUR"): string {
   return new Intl.NumberFormat("en-IE", {
     style: "currency",
-    currency: "EUR",
+    currency,
     maximumFractionDigits: 0,
   }).format(value);
 }

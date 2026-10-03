@@ -1,7 +1,7 @@
 import { addRegisteredEmployers } from "../directory-companies";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { belongsToMarket, marketFrom } from "../markets";
+import { belongsToMarket, marketFrom, marketCurrency } from "../markets";
 import { parseReportInput, toStoredReport } from "../report-input";
 import { reportCompanies } from "../report-companies";
 const input = { companyName: "Same Transport", weeklyPay: 600, hoursPerWeek: 40 };
@@ -30,4 +30,19 @@ test("Spanish catalogue matching cannot resolve an Irish company and rejects uns
 test("registered employers have distinct public identities in each market", () => {
   const employers = [{ employerName: "Same Transport" }];
   assert.notEqual(addRegisteredEmployers([], employers, "IE")[0].slug, addRegisteredEmployers([], employers, "ES")[0].slug);
+});
+
+test("US reports stay separate from Irish and Spanish reports and employer identities", () => {
+  const us = parseReportInput({ ...input, countryCode: "US" }).report!;
+  const ie = parseReportInput(input).report!;
+  assert.equal(marketFrom("US"), "US");
+  assert.equal(marketCurrency("US"), "USD");
+  assert.equal(marketCurrency("IE"), "EUR");
+  assert.equal(us.countryCode, "US");
+  assert.notEqual(us.companySlug, ie.companySlug);
+  const reports = [toStoredReport(us), toStoredReport(ie)];
+  assert.deepEqual(reportCompanies(reports, "US").map(c => c.slug), [us.companySlug]);
+  assert.ok(!reportCompanies(reports, "IE").some(c => c.slug === us.companySlug));
+  assert.ok(!reportCompanies([], "US").length);
+  assert.match(addRegisteredEmployers([], [{ employerName: "Example Carrier" }], "US")[0].slug, /^us-/);
 });

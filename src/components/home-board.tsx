@@ -1,4 +1,5 @@
 "use client";
+import { useMarketMoney } from "./market-provider";
 
 import Link from "next/link";
 import { useMemo } from "react";
@@ -6,11 +7,12 @@ import { useT } from "@/components/language-provider";
 import { CompanyCard } from "@/components/company-card";
 import { EmptyStub, SettlementStub } from "@/components/settlement-stub";
 import { buttonVariants } from "@/components/ui/button";
-import { boardTotals, companyStats, formatMoney } from "@/lib/metrics";
+import { boardTotals, companyStats } from "@/lib/metrics";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function HomeBoard() {
+  const formatMoney = useMarketMoney();
   const { reports, companies } = useAppStore();
   const { t } = useT();
   const totals = boardTotals(reports);

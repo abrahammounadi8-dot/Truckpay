@@ -9,7 +9,7 @@ const EQUIPMENT: Equipment[] = ["curtain", "reefer", "flatbed", "tanker", "speci
 const OPERATIONS: Operation[] = ["domestic", "uk", "europe"];
 
 export type ReportInput = {
-  countryCode?: "IE" | "ES";
+  countryCode?: "IE" | "ES" | "US";
   companySlug: string;
   companyName?: string;
   role: string;
@@ -31,7 +31,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
   const body = raw as Record<string, unknown>;
   if (body.countryCode !== undefined && !isMarket(body.countryCode)) return { error: "Unsupported country." };
   const countryCode = marketFrom(body.countryCode);
-  const catalogue = countryCode === "IE" ? fleet : spanishCompanies;
+  const catalogue = countryCode === "IE" ? fleet : countryCode === "ES" ? spanishCompanies : [];
   const submittedName = asString(body.companyName).replace(/\s+/g, " ");
   if (submittedName.length > 120) return { error: "Company name must be 120 characters or fewer." };
   const legacyCompany = catalogue.find(company => company.slug === asString(body.companySlug));
@@ -45,7 +45,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
 
   const weeklyPay = Number(body.weeklyPay);
   if (!Number.isFinite(weeklyPay) || weeklyPay <= 0 || weeklyPay > 20000) {
-    return { error: "Weekly take-home has to be a euro amount." };
+    return { error: "Weekly take-home must be a positive amount in the selected country’s currency." };
   }
 
   const hoursPerWeek = Number(body.hoursPerWeek);

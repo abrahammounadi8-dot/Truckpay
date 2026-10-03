@@ -8,7 +8,7 @@ import { useT } from "./language-provider";
 export function VisitorHome() {
  const market = useMarket();
  const {locale} = useT(); const es = locale === "es";
- const steps = es ? [
+ const steps = market === "US" ? (es ? [["Elige Estados Unidos", "Consulta empresas y aportaciones solo de este mercado."], ["Comparte tu experiencia", "Indica tus ingresos en USD y la empresa para la que conduces."], ["Próximamente: nóminas", "El análisis de pay stubs y settlements se habilitará tras validarlo."]] : [["Choose United States", "Explore companies and driver reports from this market."], ["Share your experience", "Report your take-home pay in USD and the trucking company you drive for."], ["Pay stub analysis coming later", "Automatic pay stub and settlement analysis will open after validation."]]) : es ? [
   ["Añade tres nóminas", "Importa desde Gmail o sube tres PDF de períodos consecutivos de la misma empresa."],
   ["Confirma tu empresa", "Revisa el nombre e indica el mes y año en que empezaste a trabajar allí."],
   ["Consulta tu resumen", "Comprueba tus importes, sigue tu historial y explora los datos disponibles de otras empresas."]
@@ -23,14 +23,15 @@ export function VisitorHome() {
   <div className="mx-auto max-w-6xl px-5 pb-8 pt-7 sm:px-8 sm:pb-12 sm:pt-20">
    <section className="max-w-3xl">
     {market === "ES" && <aside className="mb-5 rounded-xl border border-accent/40 bg-accent/10 p-4 text-sm"><p>{es ? "España: explora el catálogo de empresas. Los salarios aparecerán cuando existan datos verificados. El análisis automático de nóminas españolas todavía está en preparación." : "Spain: explore the company directory. Salaries will appear when verified data is available. Automatic Spanish payslip analysis is still in preparation."}</p><Link href="/companies" className="mt-3 inline-flex min-h-11 items-center font-semibold underline">{es ? "Ver empresas de España" : "Browse Spanish companies"}</Link></aside>}
+    {market === "US" && <aside className="mb-5 rounded-xl border border-accent/40 bg-accent/10 p-4 text-sm"><p>{es ? "Estados Unidos: aportaciones salariales en dólares, separadas de Irlanda y España. El análisis automático de pay stubs y settlements todavía no está disponible." : "United States: driver-reported pay in US dollars, separate from Ireland and Spain. Automatic pay stub and settlement analysis is not available yet."}</p><Link href="/companies" className="mt-3 inline-flex min-h-11 items-center font-semibold underline">{es ? "Ver empresas de Estados Unidos" : "Browse US trucking companies"}</Link></aside>}
     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">{`MyTruckPay · ${marketName(market, es)}`}</p>
-    <h1 className="mt-4 font-heading text-[2.6rem] font-semibold leading-[1.03] tracking-tight sm:text-7xl">{es?"Tus nóminas, más claras.":"Make sense of your payslips."}</h1>
+    <h1 className="mt-4 font-heading text-[2.6rem] font-semibold leading-[1.03] tracking-tight sm:text-7xl">{es?"Tus nóminas, más claras.": market === "US" ? "Understand your trucking pay." : "Make sense of your payslips."}</h1>
     <p className="mt-4 max-w-2xl text-base leading-7 sm:mt-6 sm:text-lg sm:leading-8 text-muted-foreground">{es?"Entiende lo que cobras, reúne tu historial y compara los datos salariales disponibles de empresas de transporte.":"Understand your pay, keep your history together and compare available pay data from haulage companies."}</p>
     <div className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8 sm:gap-5">
-     <Link href="/account" className="inline-flex min-h-12 w-full items-center justify-center gap-4 sm:w-auto rounded-xl bg-accent px-7 py-3 text-base font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent/85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">{es?"Empezar":"Get started"}<ArrowRight className="size-5" aria-hidden="true"/></Link>
+     <Link href={market === "US" ? "/companies" : "/account"} className="inline-flex min-h-12 w-full items-center justify-center gap-4 sm:w-auto rounded-xl bg-accent px-7 py-3 text-base font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent/85 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">{market === "US" ? (es ? "Explorar empresas" : "Explore companies") : es?"Empezar":"Get started"}<ArrowRight className="size-5" aria-hidden="true"/></Link>
      <Link href="/demo" className="inline-flex min-h-11 w-full items-center justify-center gap-2 sm:w-auto text-sm font-medium underline underline-offset-4">{es?"Ver una demo":"Try the demo"}</Link>
     </div>
-    <p className="mt-4 text-sm text-muted-foreground">{es?"Empieza con tu correo. Sin crear una contraseña.":"Start with your email. No account password to create."}</p>
+    <p className="mt-4 text-sm text-muted-foreground">{market === "US" ? (es ? "Mercado inicial: todavía no hay nóminas estadounidenses verificadas." : "Early US market: no verified US pay stubs yet.") : es?"Empieza con tu correo. Sin crear una contraseña.":"Start with your email. No account password to create."}</p>
    </section>
    <section aria-label={es?"Cómo funciona":"How it works"} className="mt-8 grid gap-3 sm:mt-16 sm:gap-4 md:grid-cols-3">
     {steps.map(([title,body],index)=>{const Icon=icons[index];return <article key={title} className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
