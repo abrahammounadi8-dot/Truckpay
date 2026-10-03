@@ -25,17 +25,17 @@ export function LanguageSwitcher() {
     <nav
       id="language-switcher"
       aria-label={t("language.label")}
-      className="border-t border-primary-foreground/15 bg-primary"
+      className="relative bg-primary"
     >
-      <details ref={disclosure} className="group mx-auto w-full max-w-6xl px-4" onKeyDown={event => {
+      <details ref={disclosure} className="group" onKeyDown={event => {
         if (event.key === "Escape" && disclosure.current) { disclosure.current.open = false; disclosure.current.querySelector("summary")?.focus(); }
       }}>
         <summary className="flex min-h-10 w-fit cursor-pointer list-none items-center gap-2 rounded-md py-2 text-xs font-medium text-primary-foreground/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
           <Globe className="size-4" aria-hidden="true" />
-          <span>{t("language.label")} · {localeMeta[locale].nativeName}</span>
+          <span>{localeMeta[locale].nativeName}</span>
           <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden="true" />
         </summary>
-        <div className="flex flex-wrap items-center gap-1 pb-3">
+        <div className="absolute left-0 top-full z-50 flex w-52 flex-col gap-1 rounded-xl border border-primary-foreground/20 bg-primary p-2 shadow-xl">
         {locales.map((code) => (
           <a
             key={code}

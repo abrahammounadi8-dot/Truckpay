@@ -39,7 +39,7 @@ export function SiteHeader({ showTruck = true, demoView, hidePrimaryLinks = fals
   const destination = (href: string) => demo ? `/demo?view=${href.slice(1)}` : href;
 
   return (
-    <header className="sticky top-0 z-50 overflow-visible bg-primary text-primary-foreground">
+    <header className="relative z-50 overflow-visible bg-primary text-primary-foreground">
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4">
         <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
           {showTruck && <Image src="/favicon.svg" width={40} height={40} alt="" className="size-10 shrink-0" unoptimized />}
@@ -105,8 +105,10 @@ export function SiteHeader({ showTruck = true, demoView, hidePrimaryLinks = fals
           </div>
         </nav>
       ) : null}
-      {!demo && <MarketSwitcher />}
-      <LanguageSwitcher />
+      <div className="border-t border-primary-foreground/15"><div className="mx-auto flex max-w-6xl flex-wrap items-start gap-2 px-4">
+        {!demo && <MarketSwitcher />}
+        <LanguageSwitcher />
+      </div></div>
       {!demo && <DriverShare />}
       {demo && <aside className="border-t border-amber-300 bg-amber-100 px-5 py-3 text-slate-900" aria-label={demoCopy[locale][0]}>
         <div className="mx-auto max-w-6xl"><strong className="block text-sm">{demoCopy[locale][0]}</strong><p className="mt-1 text-sm">{historyCopy[locale][11]}</p></div>
