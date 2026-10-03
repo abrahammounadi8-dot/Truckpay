@@ -35,7 +35,7 @@ export function SiteHeader({ showTruck = true, demoView, hidePrimaryLinks = fals
   const [open, setOpen] = useState(false);
   const { t, locale } = useT();
   const demo = demoView !== undefined;
-  const navigationLinks = visitor || hidePrimaryLinks ? [] : links.filter(link => !demo || link.href !== '/opinions');
+  const navigationLinks = hidePrimaryLinks ? [] : visitor ? links.filter(link => link.href === "/companies" || link.href === "/compare") : links.filter(link => !demo || link.href !== '/opinions');
   const destination = (href: string) => demo ? `/demo?view=${href.slice(1)}` : href;
 
   return (
@@ -70,7 +70,7 @@ export function SiteHeader({ showTruck = true, demoView, hidePrimaryLinks = fals
         </nav>
         <div className="flex items-center gap-2">
           {demo ? <Link href="/" className="rounded-md border border-current/20 px-3 py-1.5 text-sm">{demoCopy[locale][20]}</Link> : visitor ? <Link href="/account" className="rounded-md border border-current/20 px-4 py-2 text-sm font-medium">{locale === "es" ? "Entrar" : "Sign in"}</Link> : <AccountLink />}
-          {!visitor && navigationLinks.length > 0 && <Button
+          {navigationLinks.length > 0 && <Button
             variant="ghost"
             size="icon"
             className="text-primary-foreground hover:bg-primary-foreground/10 md:hidden"
@@ -82,7 +82,7 @@ export function SiteHeader({ showTruck = true, demoView, hidePrimaryLinks = fals
           </Button>}
         </div>
       </div>
-      {open && !visitor ? (
+      {open ? (
         <nav className="border-t border-primary-foreground/10 px-4 py-3 md:hidden">
           <div className="mx-auto flex max-w-6xl flex-col gap-1">
             {navigationLinks.map((link) => (

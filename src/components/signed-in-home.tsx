@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ArrowRight, FilePlus2, Building2, ClipboardList, ChartNoAxesCombined, UserRound, MessageSquare, ShieldCheck } from "lucide-react";
+import { HomeCompanyIntro } from "./home-company-intro";
 import { SiteHeader } from "./site-header";
 import { useT } from "./language-provider";
 
@@ -8,18 +9,15 @@ export function SignedInHome() {
  const {locale} = useT(); const es = locale === "es";
  const c = (a:string,b:string) => es?a:b;
  const actions = [
-  {title:c('Explorar empresas','Explore companies'),description:c('Conoce las empresas y compara la información disponible.','Discover employers and compare available information.'),href:'/companies',Icon:Building2},
+  {title:c('Mi cuenta','My account'),description:c('Gestiona tu acceso y tu permiso para aportar estadísticas.','Manage your access and permission to contribute statistics.'),href:'/account',Icon:Building2},
   {title:c('Mi perfil laboral','My employment profile'),description:c('Mantén tus empresas y tu experiencia al día.','Keep your employers and experience up to date.'),href:'/profile',Icon:UserRound},
   {title:c('Opiniones y sugerencias','Reviews and suggestions'),description:c('Comparte tu experiencia o ayúdanos a mejorar.','Share your experience or help us improve.'),href:'/opinions',Icon:MessageSquare},
  ];
  const focus='focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring';
  return <div className="min-h-screen bg-background text-foreground">
-  <SiteHeader hidePrimaryLinks />
+  <SiteHeader />
   <div className="mx-auto max-w-6xl space-y-6 px-4 pb-12 pt-6 sm:space-y-8 sm:px-8 sm:pt-10">
-   <header className="flex flex-wrap items-center justify-between gap-4">
-    <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{c('Tu espacio personal','Your personal space')}</p><h1 className="mt-2 font-heading text-4xl font-semibold tracking-tight sm:text-5xl">{c('Bienvenido a MyTruckPay','Welcome to MyTruckPay')}</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">{c('Tus nóminas, tu evolución y tu próximo paso. Todo empieza aquí.','Your payslips, your progress and your next step. It all starts here.')}</p></div>
-    <span className="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-xs font-medium"><ShieldCheck className="size-4 text-primary" aria-hidden="true"/>{c('Nóminas privadas','Private payslips')}</span>
-   </header>
+   <HomeCompanyIntro />
    <section aria-labelledby="home-payslips" className="grid overflow-hidden rounded-3xl border border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/10 lg:grid-cols-[1.35fr_1fr]">
     <div className="p-6 sm:p-8 lg:p-10">
      <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground"><ClipboardList className="size-6" aria-hidden="true"/></span>
