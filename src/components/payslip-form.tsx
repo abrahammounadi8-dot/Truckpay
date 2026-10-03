@@ -1,4 +1,5 @@
 "use client";
+import { useMarket } from "./market-provider";
 
 import { isValidElement, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -102,11 +103,15 @@ ru: ["Для PDF нужен пароль. Он не сохраняется.", "�
 };
 const optionalLabel: Record<Locale, string> = { es: "opcional", en: "optional", de: "optional", pl: "opcjonalnie", pt: "opcional", lt: "neprivaloma", ro: "opțional", ru: "необязательно" };
 
-const DRAFT_KEY = "truckpay.payslip-draft";
+const DRAFT_PREFIX = "truckpay.payslip-draft";
 
 export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unknown", onPrepared, onDraftRead, autoPrepare = false, onProcessed, onNeedsDetails, employmentStartFields, initialFile, onImportFiles, maxImports, onReadingChange }: { defaultPayFrequency?: PayFrequency; onReadingChange?: (reading: boolean) => void; initialFile?: File; onImportFiles?: (files: File[]) => void; maxImports?: number; employmentStartFields?: React.ReactNode; onNeedsDetails?: (needed: boolean) => void; defaultEmployer?: string; autoPrepare?: boolean; onProcessed?: (message: string | null) => void; onPrepared?: (payload: Record<string, unknown>) => void; onDraftRead?: (draft: { employerName: string } | null) => void }) {
+  const market = useMarket();
+  const countryCode = market === "US" ? "US" : "IE";
+  const currency = countryCode === "US" ? "USD" : "EUR";
   const router = useRouter();
   const { t, locale } = useT();
+  const DRAFT_KEY = `${DRAFT_PREFIX}.${countryCode}`;
   const copy = formCopy[locale];
   const tr = useUiCopy();
   const [employmentReady, setEmploymentReady] = useState(false);
@@ -158,7 +163,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
     return () => {
       if (photoPreviewRef.current) URL.revokeObjectURL(photoPreviewRef.current);
     };
-  }, []);
+  }, [DRAFT_KEY]);
 
 
 
@@ -195,6 +200,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
     try {
       const body = new FormData();
       body.append("file", file);
+      body.append("countryCode", countryCode);
       if (password !== undefined) body.append("password", password);
       const res = await fetch("/api/payslips/extract", {
         method: "POST",
@@ -256,7 +262,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
           onNeedsDetails?.(true);
           processingNotice = locale === "es" ? "Neto leído. Completa solo los datos que faltan en el apartado de carga para añadir esta nómina." : "Net pay read. Complete only the missing fields in the upload section to add this payslip.";
         } else {
-          onPrepared({ ...draft.form, employerName, amountReceipt: data.amountReceipt, deductions: packed(draft.deductions), allowances: packed(draft.allowances) });
+          onPrepared({ countryCode, currency, ...draft.form, employerName, amountReceipt: data.amountReceipt, deductions: packed(draft.deductions), allowances: packed(draft.allowances) });
         }
       }
       if (!autoPrepare && fieldCount > 0) onDraftRead?.({ employerName: draft.form.employerName });
@@ -323,7 +329,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
     if ((!showReview && !missingEssentials) || fileReadLock.current || pending) return;
     if (onPrepared) {
       if (!form.employerName.trim() || !form.paymentDate || !["weekly", "fortnightly", "monthly"].includes(form.payFrequency)) return;
-      onPrepared({ ...form, amountReceipt, employerName: form.employerName || null, allowances: packed(allowances), deductions: packed(deductions) });
+      onPrepared({ countryCode, currency, ...form, amountReceipt, employerName: form.employerName || null, allowances: packed(allowances), deductions: packed(deductions) });
       return;
     }
     setPending(true);
@@ -336,6 +342,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          countryCode, currency,
           amountReceipt,
           employerName: form.employerName || null,
           allowances: packed(allowances),
@@ -399,7 +406,8 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
         {employmentStartFields}
         <Button type="submit" disabled={readingFile || pending || !form.employerName.trim() || !form.paymentDate || !["weekly", "fortnightly", "monthly"].includes(form.payFrequency)} className="bg-accent text-accent-foreground hover:bg-accent/90">{locale === "es" ? "Añadir al contador" : "Add to the counter"}</Button>
       </section>}
-      <GmailImport onImport={async file => pickFiles([file])} onImportFiles={pickFiles} maxSelections={maxImports ?? 20} disabled={readingFile || pending} />
+      {countryCode === "US" && <p role="status" className="rounded-xl border border-accent p-4 text-sm">{locale === "es" ? "USA: lectura inicial de nóminas de empleados en USD. Usa un PDF con importes etiquetados. No se admiten liquidaciones de autónomos/1099 ni se calculan obligaciones fiscales. La fecha americana se lee como mes/día/año." : "USA: initial employee pay stub reading in USD. Use a PDF with labelled amounts. Owner-operator/1099 settlements are not supported and tax liabilities are not calculated. US dates are read as month/day/year."}</p>}
+      {countryCode === "IE" && <GmailImport onImport={async file => pickFiles([file])} onImportFiles={pickFiles} maxSelections={maxImports ?? 20} disabled={readingFile || pending} />}
       <section
         className={`rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
           dragging ? "border-accent bg-accent/10" : "border-foreground/20 bg-card"
@@ -574,6 +582,7 @@ export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unkno
 
       <Section title={t("form.basicOt")}>
         <div className="grid gap-4 sm:grid-cols-3">
+          {countryCode === "US" && <><Field label={locale === "es" ? "Millas pagadas" : "Paid miles"}><Input name="paidMiles" inputMode="decimal" value={form.paidMiles} readOnly={!canEditAmounts} onChange={event => set("paidMiles", event.target.value)} /></Field><Field label={locale === "es" ? "USD por milla" : "USD per mile"}><Input name="ratePerMile" inputMode="decimal" value={form.ratePerMile} readOnly={!canEditAmounts} onChange={event => set("ratePerMile", event.target.value)} /></Field><Field label={locale === "es" ? "Pago por millas (USD)" : "Mileage pay (USD)"}><Input name="mileagePay" inputMode="decimal" value={form.mileagePay} readOnly={!canEditAmounts} onChange={event => set("mileagePay", event.target.value)} /></Field></>}
           <Field label={t("form.basicHours")}>
             <Input id="basicHours" name="basicHours" inputMode="decimal" value={form.basicHours} onChange={(event) => set("basicHours", event.target.value)} />
           </Field>
@@ -734,7 +743,7 @@ function LineTable({
           <Input
             readOnly={readOnly} name={`${namePrefix}-amount-${index}`}
             inputMode="decimal"
-            placeholder="€"
+            placeholder="Amount"
             value={row.amount}
             onChange={(event) => {
               const next = [...rows];

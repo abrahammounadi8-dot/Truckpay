@@ -1,3 +1,4 @@
+import { payrollCountry } from "@/lib/payroll/country";
 import { comparisonAccess } from "@/lib/payroll/access-state";
 import { analyseLatestSet } from "@/lib/payroll/analysis";
 import { compareLatestToRecent } from "@/lib/payroll/change";
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
 
   const asOf = new Date().toISOString().slice(0, 10);
   const employerFilter = new URL(request.url).searchParams.get("employer");
-  const slips = (await listPayslipsForUser(userId)).filter(s => !s.manualAmountAudit && (!employerFilter || s.employerSlug === employerFilter));
+  const slips = (await listPayslipsForUser(userId)).filter(s => s.countryCode === payrollCountry(request) && !s.manualAmountAudit && (!employerFilter || s.employerSlug === employerFilter));
   const profileRaw = await getProfile(userId);
   const selected = analyseLatestSet(slips, null);
   const reference = selected.latest[0];

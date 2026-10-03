@@ -1,11 +1,14 @@
-export function formatEuro(value: number): string {
+export function formatPayrollMoney(value: number, currency = "EUR"): string {
   return new Intl.NumberFormat("en-IE", {
     style: "currency",
-    currency: "EUR",
+    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 }
+
+export function formatEuro(value: number) { return formatPayrollMoney(value); }
+export function formatPayrollMoneyMaybe(value: number | null | undefined, currency = "EUR") { return value == null ? "—" : formatPayrollMoney(value, currency); }
 
 export function formatEuroMaybe(value: number | null | undefined): string {
   return value == null ? "—" : formatEuro(value);

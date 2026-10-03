@@ -19,7 +19,8 @@ import type { PayChangeReport } from "@/lib/payroll/change";
 import type { CompanyPayStats } from "@/lib/payroll/company-stats";
 import type { PayFactor } from "@/lib/payroll/explain";
 import { frequencyMessageKey } from "@/lib/i18n";
-import { formatEuroMaybe } from "@/lib/payroll/format";
+import { formatPayrollMoneyMaybe } from "@/lib/payroll/format";
+import { useMarket } from "./market-provider";
 import {
   ANOMALY_STATUS_LABELS,
   EVIDENCE_LEVEL_LABELS,
@@ -40,6 +41,8 @@ type Payload = {
 };
 
 export function AnalysisBoard({ compact = false, employer }: { compact?: boolean; employer?: string }) {
+  const market = useMarket();
+  const formatEuroMaybe = (value: number | null | undefined) => formatPayrollMoneyMaybe(value, market === "US" ? "USD" : "EUR");
   const tr = useUiCopy();
   const { t, locale } = useT();
   const [data, setData] = useState<Payload | { employmentRequired: { employerName: string; asOf: string } } | null>(null);

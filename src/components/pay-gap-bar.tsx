@@ -1,10 +1,12 @@
 "use client";
+import { useMarketMoney } from "./market-provider";
 import { useUiCopy } from "@/components/language-provider";
 import type { CompanyStats } from "@/lib/metrics";
-import { formatMoney } from "@/lib/metrics";
+
 import { cn } from "@/lib/utils";
 
 export function PayGapBar({ stats, compact = false }: { stats: CompanyStats; compact?: boolean }) {
+  const formatMoney = useMarketMoney();
   const tr = useUiCopy();
   if (stats.count === 0) {
     return (
@@ -69,12 +71,13 @@ function Bar({
   tone: "ad" | "up" | "down";
 }) {
   const tr = useUiCopy();
+  const money = useMarketMoney();
   const width = Math.max(10, Math.round((value / max) * 100));
   return (
     <div>
       <div className="mb-1 flex items-center justify-between text-xs">
         <span className="text-muted-foreground">{label}</span>
-        <span className="font-mono tabular-nums">{formatMoney(value)}{tr("/wk")}</span>
+        <span className="font-mono tabular-nums">{money(value)}{tr("/wk")}</span>
       </div>
       <div className="h-2.5 overflow-hidden rounded-full bg-muted">
         <div

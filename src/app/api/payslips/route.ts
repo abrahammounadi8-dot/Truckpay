@@ -1,3 +1,4 @@
+import { payrollCountry } from "@/lib/payroll/country";
 import { contentLengthTooLarge, rateLimit } from "@/lib/http/request-limits";
 import { employmentStartFor, validateEmploymentStart } from "@/lib/payroll/employment-month";
 import { checkAmountReceipt } from "@/lib/payroll/amount-review";
@@ -17,7 +18,8 @@ export const runtime = "nodejs";
 export async function GET(request: Request) {
   const userId = await privateApiIdentity(request);
   if (userId instanceof Response) return userId;
-  const [payslips, profile] = await Promise.all([listPayslipsForUser(userId), getProfile(userId)]);
+  const [allPayslips, profile] = await Promise.all([listPayslipsForUser(userId), getProfile(userId)]);
+  const payslips = allPayslips.filter(slip => slip.countryCode === payrollCountry(request));
   const access = comparisonAccess(payslips, profile);
   return privateJson({
     payslips: payslips.map(toPublicPayslip),

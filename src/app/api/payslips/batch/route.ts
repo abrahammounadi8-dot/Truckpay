@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   if(startError) { await client.query("ROLLBACK"); return privateJson({error:startError},{status:422}); }
   const current = await repository.get<EmploymentProfile>("profile",userId,userId);
   const first = records[0];
-  const base = current ?? toStoredProfile(userId,{employerName:first.employerName,employerSlug:first.employerSlug},new Date().toISOString().slice(0,10));
+  const base = current ?? toStoredProfile(userId,{countryCode:first.countryCode === "US" ? "US" : "IE",employerName:first.employerName,employerSlug:first.employerSlug},new Date().toISOString().slice(0,10));
   const profile: EmploymentProfile = {...base,employmentStarts:{...base.employmentStarts,[first.employerSlug!]:{employerName:first.employerName!,startMonth,source:"user_declared",updatedAt:new Date().toISOString()}}};
   for(const record of records) await repository.save("payslip",userId,record.id,record,record.contentHash);
   await repository.save("profile",userId,userId,profile);

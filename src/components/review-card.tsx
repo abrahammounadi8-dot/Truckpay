@@ -1,10 +1,12 @@
 "use client";
+import { useMarketMoney } from "./market-provider";
 import { useUiCopy } from "@/components/language-provider";
 import { Badge } from "@/components/ui/badge";
-import { equipmentLabels, formatMoney, formatNumber, operationLabels, payTypeLabels } from "@/lib/metrics";
+import { equipmentLabels, formatNumber, operationLabels, payTypeLabels } from "@/lib/metrics";
 import type { DriverReport } from "@/lib/types";
 
 export function ReviewCard({ review }: { review: DriverReport }) {
+  const formatMoney = useMarketMoney();
   const tr = useUiCopy();
   return (
     <article className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
@@ -25,6 +27,7 @@ export function ReviewCard({ review }: { review: DriverReport }) {
         <Badge variant="secondary">{tr(equipmentLabels[review.equipment])}</Badge>
         <Badge variant="outline">{tr(operationLabels[review.operation])}</Badge>
       </div>
+      {review.countryCode === "US" && review.ratePerMile != null && <p className="mt-2 text-sm">${review.ratePerMile.toFixed(4)} / mile</p>}
       <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         <div>
           <dt className="text-xs text-muted-foreground">Quoted weekly</dt>
@@ -39,9 +42,9 @@ export function ReviewCard({ review }: { review: DriverReport }) {
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Km / week</dt>
+          <dt className="text-xs text-muted-foreground">{review.countryCode === "US" ? "Miles / week" : "Km / week"}</dt>
           <dd className="font-medium">
-            {review.kmPerWeek != null ? formatNumber(review.kmPerWeek) : "—"}
+            {review.kmPerWeek != null ? formatNumber(review.countryCode === "US" ? Math.round(review.kmPerWeek / 1.609344) : review.kmPerWeek) : "—"}
           </dd>
         </div>
         <div>

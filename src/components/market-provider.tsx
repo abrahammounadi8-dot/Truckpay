@@ -6,3 +6,8 @@ export function MarketProvider({ market, children }: { market: Market; children:
   return <MarketContext.Provider value={market}>{children}</MarketContext.Provider>;
 }
 export function useMarket() { return useContext(MarketContext); }
+
+export function useMarketMoney() {
+  const market = useMarket();
+  return (value: number) => new Intl.NumberFormat(market === "US" ? "en-US" : "en-IE", { style: "currency", currency: market === "US" ? "USD" : "EUR", maximumFractionDigits: 0 }).format(value);
+}

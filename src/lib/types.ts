@@ -2,10 +2,10 @@ export type Equipment = "curtain" | "reefer" | "flatbed" | "tanker" | "specializ
 
 export type Operation = "domestic" | "uk" | "europe";
 
-export type PayType = "hourly" | "day" | "salary" | "percentage";
+export type PayType = "hourly" | "day" | "salary" | "percentage" | "mile";
 
 export type Company = {
-  countryCode?: "IE" | "ES";
+  countryCode?: "IE" | "ES" | "US";
   publicAddress?: { address: string; sourceUrl: string; sourceName: string; mapUrl: string };
   driverReported?: boolean;
   slug: string;
@@ -24,7 +24,7 @@ export type Company = {
 };
 
 export type DriverReport = {
-  countryCode?: "IE" | "ES";
+  countryCode?: "IE" | "ES" | "US";
   companyName?: string;
   id: string;
   companySlug: string;
@@ -34,6 +34,7 @@ export type DriverReport = {
   equipment: Equipment;
   operation: Operation;
   quotedWeekly?: number;
+  ratePerMile?: number;
   hourlyRate?: number;
   weeklyPay: number;
   kmPerWeek?: number;

@@ -4,12 +4,12 @@ import { spanishCompanies } from "./spanish-companies";
 import { fleet } from "@/lib/data";
 import type { DriverReport, Equipment, Operation, PayType } from "@/lib/types";
 
-const PAY_TYPES: PayType[] = ["hourly", "day", "salary", "percentage"];
+const PAY_TYPES: PayType[] = ["hourly", "day", "salary", "percentage", "mile"];
 const EQUIPMENT: Equipment[] = ["curtain", "reefer", "flatbed", "tanker", "specialized"];
 const OPERATIONS: Operation[] = ["domestic", "uk", "europe"];
 
 export type ReportInput = {
-  countryCode?: "IE" | "ES";
+  countryCode?: "IE" | "ES" | "US";
   companySlug: string;
   companyName?: string;
   role: string;
@@ -17,6 +17,7 @@ export type ReportInput = {
   payType: PayType;
   equipment: Equipment;
   operation: Operation;
+  ratePerMile?: number;
   hourlyRate?: number;
   weeklyPay: number;
   kmPerWeek?: number;
@@ -31,7 +32,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
   const body = raw as Record<string, unknown>;
   if (body.countryCode !== undefined && !isMarket(body.countryCode)) return { error: "Unsupported country." };
   const countryCode = marketFrom(body.countryCode);
-  const catalogue = countryCode === "IE" ? fleet : spanishCompanies;
+  const catalogue = countryCode === "IE" ? fleet : countryCode === "ES" ? spanishCompanies : [];
   const submittedName = asString(body.companyName).replace(/\s+/g, " ");
   if (submittedName.length > 120) return { error: "Company name must be 120 characters or fewer." };
   const legacyCompany = catalogue.find(company => company.slug === asString(body.companySlug));
@@ -45,7 +46,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
 
   const weeklyPay = Number(body.weeklyPay);
   if (!Number.isFinite(weeklyPay) || weeklyPay <= 0 || weeklyPay > 20000) {
-    return { error: "Weekly take-home has to be a euro amount." };
+    return { error: "Weekly take-home must be a positive amount in the selected country’s currency." };
   }
 
   const hoursPerWeek = Number(body.hoursPerWeek);
@@ -53,6 +54,8 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
     return { error: "Hours per week has to be a real number." };
   }
 
+  const ratePerMile = optionalNumber(body.ratePerMile, 100);
+  if (ratePerMile === false || (body.payType === "mile" && (countryCode !== "US" || ratePerMile == null))) return { error: "Per-mile pay requires a US report and a USD-per-mile rate." };
   const hourlyRate = optionalNumber(body.hourlyRate, 80);
   const kmPerWeek = optionalNumber(body.kmPerWeek, 10000);
   if (hourlyRate === false || kmPerWeek === false) {
@@ -79,6 +82,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
       payType,
       equipment,
       operation,
+      ratePerMile,
       hourlyRate,
       weeklyPay: Math.round(weeklyPay),
       kmPerWeek,

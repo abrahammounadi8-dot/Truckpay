@@ -6,11 +6,11 @@ import { tenureBandFromMonths } from "@/lib/payroll/tenure";
 import { useEffect, useId, useState } from "react";
 import { useT } from "./language-provider";
 
-type Props = { employerName: string; asOf?: string; onReady?: (ready: boolean) => void };
+type Props = { countryCode?: "IE" | "US"; employerName: string; asOf?: string; onReady?: (ready: boolean) => void };
 export function EmploymentStartField(props: Props) {
-  return <EmploymentStartEditor key={`${props.employerName}|${props.asOf ?? ""}`} {...props} />;
+  return <EmploymentStartEditor key={`${props.countryCode ?? ""}|${props.employerName}|${props.asOf ?? ""}`} {...props} />;
 }
-function EmploymentStartEditor({ employerName, asOf, onReady }: Props) {
+function EmploymentStartEditor({ employerName, asOf, onReady, countryCode }: Props) {
   const router = useRouter();
   const { locale } = useT(); const es = locale === "es"; const id = useId();
   const [month, setMonth] = useState(""); const [savedMonth, setSavedMonth] = useState<string | null>(null);
@@ -20,18 +20,18 @@ function EmploymentStartEditor({ employerName, asOf, onReady }: Props) {
   useEffect(() => {
     let cancelled = false; onReady?.(false);
     if (!employerName.trim()) return;
-    const params = new URLSearchParams({ employer: employerName, ...(asOf ? { asOf } : {}) });
+    const params = new URLSearchParams({ ...(countryCode ? { countryCode } : {}), employer: employerName, ...(asOf ? { asOf } : {}) });
     fetch(`/api/employment-start?${params}`, { credentials: "same-origin" }).then(async r => { const d = await r.json(); if (!r.ok) throw Error(d.error ?? "No se pudo consultar el inicio."); return d; }).then(d => {
       if (cancelled) return;
       setMonth(d.startMonth ?? ""); setSavedMonth(d.valid ? d.startMonth : null); setMonths(d.tenure?.months ?? null);
       setError(d.error ?? null); setEditing(!d.valid); onReady?.(!!d.valid);
     }).catch(e => { if (!cancelled) { setError(e.message); setSavedMonth(null); } }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [employerName, asOf, onReady]);
+  }, [employerName, asOf, onReady, countryCode]);
   async function save() {
     setPending(true); setError(null);
     try {
-      const r = await fetch("/api/employment-start", { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ employerName, startMonth: month, asOf }) });
+      const r = await fetch("/api/employment-start", { method: "PUT", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ countryCode, employerName, startMonth: month, asOf }) });
       const d = await r.json(); if (!r.ok) throw Error(d.error ?? "No se pudo guardar.");
       setSavedMonth(month); setEditing(false); setMonths(d.tenure?.months ?? null); onReady?.(true);
       window.dispatchEvent(new Event("truckpay-employment-changed"));

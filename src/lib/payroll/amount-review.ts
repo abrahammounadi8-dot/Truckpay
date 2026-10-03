@@ -1,8 +1,8 @@
 import { randomUUID, randomBytes, createCipheriv, createDecipheriv, createHash } from "node:crypto";
 import type { PayslipInput } from "./types";
 
-export const amountKeys = ["basicRate", "basicPay", "overtimeRate", "overtimePay", "grossPay", "netPay", "holidayPay", "cumulativeGross", "cumulativeTax", "cumulativePrsi", "cumulativeUsc", "cumulativePension"] as const;
-export type AmountSnapshot = Record<string, number | null | number[]>;
+export const amountKeys = ["paidMiles", "ratePerMile", "mileagePay", "basicRate", "basicPay", "overtimeRate", "overtimePay", "grossPay", "netPay", "holidayPay", "cumulativeGross", "cumulativeTax", "cumulativePrsi", "cumulativeUsc", "cumulativePension"] as const;
+export type AmountSnapshot = Record<string, number | null | number[] | string>;
 export type ManualAmountAudit = { original: AmountSnapshot; submitted: AmountSnapshot; changedFields: string[]; editedAt: string; source: "local_owner_test" };
 export function canEditTestAmounts(userId: string, env: Record<string, string | undefined> = process.env, now = Date.now()) {
   const expires = Date.parse(env.MTP_AMOUNT_TEST_UNTIL ?? "");
@@ -16,6 +16,8 @@ export function amountSnapshot(fields: Record<string, unknown>, deductions: { am
     const value = fields[key];
     result[key] = value == null || value === "" ? null : Number(value);
   }
+  result.countryCode = typeof fields.countryCode === "string" ? fields.countryCode : "IE";
+  result.currency = typeof fields.currency === "string" ? fields.currency : "EUR";
   result.deductions = deductions.map(s => s.amount);
   result.allowances = allowances.map(s => s.amount);
   return result;
@@ -33,6 +35,7 @@ export function issueAmountReceipt(userId: string, original: AmountSnapshot, now
 export function checkAmountReceipt(userId: string, receiptId: unknown, input: PayslipInput, env: Record<string, string | undefined> = process.env, now = Date.now()): { error?: string; audit?: ManualAmountAudit } {
   const receipt = typeof receiptId === "string" ? (env.NODE_ENV === "production" ? openReceipt(receiptId, env) : receipts.get(receiptId)) : undefined;
   if (!receipt || receipt.userId !== userId || receipt.expires <= now) return { error: "Vuelve a leer el documento antes de guardar. La lectura ha caducado o no pertenece a esta cuenta." };
+  if (!receipt.original.countryCode || !receipt.original.currency) return { error: "Reload the document to confirm its payroll country and currency." };
   const submitted = amountSnapshot(input as unknown as Record<string, unknown>, input.deductions, input.allowances);
   const changedFields = Object.keys(receipt.original).filter(k => JSON.stringify(receipt.original[k]) !== JSON.stringify(submitted[k]));
   if (!changedFields.length) return {};

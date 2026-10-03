@@ -11,7 +11,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useT } from "@/components/language-provider";
 import { buttonVariants } from "@/components/ui/button";
 import { frequencyMessageKey } from "@/lib/i18n";
-import { formatEuroMaybe } from "@/lib/payroll/format";
+import { formatPayrollMoneyMaybe } from "@/lib/payroll/format";
 import { type Payslip } from "@/lib/payroll/types";
 import { groupPayslipsByEmployer, employerNetTotals } from "@/lib/payroll/history";
 import { historyCopy } from "@/lib/entry-copy";
@@ -151,7 +151,7 @@ export function PayslipList({ onHasPayslipsChange, onAccessChange, afterProgress
                 </p>
               </div>
               <p className="font-heading text-2xl font-semibold tabular-nums">
-                {formatEuroMaybe(slip.netPay ?? slip.grossPay ?? slip.basicPay)}
+                {formatPayrollMoneyMaybe(slip.netPay ?? slip.grossPay ?? slip.basicPay, slip.currency)}
               </p>
             </Link>
           </li>

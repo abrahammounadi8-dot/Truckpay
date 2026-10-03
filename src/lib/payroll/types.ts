@@ -1,8 +1,8 @@
 /** Payroll domain. Separate from legacy public DriverReport. Ireland-first, country-extensible. */
 
-export type CountryCode = "IE" | "GB" | "ES" | "PL" | "OTHER";
+export type CountryCode = "IE" | "US" | "GB" | "ES" | "PL" | "OTHER";
 
-export type CurrencyCode = "EUR" | "GBP" | "PLN";
+export type CurrencyCode = "EUR" | "USD" | "GBP" | "PLN";
 
 export type PayFrequency = "weekly" | "fortnightly" | "lunar" | "monthly" | "unknown";
 
@@ -137,6 +137,7 @@ export type DocumentKind =
 export type RetentionPolicy = "process_and_delete" | "retain_until" | "user_held";
 
 export type DeductionCategory =
+  | "FEDERAL_TAX" | "STATE_TAX" | "LOCAL_TAX" | "SOCIAL_SECURITY" | "MEDICARE" | "HEALTH_INSURANCE"
   | "PAYE"
   | "PRSI"
   | "USC"
@@ -152,6 +153,7 @@ export type DeductionCategory =
   | "UNKNOWN";
 
 export type FindingKind =
+  | "arithmetic_mileage"
   | "arithmetic_basic"
   | "arithmetic_overtime"
   | "gross_net_gap"
@@ -229,6 +231,9 @@ export type Payslip = {
   userId: string;
   countryCode: CountryCode;
   currency: CurrencyCode;
+  paidMiles?: number | null;
+  ratePerMile?: number | null;
+  mileagePay?: number | null;
   employerSlug: string | null;
   employerName: string | null;
   paymentDate: string;
@@ -283,7 +288,7 @@ export type EmploymentProfile = {
   vehicleType: VehicleType;
   timeFraction: TimeFraction;
   shiftType: ShiftType;
-  payType: "hourly" | "day" | "salary" | "percentage";
+  payType: "hourly" | "day" | "salary" | "percentage" | "mile";
   agreedBaseRate: number | null;
   countryCode: CountryCode;
   updatedAt: string;
@@ -307,6 +312,11 @@ export type Finding = {
 };
 
 export type PayslipInput = {
+  countryCode?: "IE" | "US";
+  currency?: "EUR" | "USD";
+  paidMiles?: number | null;
+  ratePerMile?: number | null;
+  mileagePay?: number | null;
   employerSlug?: string | null;
   employerName?: string | null;
   paymentDate: string;
@@ -349,6 +359,12 @@ export const WEEK_STATUS_LABELS: Record<VerificationStatus, string> = {
 };
 
 export const DEDUCTION_LABELS: Record<DeductionCategory, string> = {
+  FEDERAL_TAX: "Federal income tax",
+  STATE_TAX: "State income tax",
+  LOCAL_TAX: "Local income tax",
+  SOCIAL_SECURITY: "Social Security",
+  MEDICARE: "Medicare",
+  HEALTH_INSURANCE: "Health insurance",
   PAYE: "PAYE",
   PRSI: "PRSI",
   USC: "USC",

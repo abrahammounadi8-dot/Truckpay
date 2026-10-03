@@ -7,7 +7,6 @@ import {
   tenureMonthsFromStart,
 } from "@/lib/payroll/tenure";
 import type {
-  CountryCode,
   EmploymentProfile,
   JobType,
   ShiftType,
@@ -30,7 +29,7 @@ const VEHICLES: VehicleType[] = [
 ];
 const SHIFTS: ShiftType[] = ["day", "night", "rotating", "mixed"];
 const TIMES: TimeFraction[] = ["full_time", "part_time"];
-const PAY: PayType[] = ["hourly", "day", "salary", "percentage"];
+const PAY: PayType[] = ["hourly", "day", "salary", "percentage", "mile"];
 const SOURCES: TenureSource[] = [
   "payslip",
   "employment_contract",
@@ -39,6 +38,7 @@ const SOURCES: TenureSource[] = [
 ];
 
 export type ProfileInput = {
+  countryCode?: "IE" | "US";
   employerSlug?: string | null;
   employerName?: string | null;
   employmentStartDate?: string | null;
@@ -54,8 +54,10 @@ export type ProfileInput = {
 export function parseProfileInput(raw: unknown): { input?: ProfileInput; error?: string } {
   if (!raw || typeof raw !== "object") return { error: "Send a JSON profile." };
   const body = raw as Record<string, unknown>;
+  const countryCode = body.countryCode ?? "IE";
+  if (countryCode !== "IE" && countryCode !== "US") return { error: "Unsupported payroll country." };
   const named = asString(body.employerName) || asString(body.employerSlug);
-  const employer = resolveEmployer(named);
+  const employer = resolveEmployer(named, countryCode);
   const employmentStartDate = asDate(body.employmentStartDate);
   const tenureSource = SOURCES.includes(body.tenureSource as TenureSource)
     ? (body.tenureSource as TenureSource)
@@ -67,10 +69,11 @@ export function parseProfileInput(raw: unknown): { input?: ProfileInput; error?:
   }
 
   const agreed = optionalNumber(body.agreedBaseRate, 200);
-  if (agreed === false) return { error: "Agreed base rate has to be a euro amount if filled in." };
+  if (agreed === false) return { error: "Agreed base rate has to be an amount in your payroll currency if filled in." };
 
   return {
     input: {
+      countryCode,
       employerSlug: employer.employerSlug,
       employerName: employer.employerName,
       employmentStartDate,
@@ -108,7 +111,7 @@ export function toStoredProfile(userId: string, input: ProfileInput, asOf: strin
     shiftType: input.shiftType ?? "mixed",
     payType: input.payType ?? "hourly",
     agreedBaseRate: input.agreedBaseRate ?? null,
-    countryCode: "IE" as CountryCode,
+    countryCode: input.countryCode ?? "IE",
     updatedAt: new Date().toISOString(),
   };
 }

@@ -15,6 +15,10 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
   const identifierError = rejectIdentifierFields(body);
   if (identifierError) return { error: identifierError };
 
+  const countryCode = body.countryCode ?? "IE";
+  if (countryCode !== "IE" && countryCode !== "US") return { error: "Payroll analysis currently supports Ireland and United States only." };
+  const currency = countryCode === "US" ? "USD" : "EUR";
+  if (body.currency != null && body.currency !== currency) return { error: "Currency does not match the payroll country." };
   const paymentDate = asDate(body.paymentDate);
   if (!paymentDate) {
     return { error: "Payment date is required (YYYY-MM-DD)." };
@@ -29,13 +33,16 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
   }
 
   const named = asString(body.employerName) || asString(body.employerSlug);
-  const employer = resolveEmployer(named);
+  const employer = resolveEmployer(named, countryCode);
 
   const payFrequency = FREQUENCIES.includes(body.payFrequency as PayFrequency)
     ? (body.payFrequency as PayFrequency)
     : "unknown";
 
   const moneyFields = [
+    "paidMiles",
+    "ratePerMile",
+    "mileagePay",
     "employmentWeeks",
     "basicHours",
     "basicRate",
@@ -64,6 +71,7 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
         key === "totalInsurableWeeks"
         ? 400
         : 1_000_000,
+      key === "ratePerMile" ? 4 : 2,
     );
     if (value === false) {
       return { error: `“${key}” has to be a real number if you fill it in.` };
@@ -88,11 +96,13 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
   const deductions = parseLines(body.deductions);
   const allowances = parseLines(body.allowances);
   if (deductions === false || allowances === false) {
-    return { error: "Each allowance or deduction needs a label and a euro amount." };
+    return { error: "Each allowance or deduction needs a label and an amount in the payroll currency." };
   }
 
   return {
     input: {
+      countryCode, currency,
+      paidMiles: parsed.paidMiles, ratePerMile: parsed.ratePerMile, mileagePay: parsed.mileagePay,
       employerSlug: employer.employerSlug,
       employerName: employer.employerName,
       paymentDate,
@@ -124,7 +134,7 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
 
 export function toStoredPayslip(userId: string, input: PayslipInput): Payslip {
   const deductions = (input.deductions ?? []).map((line) =>
-    minimizedDeduction(line.rawLabel, line.amount),
+    minimizedDeduction(line.rawLabel, line.amount, input.countryCode ?? "IE"),
   );
   const allowances = (input.allowances ?? []).map((line) =>
     classifyAllowance("Allowance", line.amount),
@@ -134,8 +144,9 @@ export function toStoredPayslip(userId: string, input: PayslipInput): Payslip {
   return attachProcessing({
     id: crypto.randomUUID(),
     userId,
-    countryCode: "IE",
-    currency: "EUR",
+    countryCode: input.countryCode ?? "IE",
+    currency: input.countryCode === "US" ? "USD" : "EUR",
+    paidMiles: input.paidMiles ?? null, ratePerMile: input.ratePerMile ?? null, mileagePay: input.mileagePay ?? null,
     employerSlug: input.employerSlug ?? null,
     employerName: input.employerName ?? null,
     paymentDate: input.paymentDate,
@@ -183,11 +194,11 @@ function asDate(value: unknown): string | null {
   return text;
 }
 
-function optionalNumber(value: unknown, max: number): number | null | false {
+function optionalNumber(value: unknown, max: number, decimals = 2): number | null | false {
   if (value === undefined || value === null || value === "") return null;
   const parsed = typeof value === "number" ? value : Number(String(value).replace(",", "."));
   if (!Number.isFinite(parsed) || parsed < 0 || parsed > max) return false;
-  return Math.round(parsed * 100) / 100;
+  return Math.round(parsed * 10 ** decimals) / 10 ** decimals;
 }
 
 function optionalWeek(value: unknown): number | null | false {
@@ -213,7 +224,7 @@ function parseLines(value: unknown): { rawLabel: string; amount: number }[] | fa
   return lines;
 }
 
-function minimizedDeduction(label: string, amount: number) {
-  const line = classifyDeduction(label, amount, "IE");
+function minimizedDeduction(label: string, amount: number, country: string) {
+  const line = classifyDeduction(label, amount, country);
   return {...line, rawLabel: line.normalizedCategory === "UNKNOWN" ? "Other deduction" : line.normalizedCategory};
 }

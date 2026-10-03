@@ -4,6 +4,10 @@
  */
 
 const IDENTIFIER_KEYS = new Set([
+  "ssn",
+  "socialsecuritynumber",
+  "taxpayerid",
+  "itin",
   "ppsn",
   "pps",
   "licence",
@@ -28,7 +32,7 @@ export function rejectIdentifierFields(body: unknown): string | null {
     if (!IDENTIFIER_KEYS.has(normalized)) continue;
     const value = (body as Record<string, unknown>)[key];
     if (value == null || value === "") continue;
-    return "Do not send PPSN, licence, or employee numbers. MyTruckPay does not store them.";
+    return "Do not send SSN, PPSN, licence, or employee numbers. MyTruckPay does not store them.";
   }
   return null;
 }

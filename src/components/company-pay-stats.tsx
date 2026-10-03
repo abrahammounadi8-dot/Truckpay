@@ -5,7 +5,8 @@ import { tenureBandLabel } from "@/lib/payroll/employment-month";
 import { useUiCopy, useT } from "@/components/language-provider";
 
 import { Badge } from "@/components/ui/badge";
-import { formatEuroMaybe } from "@/lib/payroll/format";
+import { formatPayrollMoneyMaybe } from "@/lib/payroll/format";
+import { useMarket } from "./market-provider";
 import type { CompanyPayStats } from "@/lib/payroll/company-stats";
 
 import {
@@ -19,6 +20,8 @@ import {
 } from "@/lib/payroll/types";
 
 export function CompanyPayStatsPanel({ stats: initialStats }: { stats: CompanyPayStats }) {
+  const market = useMarket();
+  const formatEuroMaybe = (value: number | null | undefined) => formatPayrollMoneyMaybe(value, market === "US" ? "USD" : "EUR");
   const [freshStats, setFreshStats] = useState<CompanyPayStats | null>(null);
   const stats = freshStats?.employerSlug === initialStats.employerSlug ? freshStats : initialStats;
   useEffect(() => {

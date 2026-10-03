@@ -34,6 +34,7 @@ function make(
 
 /** Per-slip anomaly foundation. Confirmed only with sufficient evidence. */
 export function detectPayslipAnomalies(slip: Payslip, prior: Payslip[], profile: EmploymentProfile | null): Anomaly[] {
+  prior = prior.filter(record => record.countryCode === slip.countryCode && record.currency === slip.currency);
   const anomalies: Anomaly[] = [];
 
   if (slip.basicHours == null) {
