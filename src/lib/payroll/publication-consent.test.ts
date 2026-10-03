@@ -1,7 +1,7 @@
 import { it } from "node:test";
 import assert from "node:assert/strict";
 import type { EmploymentProfile } from "./types";
-import { hasPublicPublicationConsent } from "./publication-consent";
+import { ACTIVE_PUBLICATION_NOTICE_VERSION, hasPublicPublicationConsent } from "./publication-consent";
 import { sharesStatistics, STATISTICS_NOTICE_VERSION } from "./statistics-sharing";
 
 const profile = {
@@ -36,6 +36,30 @@ it("a draft publication choice never enables the active notice", () => {
   const value: EmploymentProfile = {
     ...profile,
     publicationSharing: { enabled: true, noticeVersion: "draft-notice", updatedAt: "2026-09-30T08:00:00.000Z" },
+  };
+  assert.equal(hasPublicPublicationConsent(value), false);
+});
+
+it("explicit opt-in to the active publication notice enables public statistics", () => {
+  const value: EmploymentProfile = {
+    ...profile,
+    publicationSharing: {
+      enabled: true,
+      noticeVersion: ACTIVE_PUBLICATION_NOTICE_VERSION,
+      updatedAt: "2026-09-30T09:00:00.000Z",
+    },
+  };
+  assert.equal(hasPublicPublicationConsent(value), true);
+});
+
+it("withdrawing an active publication choice disables public statistics immediately", () => {
+  const value: EmploymentProfile = {
+    ...profile,
+    publicationSharing: {
+      enabled: false,
+      noticeVersion: ACTIVE_PUBLICATION_NOTICE_VERSION,
+      updatedAt: "2026-09-30T10:00:00.000Z",
+    },
   };
   assert.equal(hasPublicPublicationConsent(value), false);
 });
