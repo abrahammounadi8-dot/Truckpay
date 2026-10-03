@@ -8,7 +8,7 @@ import { accountCopy } from "@/lib/auth/copy";
 import { emailCopy } from "@/lib/auth/email-copy";
 import type { DeliveryStatus } from "@/lib/auth/email";
 
-export function AccountPanel({ email, enabled, failed, delivery, callbackURL = "/", sharesStatistics = false }: { email: string | null; enabled: boolean; failed: boolean; delivery: DeliveryStatus; callbackURL?: string; sharesStatistics?: boolean }) {
+export function AccountPanel({ email, enabled, failed, delivery, callbackURL = "/", sharesStatistics = false, moderator = false }: { email: string | null; enabled: boolean; failed: boolean; delivery: DeliveryStatus; callbackURL?: string; sharesStatistics?: boolean; moderator?: boolean }) {
   const { locale } = useT();
   const c = accountCopy[locale];
   const mail = emailCopy[locale];
@@ -86,6 +86,7 @@ export function AccountPanel({ email, enabled, failed, delivery, callbackURL = "
       <p>{real ? mail.verified : c.signedIn}: <strong>{email}</strong></p>
       <Link href="/" className="inline-block rounded-lg bg-primary px-5 py-3 text-primary-foreground">{c.continue}</Link>
       <button type="button" onClick={signOut} disabled={pending} className="ml-3 rounded-lg border px-4 py-3">{pending ? c.pending : c.signOut}</button>
+      {moderator && <Link href="/moderation" className="block rounded-lg border border-accent bg-accent/10 px-5 py-3 font-semibold">{locale === "es" ? "Revisar comentarios" : "Review comments"}</Link>}
       <StatisticsSharing initialEnabled={sharesStatistics} />
       <div className="mt-6 rounded-lg border p-4">
         <button disabled={pending} onClick={() => setConfirmDelete(true)} className="text-destructive underline">{locale === "es" ? "Eliminar mi cuenta" : "Delete my account"}</button>
