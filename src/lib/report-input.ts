@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { marketFrom, isMarket } from "./markets";
+import { spanishCompanies } from "./spanish-companies";
 import { fleet } from "@/lib/data";
 import type { DriverReport, Equipment, Operation, PayType } from "@/lib/types";
 
@@ -8,7 +9,7 @@ const EQUIPMENT: Equipment[] = ["curtain", "reefer", "flatbed", "tanker", "speci
 const OPERATIONS: Operation[] = ["domestic", "uk", "europe"];
 
 export type ReportInput = {
-  countryCode?: "IE" | "GB" | "NL";
+  countryCode?: "IE" | "GB" | "NL" | "ES" | "US";
   companySlug: string;
   companyName?: string;
   role: string;
@@ -29,9 +30,9 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
     return { error: "Send a JSON wage slip." };
   }
   const body = raw as Record<string, unknown>;
-  if (body.countryCode !== undefined && !isMarket(body.countryCode)) return { error: "Unsupported country." };
-  const countryCode = marketFrom(body.countryCode);
-  const catalogue = countryCode === "IE" ? fleet : [];
+  const rawCountry = body.countryCode;
+  const countryCode = rawCountry === "ES" || rawCountry === "US" ? rawCountry : marketFrom(rawCountry);
+  const catalogue = countryCode === "IE" ? fleet : countryCode === "ES" ? spanishCompanies : [];
   const submittedName = asString(body.companyName).replace(/\s+/g, " ");
   if (submittedName.length > 120) return { error: "Company name must be 120 characters or fewer." };
   const legacyCompany = catalogue.find(company => company.slug === asString(body.companySlug));
