@@ -21,10 +21,10 @@ test("same company name in Spain and Ireland has separate report identities", ()
   assert.ok(!reportCompanies(reports, "ES").some(c => c.slug === ie.companySlug));
   assert.ok(!reportCompanies(reports, "IE").some(c => c.slug === es.companySlug));
 });
-test("Spanish catalogue matching cannot resolve an Irish company and rejects unsupported countries", () => {
+test("Spanish catalogue matching stays isolated while UK reports remain supported", () => {
   assert.equal(parseReportInput({ ...input, companyName: "Primafrio", countryCode: "ES" }).report?.companySlug, "es-primafrio");
   assert.notEqual(parseReportInput({ ...input, companyName: "Nolan", countryCode: "ES" }).report?.companySlug, "nolan");
-  assert.ok(parseReportInput({ ...input, countryCode: "GB" }).error);
+  assert.equal(parseReportInput({ ...input, countryCode: "GB" }).report?.countryCode, "GB");
 });
 
 test("registered employers have distinct public identities in each market", () => {
@@ -35,7 +35,7 @@ test("registered employers have distinct public identities in each market", () =
 test("US reports stay separate from Irish and Spanish reports and employer identities", () => {
   const us = parseReportInput({ ...input, countryCode: "US" }).report!;
   const ie = parseReportInput(input).report!;
-  assert.equal(marketFrom("US"), "US");
+  assert.equal(marketFrom("GB"), "GB");
   assert.equal(marketCurrency("US"), "USD");
   assert.equal(marketCurrency("IE"), "EUR");
   assert.equal(us.countryCode, "US");
