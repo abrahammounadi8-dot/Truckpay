@@ -23,7 +23,7 @@ export type DocumentExtractResult = {
 };
 
 export async function extractPayslipDocument(input: {
-  countryCode?: "IE" | "GB" | "NL";
+  countryCode?: "IE" | "GB" | "NL" | "US";
   bytes: Uint8Array;
   mime: string;
   filename: string;
