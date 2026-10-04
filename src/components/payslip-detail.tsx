@@ -89,7 +89,7 @@ function PayslipDetailContent({
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       {slip.manualAmountAudit && <p role="status" className="rounded-lg border border-amber-500 p-3">Importes modificados manualmente para una prueba local. No verificados por el documento ni incluidos en el análisis verificado.</p>}
-      <EmploymentStartField countryCode={slip.countryCode === "US" ? "US" : "IE"} employerName={slip.employerName ?? slip.employerSlug ?? ""} asOf={slip.payPeriodEnd || slip.paymentDate} />
+      <EmploymentStartField countryCode={slip.countryCode === "GB" ? "GB" : slip.countryCode === "NL" ? "NL" : "IE"} employerName={slip.employerName ?? slip.employerSlug ?? ""} asOf={slip.payPeriodEnd || slip.paymentDate} />
       <WeekBanner slip={slip} />
 
       <div className="stub-paper rounded-xl p-5 ring-1 ring-foreground/10">
