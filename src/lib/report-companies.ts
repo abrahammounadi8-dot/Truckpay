@@ -1,10 +1,9 @@
-import { spanishCompanies } from "./spanish-companies";
-import { fleet } from "@/lib/data";
+import { catalogForMarket } from "./market-companies";
 import type { Company, DriverReport } from "@/lib/types";
 
 /** Public, driver-declared companies. No private payslips or invented company facts. */
 export function reportCompanies(reports: DriverReport[], market: "IE" | "GB" | "NL" | "ES" | "US" = "IE"): Company[] {
-  const companies = new Map<string, Company>((market === "IE" ? fleet : market === "ES" ? spanishCompanies : []).map(company => [company.slug, company]));
+  const companies = new Map<string, Company>(catalogForMarket(market).map(company => [company.slug, company]));
   for (const report of reports) {
     if ((report.countryCode ?? "IE") !== market) continue;
     if (companies.has(report.companySlug) || typeof report.companyName !== "string" || !report.companyName.trim()) continue;
