@@ -21,7 +21,7 @@ import {
 
 export function CompanyPayStatsPanel({ stats: initialStats }: { stats: CompanyPayStats }) {
   const market = useMarket();
-  const formatEuroMaybe = (value: number | null | undefined) => formatPayrollMoneyMaybe(value, market === "US" ? "USD" : "EUR");
+  const formatEuroMaybe = (value: number | null | undefined) => formatPayrollMoneyMaybe(value, market === "GB" ? "GBP" : "EUR");
   const [freshStats, setFreshStats] = useState<CompanyPayStats | null>(null);
   const stats = freshStats?.employerSlug === initialStats.employerSlug ? freshStats : initialStats;
   useEffect(() => {
