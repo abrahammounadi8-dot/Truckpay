@@ -11,7 +11,7 @@ export function slugifyEmployer(name: string): string {
   return slug || "employer";
 }
 
-/** Any printed employer name is allowed. Known directory slugs are used only when the name matches. */
+/** Any printed employer name is allowed. Known Irish directory slugs are used only when the name matches. */
 export function resolveEmployer(raw: string | null | undefined, country = "IE"): {
   employerName: string | null;
   employerSlug: string | null;
@@ -19,15 +19,15 @@ export function resolveEmployer(raw: string | null | undefined, country = "IE"):
   const name = (raw ?? "").trim().slice(0, 120);
   if (!name) return { employerName: null, employerSlug: null };
   const lower = name.toLowerCase();
-  const known = fleet.find(
+  const known = country === "IE" ? fleet.find(
     (company) =>
       company.slug === lower ||
       company.name.toLowerCase() === lower ||
       company.shortName.toLowerCase() === lower,
-  );
+  ) : undefined;
   return {
     employerName: name,
-    employerSlug: country === "US" ? `us-${slugifyEmployer(name)}` : known ? known.slug : slugifyEmployer(name),
+    employerSlug: country === "IE" ? (known ? known.slug : slugifyEmployer(name)) : `${country.toLowerCase()}-${slugifyEmployer(name)}`,
   };
 }
 
