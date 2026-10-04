@@ -76,7 +76,7 @@ export function EmploymentProfileForm() {
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          countryCode: market === "US" ? "US" : "IE",
+          countryCode: market,
           ...form,
           employerName: form.employerName || null,
 
