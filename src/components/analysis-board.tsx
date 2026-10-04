@@ -42,7 +42,7 @@ type Payload = {
 
 export function AnalysisBoard({ compact = false, employer }: { compact?: boolean; employer?: string }) {
   const market = useMarket();
-  const formatEuroMaybe = (value: number | null | undefined) => formatPayrollMoneyMaybe(value, market === "US" ? "USD" : "EUR");
+  const formatEuroMaybe = (value: number | null | undefined) => formatPayrollMoneyMaybe(value, market === "GB" ? "GBP" : "EUR");
   const tr = useUiCopy();
   const { t, locale } = useT();
   const [data, setData] = useState<Payload | { employmentRequired: { employerName: string; asOf: string } } | null>(null);
