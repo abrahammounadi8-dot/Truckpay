@@ -56,7 +56,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
         ratePerMile: form.ratePerMile ? Number(form.ratePerMile) : undefined,
         hourlyRate: form.hourlyRate ? Number(form.hourlyRate) : undefined,
         weeklyPay: Number(form.weeklyPay),
-        kmPerWeek: form.kmPerWeek ? Number(form.kmPerWeek) * (market === "US" ? 1.609344 : 1) : undefined,
+        kmPerWeek: form.kmPerWeek ? Number(form.kmPerWeek) : undefined,
         hoursPerWeek: Number(form.hoursPerWeek),
         body: "",
       });
@@ -99,7 +99,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
             value={form.payType}
             onChange={(event) => set("payType", event.target.value as PayType)}
           >
-            {(market === "US" ? [...payTypes, "mile" as const] : payTypes).map((payType) => (
+            {payTypes.map((payType) => (
               <option key={payType} value={payType}>
                 {tr(payTypeLabels[payType])}
               </option>
@@ -125,7 +125,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
             value={form.operation}
             onChange={(event) => set("operation", event.target.value as Operation)}
           >
-            {(market === "US" ? operations.filter(item => item === "domestic") : operations).map((item) => (
+            {operations.map((item) => (
               <option key={item} value={item}>
                 {tr(operationLabels[item])}
               </option>
@@ -134,8 +134,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
         </Field>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        {market === "US" && form.payType === "mile" && <Field label="USD per mile — required"><Input inputMode="decimal" value={form.ratePerMile} onChange={event => set("ratePerMile", event.target.value)} required /></Field>}
-        <Field label={market === "US" ? "Weekly take-home ($) — required" : tr("Weekly take-home (€) — required")}>
+                <Field label={market === "GB" ? "Weekly take-home (£) — required" : tr("Weekly take-home (€) — required")}>
           <Input
             inputMode="decimal"
             value={form.weeklyPay}
@@ -144,7 +143,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
             required
           />
         </Field>
-        <Field label={market === "US" ? "Hourly rate ($) — optional" : tr("Hourly rate (€) — optional")}>
+        <Field label={market === "GB" ? "Hourly rate (£) — optional" : tr("Hourly rate (€) — optional")}>
           <Input
             inputMode="decimal"
             value={form.hourlyRate}
