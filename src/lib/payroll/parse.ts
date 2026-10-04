@@ -16,8 +16,8 @@ export function parsePayslipInput(raw: unknown): { input?: PayslipInput; error?:
   if (identifierError) return { error: identifierError };
 
   const countryCode = body.countryCode ?? "IE";
-  if (countryCode !== "IE" && countryCode !== "US") return { error: "Payroll analysis currently supports Ireland and United States only." };
-  const currency = countryCode === "US" ? "USD" : "EUR";
+  if (countryCode !== "IE" && countryCode !== "GB" && countryCode !== "NL") return { error: "Payroll analysis currently supports Ireland, United Kingdom and Netherlands." };
+  const currency = countryCode === "GB" ? "GBP" : "EUR";
   if (body.currency != null && body.currency !== currency) return { error: "Currency does not match the payroll country." };
   const paymentDate = asDate(body.paymentDate);
   if (!paymentDate) {
@@ -145,7 +145,7 @@ export function toStoredPayslip(userId: string, input: PayslipInput): Payslip {
     id: crypto.randomUUID(),
     userId,
     countryCode: input.countryCode ?? "IE",
-    currency: input.countryCode === "US" ? "USD" : "EUR",
+    currency: input.countryCode === "GB" ? "GBP" : "EUR",
     paidMiles: input.paidMiles ?? null, ratePerMile: input.ratePerMile ?? null, mileagePay: input.mileagePay ?? null,
     employerSlug: input.employerSlug ?? null,
     employerName: input.employerName ?? null,
