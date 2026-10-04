@@ -9,5 +9,5 @@ export function useMarket() { return useContext(MarketContext); }
 
 export function useMarketMoney() {
   const market = useMarket();
-  return (value: number) => new Intl.NumberFormat(market === "US" ? "en-US" : "en-IE", { style: "currency", currency: market === "US" ? "USD" : "EUR", maximumFractionDigits: 0 }).format(value);
+  return (value: number) => new Intl.NumberFormat(market === "GB" ? "en-GB" : market === "NL" ? "nl-NL" : "en-IE", { style: "currency", currency: market === "GB" ? "GBP" : "EUR", maximumFractionDigits: 0 }).format(value);
 }
