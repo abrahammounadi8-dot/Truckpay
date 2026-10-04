@@ -1,6 +1,6 @@
 /** Payroll domain. Separate from legacy public DriverReport. Ireland-first, country-extensible. */
 
-export type CountryCode = "IE" | "US" | "GB" | "ES" | "PL" | "OTHER";
+export type CountryCode = "IE" | "GB" | "NL" | "US" | "ES" | "PL" | "OTHER";
 
 export type CurrencyCode = "EUR" | "USD" | "GBP" | "PLN";
 
@@ -312,8 +312,8 @@ export type Finding = {
 };
 
 export type PayslipInput = {
-  countryCode?: "IE" | "US";
-  currency?: "EUR" | "USD";
+  countryCode?: "IE" | "GB" | "NL";
+  currency?: "EUR" | "GBP";
   paidMiles?: number | null;
   ratePerMile?: number | null;
   mileagePay?: number | null;
