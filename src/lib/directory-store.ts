@@ -7,7 +7,7 @@ import { resolveEmployer } from "./payroll/employer";
 import { publicStatisticsSource } from "./payroll/public-statistics-source";
 import { eligibleDirectoryEmployers } from "./payroll/directory-eligibility";
 import { addRegisteredEmployers } from "./directory-companies";
-import { fleet } from "./data";
+import { catalogForMarket } from "./market-companies";
 import { recentPublicationCompanies } from "./payroll/recent-publications";
 
 export async function listDirectoryWithPayStats() {
@@ -15,7 +15,7 @@ export async function listDirectoryWithPayStats() {
   const source = await publicStatisticsSource();
   const payslips = source.payslips.filter(slip => slip.countryCode === market && slip.currency === marketCurrency(market));
   const profiles = source.profiles.filter(profile => profile.countryCode === market);
-  const catalogue = market === "IE" ? fleet : [];
+  const catalogue = catalogForMarket(market);
   const companies = recentPublicationCompanies(addRegisteredEmployers(catalogue, eligibleDirectoryEmployers(payslips, profiles), market), payslips, profiles, new Date().toISOString());
   const asOf = new Date().toISOString().slice(0, 10);
   const payStats = Object.fromEntries(companies.map(company => [company.slug,
