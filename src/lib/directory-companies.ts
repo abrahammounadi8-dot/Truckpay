@@ -3,7 +3,7 @@ import { slugifyEmployer } from "./payroll/employer";
 
 export const companyNameKey = (name: string) => name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 /** Deliberately project employer identity only; never spread a private record. */
-export function addRegisteredEmployers(companies: Company[], employers: { employerName?: string | null; employerSlug?: string | null }[], market: "IE" | "GB" | "NL" = "IE"): Company[] {
+export function addRegisteredEmployers(companies: Company[], employers: { employerName?: string | null; employerSlug?: string | null }[], market: "IE" | "GB" | "NL" | "ES" | "US" = "IE"): Company[] {
   const result = [...companies];
   const names = new Set(result.flatMap(c => [companyNameKey(c.name), companyNameKey(c.shortName)]));
   const slugs = new Set(result.map(c => c.slug));
