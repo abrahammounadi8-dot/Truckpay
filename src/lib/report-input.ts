@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { marketFrom } from "./markets";
-import { spanishCompanies } from "./spanish-companies";
-import { fleet } from "@/lib/data";
+import { catalogForMarket } from "./market-companies";
 import type { DriverReport, Equipment, Operation, PayType } from "@/lib/types";
 
 const PAY_TYPES: PayType[] = ["hourly", "day", "salary", "percentage", "mile"];
@@ -31,8 +30,8 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
   }
   const body = raw as Record<string, unknown>;
   const rawCountry = body.countryCode;
-  const countryCode = rawCountry === "ES" || rawCountry === "US" ? rawCountry : marketFrom(rawCountry);
-  const catalogue = countryCode === "IE" ? fleet : countryCode === "ES" ? spanishCompanies : [];
+  const countryCode = marketFrom(rawCountry);
+  const catalogue = catalogForMarket(countryCode);
   const submittedName = asString(body.companyName).replace(/\s+/g, " ");
   if (submittedName.length > 120) return { error: "Company name must be 120 characters or fewer." };
   const legacyCompany = catalogue.find(company => company.slug === asString(body.companySlug));
