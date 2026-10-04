@@ -23,7 +23,7 @@ export type DocumentExtractResult = {
 };
 
 export async function extractPayslipDocument(input: {
-  countryCode?: "IE" | "US";
+  countryCode?: "IE" | "GB" | "NL";
   bytes: Uint8Array;
   mime: string;
   filename: string;
@@ -65,7 +65,7 @@ export async function extractPayslipDocument(input: {
 
   if (IMAGES.has(mime) || /\.(jpe?g|png|webp|gif)$/i.test(input.filename)) {
     const text = await readImageText(input.bytes);
-    const draft = input.countryCode === "US" ? extractUsPayslipText(text) : extractFromPayslipText(text);
+    const draft = extractFromPayslipText(text);
     return {
       kind: "image",
       stored: false,
@@ -118,7 +118,7 @@ async function readPdfDraft(bytes: Uint8Array, password?: string, countryCode = 
   try {
     if (pdf.numPages !== 1) throw new Error("MULTIPLE_PAGES");
     const { items } = await extractTextItems(pdf);
-    const sage = countryCode === "US" ? [] : items.map(extractSagePage).filter(draft => draft !== null);
+    const sage = items.map(extractSagePage).filter(draft => draft !== null);
     if (process.env.NODE_ENV === "development") {
       // Local diagnostic: only counts and known heading presence; never document text,
       // filenames, passwords, identities or payroll values.
@@ -133,7 +133,7 @@ async function readPdfDraft(bytes: Uint8Array, password?: string, countryCode = 
     // Never combine distinct payslips from a multi-page file.
     if (sage.length) return items.length === 1 ? sage[0] : emptyDraft();
     const { text } = await extractText(pdf, { mergePages: true });
-    return countryCode === "US" ? extractUsPayslipText(text) : extractFromPayslipText(text);
+    return extractFromPayslipText(text);
   } finally {
     await pdf.loadingTask.destroy();
   }
