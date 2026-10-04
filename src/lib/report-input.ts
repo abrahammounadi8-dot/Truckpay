@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
 import { marketFrom, isMarket } from "./markets";
-import { spanishCompanies } from "./spanish-companies";
 import { fleet } from "@/lib/data";
 import type { DriverReport, Equipment, Operation, PayType } from "@/lib/types";
 
@@ -9,7 +8,7 @@ const EQUIPMENT: Equipment[] = ["curtain", "reefer", "flatbed", "tanker", "speci
 const OPERATIONS: Operation[] = ["domestic", "uk", "europe"];
 
 export type ReportInput = {
-  countryCode?: "IE" | "ES" | "US";
+  countryCode?: "IE" | "GB" | "NL";
   companySlug: string;
   companyName?: string;
   role: string;
@@ -32,7 +31,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
   const body = raw as Record<string, unknown>;
   if (body.countryCode !== undefined && !isMarket(body.countryCode)) return { error: "Unsupported country." };
   const countryCode = marketFrom(body.countryCode);
-  const catalogue = countryCode === "IE" ? fleet : countryCode === "ES" ? spanishCompanies : [];
+  const catalogue = countryCode === "IE" ? fleet : [];
   const submittedName = asString(body.companyName).replace(/\s+/g, " ");
   if (submittedName.length > 120) return { error: "Company name must be 120 characters or fewer." };
   const legacyCompany = catalogue.find(company => company.slug === asString(body.companySlug));
@@ -55,7 +54,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
   }
 
   const ratePerMile = optionalNumber(body.ratePerMile, 100);
-  if (ratePerMile === false || (body.payType === "mile" && (countryCode !== "US" || ratePerMile == null))) return { error: "Per-mile pay requires a US report and a USD-per-mile rate." };
+  if (ratePerMile === false || (body.payType === "mile" && ratePerMile == null)) return { error: "Per-mile pay requires a valid rate." };
   const hourlyRate = optionalNumber(body.hourlyRate, 80);
   const kmPerWeek = optionalNumber(body.kmPerWeek, 10000);
   if (hourlyRate === false || kmPerWeek === false) {
