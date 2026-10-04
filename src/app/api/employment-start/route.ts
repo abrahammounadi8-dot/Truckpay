@@ -10,7 +10,9 @@ export const runtime = "nodejs";
 export async function GET(request: Request) {
   const userId = await privateApiIdentity(request); if (userId instanceof Response) return userId;
   const url = new URL(request.url);
-  const employer = resolveEmployer(url.searchParams.get("employer"), url.searchParams.get("countryCode") === "US" ? "US" : url.searchParams.get("countryCode") === "IE" ? "IE" : payrollCountry(request));
+  const requestedCountry = url.searchParams.get("countryCode");
+  const countryCode = requestedCountry === "GB" || requestedCountry === "NL" || requestedCountry === "IE" ? requestedCountry : payrollCountry(request);
+  const employer = resolveEmployer(url.searchParams.get("employer"), countryCode);
   const profile = await getProfile(userId);
   const entry = employmentStartFor(profile, employer.employerSlug);
   const asOf = url.searchParams.get("asOf") || new Date().toISOString().slice(0, 10);
@@ -22,7 +24,7 @@ export async function PUT(request: Request) {
   let body: Record<string, unknown>;
   try { body = await request.json(); } catch { return privateJson({ error: "Indica la empresa y el mes de inicio." }, { status: 400 }); }
   const countryCode = body.countryCode ?? payrollCountry(request);
-  if (countryCode !== "IE" && countryCode !== "US") return privateJson({ error: "Unsupported payroll country." }, { status: 400 });
+  if (countryCode !== "IE" && countryCode !== "GB" && countryCode !== "NL") return privateJson({ error: "Unsupported payroll country." }, { status: 400 });
   const employer = resolveEmployer(typeof body?.employerName === "string" ? body.employerName : "", countryCode);
   if (!employer.employerSlug || !employer.employerName) return privateJson({ error: "Indica la empresa." }, { status: 400 });
   const asOf = typeof body.asOf === "string" && body.asOf ? body.asOf : undefined;
