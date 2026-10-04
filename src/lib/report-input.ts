@@ -41,7 +41,6 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
   const identity = companyName.normalize("NFKC").toLowerCase();
   const known = catalogue.find(company => [company.name, company.shortName, company.slug]
     .some(name => name.normalize("NFKC").toLowerCase() === identity));
-  // Names outside the directory cannot collide with curated companies or other alphabets.
   const companySlug = known?.slug ?? ("reported-" + createHash("sha256").update(countryCode === "IE" ? identity : `${countryCode}:${identity}`).digest("hex"));
 
   const weeklyPay = Number(body.weeklyPay);
@@ -56,6 +55,7 @@ export function parseReportInput(raw: unknown): { report?: ReportInput; error?: 
 
   const ratePerMile = optionalNumber(body.ratePerMile, 100);
   if (ratePerMile === false || (body.payType === "mile" && ratePerMile == null)) return { error: "Per-mile pay requires a valid rate." };
+  if (body.payType === "mile" && countryCode !== "US") return { error: "Per-mile pay is only supported for US reports." };
   const hourlyRate = optionalNumber(body.hourlyRate, 80);
   const kmPerWeek = optionalNumber(body.kmPerWeek, 10000);
   if (hourlyRate === false || kmPerWeek === false) {
