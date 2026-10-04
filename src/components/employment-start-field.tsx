@@ -6,7 +6,7 @@ import { tenureBandFromMonths } from "@/lib/payroll/tenure";
 import { useEffect, useId, useState } from "react";
 import { useT } from "./language-provider";
 
-type Props = { countryCode?: "IE" | "US"; employerName: string; asOf?: string; onReady?: (ready: boolean) => void };
+type Props = { countryCode?: "IE" | "GB" | "NL"; employerName: string; asOf?: string; onReady?: (ready: boolean) => void };
 export function EmploymentStartField(props: Props) {
   return <EmploymentStartEditor key={`${props.countryCode ?? ""}|${props.employerName}|${props.asOf ?? ""}`} {...props} />;
 }
