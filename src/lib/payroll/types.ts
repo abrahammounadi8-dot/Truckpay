@@ -312,8 +312,8 @@ export type Finding = {
 };
 
 export type PayslipInput = {
-  countryCode?: "IE" | "GB" | "NL";
-  currency?: "EUR" | "GBP";
+  countryCode?: "IE" | "GB" | "NL" | "US";
+  currency?: "EUR" | "GBP" | "USD";
   paidMiles?: number | null;
   ratePerMile?: number | null;
   mileagePay?: number | null;
