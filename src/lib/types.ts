@@ -5,7 +5,7 @@ export type Operation = "domestic" | "uk" | "europe";
 export type PayType = "hourly" | "day" | "salary" | "percentage" | "mile";
 
 export type Company = {
-  countryCode?: "IE" | "ES" | "US";
+  countryCode?: "IE" | "GB" | "NL";
   publicAddress?: { address: string; sourceUrl: string; sourceName: string; mapUrl: string };
   driverReported?: boolean;
   slug: string;
@@ -24,7 +24,7 @@ export type Company = {
 };
 
 export type DriverReport = {
-  countryCode?: "IE" | "ES" | "US";
+  countryCode?: "IE" | "GB" | "NL";
   companyName?: string;
   id: string;
   companySlug: string;
