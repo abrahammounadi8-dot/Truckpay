@@ -20,6 +20,10 @@ export function marketName(market: Market, spanish: boolean): string {
   return spanish ? "Irlanda" : "Ireland";
 }
 
-export function marketCurrency(market: Market): "EUR" | "GBP" {
-  return market === "GB" ? "GBP" : "EUR";
+export type SupportedMarket = Market | "ES" | "US";
+
+export function marketCurrency(market: SupportedMarket): "EUR" | "GBP" | "USD" {
+  if (market === "GB") return "GBP";
+  if (market === "US") return "USD";
+  return "EUR";
 }
