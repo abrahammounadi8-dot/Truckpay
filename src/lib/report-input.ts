@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { marketFrom, isMarket } from "./markets";
+import { marketFrom } from "./markets";
 import { spanishCompanies } from "./spanish-companies";
 import { fleet } from "@/lib/data";
 import type { DriverReport, Equipment, Operation, PayType } from "@/lib/types";
