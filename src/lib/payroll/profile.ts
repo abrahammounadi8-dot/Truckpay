@@ -38,7 +38,7 @@ const SOURCES: TenureSource[] = [
 ];
 
 export type ProfileInput = {
-  countryCode?: "IE" | "US";
+  countryCode?: "IE" | "GB" | "NL";
   employerSlug?: string | null;
   employerName?: string | null;
   employmentStartDate?: string | null;
