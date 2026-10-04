@@ -107,8 +107,8 @@ const DRAFT_PREFIX = "truckpay.payslip-draft";
 
 export function PayslipForm({ defaultEmployer = "", defaultPayFrequency = "unknown", onPrepared, onDraftRead, autoPrepare = false, onProcessed, onNeedsDetails, employmentStartFields, initialFile, onImportFiles, maxImports, onReadingChange }: { defaultPayFrequency?: PayFrequency; onReadingChange?: (reading: boolean) => void; initialFile?: File; onImportFiles?: (files: File[]) => void; maxImports?: number; employmentStartFields?: React.ReactNode; onNeedsDetails?: (needed: boolean) => void; defaultEmployer?: string; autoPrepare?: boolean; onProcessed?: (message: string | null) => void; onPrepared?: (payload: Record<string, unknown>) => void; onDraftRead?: (draft: { employerName: string } | null) => void }) {
   const market = useMarket();
-  const countryCode = market === "US" ? "US" : "IE";
-  const currency = countryCode === "US" ? "USD" : "EUR";
+  const countryCode = market;
+  const currency = countryCode === "GB" ? "GBP" : "EUR";
   const router = useRouter();
   const { t, locale } = useT();
   const DRAFT_KEY = `${DRAFT_PREFIX}.${countryCode}`;
