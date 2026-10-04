@@ -23,7 +23,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
   const [pending, setPending] = useState(false);
   const [form, setForm] = useState({
     companyName: defaultCompany ?? "",
-    role: market === "US" ? "Truck driver" : "HGV driver",
+    role: "HGV driver",
     tenure: "1–2 years",
     payType: "hourly" as PayType,
     equipment: "curtain" as Equipment,
@@ -53,7 +53,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
         payType: form.payType,
         equipment: form.equipment,
         operation: form.operation,
-        ratePerMile: market === "US" && form.ratePerMile ? Number(form.ratePerMile) : undefined,
+        ratePerMile: form.ratePerMile ? Number(form.ratePerMile) : undefined,
         hourlyRate: form.hourlyRate ? Number(form.hourlyRate) : undefined,
         weeklyPay: Number(form.weeklyPay),
         kmPerWeek: form.kmPerWeek ? Number(form.kmPerWeek) * (market === "US" ? 1.609344 : 1) : undefined,
@@ -159,7 +159,7 @@ export function ReportForm({ defaultCompany }: { defaultCompany?: string }) {
             required
           />
         </Field>
-        <Field label={market === "US" ? "Miles / week — optional" : tr("Km / week — optional")}>
+        <Field label={tr("Km / week — optional")}>
           <Input
             inputMode="numeric"
             value={form.kmPerWeek}
