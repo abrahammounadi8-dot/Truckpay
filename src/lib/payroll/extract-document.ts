@@ -65,7 +65,7 @@ export async function extractPayslipDocument(input: {
 
   if (IMAGES.has(mime) || /\.(jpe?g|png|webp|gif)$/i.test(input.filename)) {
     const text = await readImageText(input.bytes);
-    const draft = extractFromPayslipText(text);
+    const draft = input.countryCode === "US" ? extractUsPayslipText(text) : extractFromPayslipText(text);
     return {
       kind: "image",
       stored: false,
@@ -133,7 +133,7 @@ async function readPdfDraft(bytes: Uint8Array, password?: string, countryCode = 
     // Never combine distinct payslips from a multi-page file.
     if (sage.length) return items.length === 1 ? sage[0] : emptyDraft();
     const { text } = await extractText(pdf, { mergePages: true });
-    return extractFromPayslipText(text);
+    return countryCode === "US" ? extractUsPayslipText(text) : extractFromPayslipText(text);
   } finally {
     await pdf.loadingTask.destroy();
   }
