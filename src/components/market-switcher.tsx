@@ -9,6 +9,8 @@ const flags: Record<Market, string> = {
   IE: "🇮🇪",
   GB: "🇬🇧",
   NL: "🇳🇱",
+  ES: "🇪🇸",
+  US: "🇺🇸",
 };
 
 export function MarketSwitcher() {
