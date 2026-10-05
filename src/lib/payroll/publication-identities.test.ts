@@ -2,7 +2,7 @@ import { it } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
-import { reviewPublicationIdentity } from "./publication-identities";
+import { reviewPublicationIdentity, type IdentityReviewAction } from "./publication-identities";
 import type { ReviewPool } from "./publication-journal";
 
 async function fixture() {
@@ -95,4 +95,35 @@ it("fails closed for unverified/conflict states and records revocation", async (
       /reason is required/,
     );
   } finally { await db.close(); }
+});
+
+it("preserves a reviewed person key through exclusion and subsequent approval", async () => {
+  const { db, pool } = await fixture();
+  try {
+    const userId = "30000000-0000-4000-8000-000000000001";
+    const request = { userId, reviewerReference: "manual-review" };
+    const approved = await reviewPublicationIdentity(pool, { ...request, action: "approve" });
+    for (const action of ["conflict", "unverified"] as const) {
+      const excluded = await reviewPublicationIdentity(pool, {
+        ...request, action, reason: "review requires clarification",
+      });
+      assert.equal(excluded.status, action);
+      assert.equal(excluded.personKey, approved.personKey);
+      const eligible = await db.query(
+        "SELECT person_key FROM truckpay_publication_identities WHERE review_status='approved' AND revoked_at IS NULL",
+      );
+      assert.equal(eligible.rows.length, 0);
+      const restored = await reviewPublicationIdentity(pool, { ...request, action: "approve" });
+      assert.equal(restored.personKey, approved.personKey, "exclusion must not allow a new person key");
+    }
+  } finally { await db.close(); }
+});
+
+it("rejects unknown runtime actions before opening a database connection", async () => {
+  const pool: ReviewPool = { connect: async () => { throw new Error("must not connect"); } };
+  await assert.rejects(reviewPublicationIdentity(pool, {
+    userId: "30000000-0000-4000-8000-000000000001",
+    action: "unexpected" as IdentityReviewAction,
+    reviewerReference: "manual-review",
+  }), /Valid identity review action is required/);
 });
